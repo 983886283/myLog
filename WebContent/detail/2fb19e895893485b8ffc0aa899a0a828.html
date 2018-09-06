@@ -1,0 +1,159 @@
+<html>
+<!DOCTYPE html>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <title>Nginx的Location区段</title>
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link rel="stylesheet" href="../css/bootstrap.min.css">
+	<link rel="stylesheet" href="../css/font-awesome.min.css">
+    <link rel="stylesheet" href="../plugins/ckeditor/plugins/codesnippet/lib/highlight/styles/googlecode.css">
+    <link rel="stylesheet" type="text/css" href="../css/front/screen.css">
+    <script src="../plugins/ckeditor/plugins/codesnippet/lib/highlight/highlight.pack.js"></script>
+	<style type="text/css">
+		.list{
+			margin-top:5em;
+			position: fixed;
+		}
+		
+		.list h4{
+			padding-bottom:0.5em;
+			border-bottom:2px solid lightgray;
+		}
+		
+		.list .readTitle li{
+			margin-top:0.4em;
+			padding-left:1em;
+			border:2px solid white;
+		}
+		.list .readTitle li:hover{
+			border-left:2px solid black;
+			color:blue;
+		}
+		.liHover{
+			border-left:2px solid black !important;
+		}
+		.aHover{
+			color:blue;
+		}
+		.list .readTitle li a:hover{
+			color:blue;
+			text-decoration: none;
+		}
+	</style>
+</head>
+<body>
+    <section class="content-wrap container-fluid">
+        <div class="container">
+            <div class="row">
+				<div class="col-md-3 visible-lg-block visible-md-block">
+					<div class="list">
+						<h4>阅读目录</h4>
+						<div>
+							<ul class="readTitle list-unstyled"></ul>
+						</div>
+					</div>
+				</div>
+                 <main class="col-md-19 main-content">
+					<article class="post row">
+					<header class="post-head">
+				        <h1 class="post-title">Nginx的Location区段</h1>
+				        <section class="post-meta">
+					        <span><span class="glyphicon glyphicon-user"></span>:<span>c</span></span>|
+				            <span><span class="glyphicon glyphicon-bookmark"></span>:<span>Software</span></span>|
+				            <span><span class="glyphicon glyphicon-time"></span>:<span>2018-03-26</span></span>
+				        </section>
+				    </header>
+				    <section class="post-content"><p>Nginx location 配置语法</p>
+
+<pre>
+<code class="language-nginx">location [=|~|~*|^~|@] pattern{……}</code></pre>
+
+<pre>
+<code>1：没有修饰符 表示：必须以指定模式开始
+server {
+server_name localhost:8080/myLog;
+location /blog {}
+}
+
+可以匹配
+localhost:8080/myLog/blog
+localhost:8080/myLog/blog?id=1
+localhost:8080/myLog/blogs
+localhost:8080/myLog/blog/</code></pre>
+
+<pre>
+<code>2：= 表示：必须与指定的模式精确匹配，如：
+server {
+server_name localhost:8080/myLog;
+location = /blog {}
+}
+
+可以匹配
+localhost:8080/myLog/blog
+localhost:8080/myLog/blog?id=1
+
+错误匹配
+localhost:8080/myLog/blog/
+localhost:8080/myLog/blogs</code></pre>
+
+<pre>
+<code>3：~ 表示：指定的正则表达式(区分大小写)
+server {
+server_name localhost:8080/myLog;
+location ~ ^/blog$ {}
+}
+
+可以匹配
+localhost:8080/myLog/blog
+localhost:8080/myLog/blog?id=1
+
+错误匹配
+localhost:8080/myLog/BLOG
+localhost:8080/myLog/blog/
+localhost:8080/myLog/blogs</code></pre>
+
+<pre>
+<code>4：~* 表示：指定的正则表达式不区分大小写
+server {
+server_name localhost:8080/myLog;
+location ~* ^/blog$ {}
+}
+
+可以匹配
+localhost:8080/myLog/blog
+localhost:8080/myLog/blog?id=1
+localhost:8080/myLog/BLOG
+
+错误匹配
+localhost:8080/myLog/blog/
+localhost:8080/myLog/blogs</code></pre>
+
+<pre>
+<code>5：^~ 类似于无修饰符的行为,也是以指定模式开始,不同的是,如果模式匹配,那么就停止搜索其他模式了。</code></pre>
+
+<pre>
+<code>6：@ ：定义命名location区段,这些区段客户段不能访问,只可以由内部产生的请求来访问,如try_files或error_page等</code></pre>
+
+<p>a. &quot;普通location&quot;的匹配规则是&quot;最大前缀&quot;,因此&quot;普通location&quot;匹配与顺序无关;<br />
+而&quot;正则location&quot;的匹配规则是&quot;顺序匹配&quot;,且只要匹配到一个就停止。<br />
+b.&quot;普通location&quot;与&quot;正则 location&quot;之间的匹配顺序是,先匹配&quot;普通 location&quot;,可能再匹配&quot;正则 location&quot;。<br />
+匹配&quot;普通 location&quot;后,有时需要继续匹配&quot;正则 location&quot;，有时则不需要继续匹配&quot;正则 location&quot;。<br />
+&nbsp; &nbsp; 以下两种情况不需要继续匹配正则location：<br />
+&nbsp;&nbsp; &nbsp;（1）当普通location的前面指定了&ldquo;^~&rdquo;，一旦匹配，则不需要继续匹配。<br />
+&nbsp;&nbsp; &nbsp;（2）当普通location严格匹配，不是最大前缀匹配，则不再继续匹配正则<br />
+<strong>总结：&ldquo;正则 location 匹配让步普通 location 的严格精确匹配结果；但覆盖普通 location 的最大前缀匹配结果&rdquo;</strong></p>
+
+				    </section>
+					</article>
+				</main>
+            </div>
+        </div>
+    </section>
+    <a href="#top" id="goTop" ><i class="fa fa-angle-up fa-3x"></i></a>
+	<script src="../js/jquery.min.js"></script>
+    <script type="text/javascript" src="../js/datas/detailAngularJs.js"></script>
+    <script src="../plugins/scrolltopcontrol.js"></script>
+</body>
+</html>

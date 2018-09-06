@@ -1,0 +1,257 @@
+<html>
+<!DOCTYPE html>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <title>高性能Mysql笔记三</title>
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link rel="stylesheet" href="../css/bootstrap.min.css">
+	<link rel="stylesheet" href="../css/font-awesome.min.css">
+    <link rel="stylesheet" href="../plugins/ckeditor/plugins/codesnippet/lib/highlight/styles/googlecode.css">
+    <link rel="stylesheet" type="text/css" href="../css/front/screen.css">
+    <script src="../plugins/ckeditor/plugins/codesnippet/lib/highlight/highlight.pack.js"></script>
+	<style type="text/css">
+		.list{
+			margin-top:5em;
+			position: fixed;
+		}
+		
+		.list h4{
+			padding-bottom:0.5em;
+			border-bottom:2px solid lightgray;
+		}
+		
+		.list .readTitle li{
+			margin-top:0.4em;
+			padding-left:1em;
+			border:2px solid white;
+		}
+		.list .readTitle li:hover{
+			border-left:2px solid black;
+			color:blue;
+		}
+		.liHover{
+			border-left:2px solid black !important;
+		}
+		.aHover{
+			color:blue;
+		}
+		.list .readTitle li a:hover{
+			color:blue;
+			text-decoration: none;
+		}
+	</style>
+</head>
+<body>
+    <section class="content-wrap container-fluid">
+        <div class="container">
+            <div class="row">
+				<div class="col-md-3 visible-lg-block visible-md-block">
+					<div class="list">
+						<h4>阅读目录</h4>
+						<div>
+							<ul class="readTitle list-unstyled"></ul>
+						</div>
+					</div>
+				</div>
+                 <main class="col-md-19 main-content">
+					<article class="post row">
+					<header class="post-head">
+				        <h1 class="post-title">高性能Mysql笔记三</h1>
+				        <section class="post-meta">
+					        <span><span class="glyphicon glyphicon-user"></span>:<span>c</span></span>|
+				            <span><span class="glyphicon glyphicon-bookmark"></span>:<span>Database</span></span>|
+				            <span><span class="glyphicon glyphicon-time"></span>:<span>2018-09-01</span></span>
+				        </section>
+				    </header>
+				    <section class="post-content"><h2>索引基础</h2>
+
+<h3>索引的类型</h3>
+
+<pre>
+<code>在MySQL中，索引是在存储引擎层而不是服务器层实现的。所以，并没有统一的索引标准：不同存储引擎的索引的工作方式并不一样，也不是所有的存储引擎都支持所有类型的索引。即使多个存储引擎支持同一种类型的索引，其底层的实现也可能不同。索引大大减少了服务器需要扫描的数据量。索引可以帮助服务器避免排序和临时表。索引可以将随机I/O变为顺序I/O。
+
+1、单行访问是很慢的。特别是在机械硬盘存储中（SSD的随机I/O要快很多，不过这一点仍然成立）。如果服务器从存储中读取一个数据块只是为了获取其中一行，那么就浪费了很多工作。最好读取的块中能包含尽可能多所需要的行。使用索引可以创建位置引用以提升效率。
+2、按顺序访问范围数据是很快的，这有两个原因。第一，顺序I/O不需要多次磁盘寻道，所以比随机I/O要快很多（特别是对机械硬盘）。第二，如果服务器能够按需要顺序读取数据，那么就不再需要额外的排序操作，并且GROUP BY查询也无须再做排序和将行按组进行聚合计算了。
+3、索引覆盖查询是很快的。如果一个索引包含了查询需要的所有列，那么存储引擎就不需要再回表查找行。这避免了大量的单行访问，而上面的第1点已经写明单行访问是很慢的。</code></pre>
+
+<h3>使用索引扫描来做排序</h3>
+
+<pre>
+<code>MySQL有两种方式可以生成有序的结果：文件排序对小数据集很快，按索引顺序扫描可以满足大数据量的排序；如果EXPLAIN出来的type列的值为“index”，则说明MySQL使用了索引扫描来做排序
+
+只有当索引的列顺序和ORDER BY子句的顺序完全一致，并且所有列的排序方向（倒序或正序）都一致时，MySQL才能够使用索引来对结果做排序。
+如果查询需要关联多张表，则只有当ORDER BY子句引用的字段全部为第一个表时，才能使用索引做排序。
+需要满足索引的最左前缀的要求，或者WHERE子句或者JOIN子句中前导列为常量（精确匹配），才能使用索引做排序；
+eg：KEY rental_date (rental_date,inventory_id,customer_id)
+可以使用索引排序
+WHERE rental_date = '2005-05-25' ORDER BY inventory_id, customer_id
+WHERE rental_date = '2005-05-25' ORDER BY inventory_id DESC
+不能使用索引排序
+WHERE rental_date = '2005-05-25' ORDER BY inventory_id DESC, customer_id ASC（排序方向不一致）
+WHERE rental_date = '2005-05-25' ORDER BY inventory_id，staff_id（索引的列顺序和ORDER BY子句的顺序不一致）
+WHERE rental_date &gt; '2005-05-25' ORDER BY inventory_id, customer_id（rental_date范围非精确）
+WHERE rental_date = '2005-05-25' AND inventory_id IN(1,2) ORDER BY customer_id（inventory_id范围非精确）</code></pre>
+
+<h3>B-Tree索引</h3>
+
+<pre>
+<code>“B-Tree”索引，底层的存储引擎也可能使用不同的存储结构，例如，NDB集群存储引擎内部实际上使用T-Tree结构存储这种索引，而InnoDB则使用的是B+Tree；
+
+B-Tree通常意味着所有的值都是按顺序存储的，顺序为定义索引时列的顺序。B-Tree对索引列是顺序组织存储的，所以很适合查找范围数据（LIKE）。因为索引树中的节点是有序的，可以按照这种方式用于ORDER BY和GROUP BY操作。
+
+B-Tree索引使存储引擎不需要进行全表扫描来获取数据，而是从索引的根节点开始进行搜索。根节点的槽中存放了指向子节点的指针，存储引擎根据这些指针向下层查找。通过比较节点页的值和要查找的值可以找到合适的指针进入下层子节点，这些指针实际上定义了子节点页中值的上限和下限。最终存储引擎要么是找到对应的值，要么该记录不存在。叶子节点的指针指向的是被索引的数据，而不是其他的节点页。
+
+eg：索引为key(last_name, first_name, birthday));
+
+B-Tree索引使用范围
+1、全值匹配：指的是和索引中的所有列进行匹配
+2、匹配最左前缀：即只使用索引的第一列
+3、匹配列前缀：eg:last_name前缀/last_name精确匹配+first_name前缀/last_name精确匹配+first_name精确匹配+birthday前缀
+4、匹配范围值：eg:last_name范围/last_name精确匹配+first_name范围/last_name精确匹配+first_name精确匹配+birthday范围
+5、只访问索引的查询（不理解）
+
+B-Tree索引的限制
+1、必须按照索引的最左列开始查找。例如上面例子中的索引无法用于查找first_name为Bill的人，也无法查找某个特定birthday的人，因为这两列都不是最左数据列。
+2、不能跳过索引中的列。也就是说，前面所述的索引无法用于查找姓为Smith并且在某个特定birthday的人。如果不指定first_name，则MySQL只能使用索引的第一列。
+3、如果查询中有某个列的范围查询，则其右边所有列都无法使用索引优化查找。例如有查询WHERE last_name='Smith' AND first_name LIKE 'J％' AND birthday='1976-12-23'，这个查询只能使用索引的前两列，因为这里LIKE是一个范围条件（但是服务器可以把其余列用于其他目的）。如果范围查询列值的数量有限，那么可以通过使用多个等于条件来代替范围条件。
+</code></pre>
+
+<h3>哈希索引</h3>
+
+<pre>
+<code>哈希索引（hash index）基于哈希表实现，只有精确匹配索引所有列的查询才有效。
+
+对于每一行数据，存储引擎都会对所有的索引列计算一个哈希码，哈希码是一个较小的值，并且不同键值的行计算出来的哈希码也不一样。哈希索引将所有的哈希码存储在索引中，同时在哈希表中保存指向每个数据行的指针。因为索引自身只需存储对应的哈希值，所以索引的结构十分紧凑，这也让哈希索引查找的速度非常快。
+
+eg:索引为KEY USING HASH(first_name)
+SELECT last_name FROM testhash WHERE first_name='Peter';
+MySQL先计算'Peter'的哈希值，并使用该值寻找对应的记录指针。因为f（'Peter'）=8784，所以MySQL在索引中查找8784，可以找到指向第3行的指针，比较第3行的值是否为'Peter'，确保就是要查找的行（哈希冲突很多）。
+
+哈希索引的限制
+1、哈希索引只包含哈希值和行指针，而不存储字段值，所以不能使用索引中的值来避免读取行。不过，访问内存中的行的速度很快，所以大部分情况下这一点对性能的影响并不明显。
+2、哈希索引数据并不是按照索引值顺序存储的，所以也就无法用于排序。
+3、哈希索引也不支持部分索引列匹配查找，因为哈希索引始终是使用索引列的全部内容来计算哈希值的。
+4、哈希索引只支持等值比较查询，包括=、IN()、&lt;=&gt;（注意&lt;&gt;和&lt;=&gt;是不同的操作）。
+5、哈希索引不支持任何范围查询，例如WHERE price&gt;100。
+6、访问哈希索引的数据非常快，除非有很多哈希冲突（不同的索引列值却有相同的哈希值）。当出现哈希冲突的时候，存储引擎必须遍历链表中所有的行指针，逐行进行比较，直到找到所有符合条件的行。
+7、如果哈希冲突很多的话，一些索引维护操作的代价也会很高。例如，如果在某个选择性很低（哈希冲突很多）的列上建立哈希索引，那么当从表中删除一行时，存储引擎需要遍历对应哈希值的链表中的每一行，找到并删除对应行的引用，冲突越多，代价越大。
+
+创建自定义哈希索引
+如果存储引擎不支持哈希索引，可以在B-Tree基础上创建一个伪哈希索引。依然使用B-Tree进行查找，但是它使用哈希值（非SHA1()或MD5()，其结果为长字符串而非数字,数据量大且哈希冲突多可以自己实现哈希函数或者使用FNV64()），而不是键值本身进行索引查找，只需要很小的索引就可以为超长的键创建索引。
+创建索引。你需要做的就是在查询的WHERE子句中手动指定使用哈希函数。
+如：原本sql:SELECT id FROM url WHERE url="http://www.mysql.com";索引为url列
+若删除原来url列上的索引，而新增一个索引的url_crc列，使用CRC32做哈希，使用下面的方式查询：
+SELECT id FROM url WHERE url="http://www.mysql.com" AND url_crc=CRC32("http://www.mysql.com"); 
+性能会非常高，因为MySQL优化器会使用这个选择性很高而体积很小的基于url_crc列的索引来完成查找。即使有多个记录有相同的索引值，查找仍然很快，只需要根据哈希值做快速的整数比较就能找到索引条目，然后一一比较返回对应的行。缺陷是需要维护哈希值，可以手动维护，也可以使用触发器实现。</code></pre>
+
+<h3>空间数据索引（R-Tree）</h3>
+
+<pre>
+<code>Mysql中不推荐</code></pre>
+
+<h3>全文索引</h3>
+
+<pre>
+<code>全文索引是一种特殊类型的索引，它查找的是文本中的关键词，而不是直接比较索引中的值。全文搜索和其他几类索引的匹配方式完全不一样。它有许多需要注意的细节，如停用词、词干和复数、布尔搜索等。全文索引更类似于搜索引擎做的事情，而不是简单的WHERE条件匹配。在相同的列上同时创建全文索引和基于值的B-Tree索引不会有冲突，全文索引适用于MATCH AGAINST操作，而不是普通的WHERE条件操作。</code></pre>
+
+<h3>其他索引类别</h3>
+
+<pre>
+<code>还有很多第三方的存储引擎使用不同类型的数据结构来存储索引</code></pre>
+
+<h2>高性能的索引策略</h2>
+
+<h3>独立的列</h3>
+
+<pre>
+<code>索引应为独立的列：如果查询中的列不是独立的，则MySQL就不会使用索引。“独立的列”是指索引列不能是表达式的一部分，也不能是函数的参数。例如下边查询无法使用索引：
+WHERE actor_id + 1 = 5;
+WHERE TO_DAYS(CURRENT_DATE)-TO_DAYS(date_col)&lt;=10;</code></pre>
+
+<h3>前缀索引</h3>
+
+<pre>
+<code>如果索引很长的字符列,会让索引变得大且慢，这时可以根据业务找到最适合的前缀长度,创建前缀索引，其缺点为：MySQL无法使用前缀索引做ORDER BY和GROUP BY，也无法使用前缀索引做覆盖扫描。
+eg:ALTER TABLE city_demo ADD KEY (city(7));</code></pre>
+
+<h3>多列索引</h3>
+
+<pre>
+<code>5.0版本后引入了一种”索引合并”的策略，查询能够同时使用这两个单列索引进行扫描，并将结果进行合并。这种算法有三个变种：OR条件的联合（union），AND条件的相交（intersection），组合前两种情况的联合及相交。索引合并策略有时候是一种优化的结果，但实际上更多时候说明了表上的索引建得很糟糕。
+
+1、当出现服务器对多个索引做相交操作时（通常有多个AND条件），通常意味着需要一个包含所有相关列的多列索引，而不是多个独立的单列索引。
+2、当服务器需要对多个索引做联合操作时（通常有多个OR条件），通常需要耗费大量CPU和内存资源在算法的缓存、排序和合并操作上。特别是当其中有些索引的选择性不高，需要合并扫描返回的大量数据的时候。
+3、更重要的是，优化器不会把这些计算到“查询成本”中，优化器只关心随机页面读取。这会使得查询的成本被“低估”，导致该执行计划还不如直接走全表扫描。这样做不但会消耗更多的CPU和内存资源，还可能会影响查询的并发性，但如果是单独运行这样的查询则往往会忽略对并发性的影响。</code></pre>
+
+<h3>选择合适的索引列顺序</h3>
+
+<pre>
+<code>一般将选择性最高的列放在索引最前列，可以最快地过滤出需要的行
+性能不只依赖于所有索引列的选择性,也和查询条件的具体值分布有关,可能需要根据运行频率最高的查询调整索引列顺序
+有时需要根据排序,分组和范围条件综合考虑
+尽可能将需要做范围查询的列放到索引的后面，以便优化器能使用尽可能多的索引列
+避免多个范围查询，或者把范围改为多个等值查询，如age between 1 and 3改为age in (1,2,3)
+
+</code></pre>
+
+<h3>聚簇索引</h3>
+
+<pre>
+<code>聚簇索引并不是一种单独的索引类型，而是一种数据存储方式。具体的细节依赖于其实现方式，但InnoDB的聚簇索引实际上在同一个结构中保存了B-Tree索引和数据行。当表有聚簇索引时，它的数据行实际上存放在索引的叶子页中。因为无法同时把数据行存放在两个不同的地方，所以一个表只能有一个聚簇索引，不过，覆盖索引可以模拟多个聚簇索引的情况。因为是存储引擎负责实现索引，因此不是所有的存储引擎都支持聚簇索引。
+
+InnoDB将通过主键聚集数据，如果没有定义主键，InnoDB会选择一个唯一的非空索引代替。如果没有这样的索引，InnoDB会隐式定义一个主键来作为聚簇索引。InnoDB只聚集在同一个页面中的记录。包含相邻键值的页面可能会相距甚远。
+
+聚簇索引的优点
+1、可以把相关数据保存在一起，这样只需要从磁盘读取少数的数据页就能获取全部数据。如果没有使用聚簇索引，则每行都可能导致一次磁盘I/O。
+2、数据访问更快。聚簇索引将索引和数据保存在同一个B-Tree中，因此从聚簇索引中获取数据通常比在非聚簇索引中查找要快。
+3、使用覆盖索引扫描的查询可以直接使用页节点中的主键值。
+
+聚簇索引的缺点
+1、聚簇数据最大限度地提高了I/O密集型应用的性能，但如果数据全部都放在内存中，聚簇索引与访问的顺序就没那么重要了。
+2、插入速度严重依赖于插入顺序。最好避免随机的（不连续且值的分布范围非常大）主键，主键按照顺序插入是加载数据到InnoDB表中速度最快的方式。但如果不是按照主键顺序加载数据，那么在加载完成后最好使用OPTIMIZE TABLE命令重新组织一下表。
+3、更新聚簇索引列的代价很高，因为会强制InnoDB将每个被更新的行移动到新的位置。
+4、基于聚簇索引的表在插入新行，或者主键被更新导致需要移动行的时候，可能面临“页分裂”的问题。当行的主键值要求必须将这一行插入到某个已满的页中时，存储引擎会将该页分裂成两个页面来容纳该行，这就是一次页分裂操作。页分裂会导致表占用更多的磁盘空间。
+5、聚簇索引可能导致全表扫描变慢，尤其是行比较稀疏，或者由于页分裂导致数据存储不连续的时候。
+6、二级索引（非聚簇索引）可能比想象的要更大，因为在二级索引的叶子节点包含了引用的主键列。
+7、二级索引访问需要两次索引查找，而不是一次。
+
+不连续且值的分布范围非常大的聚簇索引造成的影响
+1、写入的目标页可能已经刷到磁盘上并从缓存中移除，或者是还没有被加载到缓存中，InnoDB在插入之前不得不先找到并从磁盘读取目标页到内存中。这将导致大量的随机I/O。
+2、因为写入是乱序的，InnoDB不得不频繁地做页分裂操作，以便为新的行分配空间。页分裂会导致移动大量数据，一次插入最少需要修改三个页而不是一个页。
+3、由于频繁的页分裂，页会变得稀疏并被不规则地填充，所以最终数据会有碎片。
+
+顺序的主键也可能造成更坏的结果
+对于高并发工作负载，在InnoDB中按主键顺序插入可能会造成明显的争用。主键的上界会成为“热点”。因为所有的插入都发生在这里，所以并发插入可能导致间隙锁竞争。另一个热点可能是AUTO_INCREMENT锁机制；如果遇到这个问题，则可能需要考虑重新设计表或者应用，或者更改innodb_autoinc_lock_mode配置</code></pre>
+
+<h3>覆盖索引</h3>
+
+<pre>
+<code>如果一个索引包含（或者说覆盖）所有需要查询的字段的值，我们就称之为“覆盖索引”。
+
+覆盖索引好处
+1、索引条目通常远小于数据行大小，所以如果只需要读取索引，那MySQL就会极大地减少数据访问量。这对缓存的负载非常重要，因为这种情况下响应时间大部分花费在数据拷贝上。覆盖索引对于I/O密集型的应用也有帮助，因为索引比数据更小，更容易全部放入内存中（这对于MyISAM尤其正确，因为MyISAM能压缩索引以变得更小）。
+2、因为索引是按照列值顺序存储的（至少在单个页内是如此），所以对于I/O密集型的范围查询会比随机从磁盘读取每一行数据的I/O要快得多。对于某些存储引擎，例如MyISAM和Percona XtraDB，甚至可以通过OPTIMIZE命令使得索引完全顺序排列。
+3、一些存储引擎如MyISAM在内存中只缓存索引，数据则依赖于操作系统来缓存，因此要访问数据需要一次系统调用。这可能会导致严重的性能问题，尤其是那些系统调用占了数据访问中的最大开销的场景。
+4、由于InnoDB的聚簇索引，覆盖索引对InnoDB表特别有用。InnoDB的二级索引在叶子节点中保存了行的主键值，所以如果二级主键能够覆盖查询，则可以避免对主键索引的二次查询。
+
+不是所有类型的索引都可以成为覆盖索引。哈希索引、空间索引和全文索引等都不存储索引列的值，所以只能使用B-Tree索引做覆盖索引。另外，不同的存储引擎实现覆盖索引的方式也不同，不是所有的引擎都支持覆盖索引
+
+分析：SELECT * FROM products WHERE actor='SEAN' AND title like '%APOLLO%'无法使用覆盖索引的原因（key: actor）
+1、索引覆盖了WHERE条件中的字段，但无法覆盖整个查询涉及的字段（*），因此无法享受覆盖索引
+2、MySQL能在索引中做最左前缀匹配的LIKE比较，因为该操作可以转换为简单的比较操作，但是如果是通配符开头的LIKE查询，存储引擎就无法做比较匹配。这种情况下，MySQL服务器只能提取数据行的值而不是索引值来做比较。</code></pre>
+
+<h2>&nbsp;</h2>
+				    </section>
+					</article>
+				</main>
+            </div>
+        </div>
+    </section>
+    <a href="#top" id="goTop" ><i class="fa fa-angle-up fa-3x"></i></a>
+	<script src="../js/jquery.min.js"></script>
+    <script type="text/javascript" src="../js/datas/detailAngularJs.js"></script>
+    <script src="../plugins/scrolltopcontrol.js"></script>
+</body>
+</html>

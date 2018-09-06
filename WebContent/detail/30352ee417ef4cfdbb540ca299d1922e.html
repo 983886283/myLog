@@ -1,0 +1,168 @@
+<html>
+<!DOCTYPE html>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <title>Centos7虚拟机安装</title>
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link rel="stylesheet" href="../css/bootstrap.min.css">
+	<link rel="stylesheet" href="../css/font-awesome.min.css">
+    <link rel="stylesheet" href="../plugins/ckeditor/plugins/codesnippet/lib/highlight/styles/googlecode.css">
+    <link rel="stylesheet" type="text/css" href="../css/front/screen.css">
+    <script src="../plugins/ckeditor/plugins/codesnippet/lib/highlight/highlight.pack.js"></script>
+	<style type="text/css">
+		.list{
+			margin-top:5em;
+			position: fixed;
+		}
+		
+		.list h4{
+			padding-bottom:0.5em;
+			border-bottom:2px solid lightgray;
+		}
+		
+		.list .readTitle li{
+			margin-top:0.4em;
+			padding-left:1em;
+			border:2px solid white;
+		}
+		.list .readTitle li:hover{
+			border-left:2px solid black;
+			color:blue;
+		}
+		.liHover{
+			border-left:2px solid black !important;
+		}
+		.aHover{
+			color:blue;
+		}
+		.list .readTitle li a:hover{
+			color:blue;
+			text-decoration: none;
+		}
+	</style>
+</head>
+<body>
+    <section class="content-wrap container-fluid">
+        <div class="container">
+            <div class="row">
+				<div class="col-md-3 visible-lg-block visible-md-block">
+					<div class="list">
+						<h4>阅读目录</h4>
+						<div>
+							<ul class="readTitle list-unstyled"></ul>
+						</div>
+					</div>
+				</div>
+                 <main class="col-md-19 main-content">
+					<article class="post row">
+					<header class="post-head">
+				        <h1 class="post-title">Centos7虚拟机安装</h1>
+				        <section class="post-meta">
+					        <span><span class="glyphicon glyphicon-user"></span>:<span>c</span></span>|
+				            <span><span class="glyphicon glyphicon-bookmark"></span>:<span>Other</span></span>|
+				            <span><span class="glyphicon glyphicon-time"></span>:<span>2018-03-17</span></span>
+				        </section>
+				    </header>
+				    <section class="post-content"><p><a id="一、下载CentOS" name="一、下载CentOS"></a>一、下载CentOS</p>
+
+<pre>
+<code>打开http://mirrors.aliyun.com/centos/7/isos/x86_64/
+下载
+CentOS-7-x86_64-Everything-1708.iso</code></pre>
+
+<p>下载vmware以及注册码略</p>
+
+<p>安装CentOS略</p>
+
+<p>启动CentOS7</p>
+
+<p><a id="无法联网，输入ifconfig出现ens33" name="无法联网，输入ifconfig出现ens33"></a>问题一：无法联网，输入ifconfig出现ens33，没有etho即IP之类</p>
+
+<p>（1）将里面的NAME和DEVICE项修改为eth0；ONBOOT项的no改为yes</p>
+
+<pre>
+<code class="language-bash">vi /etc/sysconfig/network-scripts/ifcfg-ens33</code></pre>
+
+<p>（2）重命名网卡配置文件ifcfg-ens33为ifcfg-eth0</p>
+
+<pre>
+<code class="language-bash">[root@localhost ~]# cd /etc/sysconfig/network-scripts/
+[root@localhost network-scripts]# mv ifcfg-ens33 ifcfg-eth0
+</code></pre>
+
+<p>ifcfg-eth0文件内容</p>
+
+<pre>
+<code class="language-bash">[root@localhost etc]#  cat /etc/sysconfig/network-scripts/ifcfg-eth0 
+TYPE=Ethernet
+PROXY_METHOD=none
+BROWSER_ONLY=no
+BOOTPROTO=dhcp
+DEFROUTE=yes
+IPV4_FAILURE_FATAL=no
+IPV6INIT=yes
+IPV6_AUTOCONF=yes
+IPV6_DEFROUTE=yes
+IPV6_FAILURE_FATAL=no
+IPV6_ADDR_GEN_MODE=stable-privacy
+NAME=eth0
+UUID=844360e0-bdd1-43ee-bbb9-d3a50ab361e8
+DEVICE=eth0
+ONBOOT=yes
+</code></pre>
+
+<p>编辑/etc/default/grub并加入&ldquo;net.ifnames=0 biosdevname=0 &rdquo;到GRUBCMDLINELINUX变量</p>
+
+<pre>
+<code class="language-bash">[root@localhost etc]# cat /etc/default/grub 
+GRUB_TIMEOUT=5
+GRUB_DISTRIBUTOR="$(sed 's, release .*$,,g' /etc/system-release)"
+GRUB_DEFAULT=saved
+GRUB_DISABLE_SUBMENU=true
+GRUB_TERMINAL_OUTPUT="console"
+GRUB_CMDLINE_LINUX="crashkernel=auto net.ifnames=0 biosdevname=0 rhgb quiet"
+GRUB_DISABLE_RECOVERY="true"
+</code></pre>
+
+<p>（3）运行命令grub2-mkconfig -o /boot/grub2/grub.cfg 来重新生成GRUB配置并更新内核参数。</p>
+
+<pre>
+<code class="language-bash">[root@localhost network-scripts]# grub2-mkconfig -o /boot/grub2/grub.cfg  
+Generating grub configuration file ...  
+Found linux image: /boot/vmlinuz-3.10.0-514.el7.x86_64  
+Found initrd image: /boot/initramfs-3.10.0-514.el7.x86_64.img  
+Found linux image: /boot/vmlinuz-0-rescue-b7f83ca165964a47b8b283907b126140  
+Found initrd image: /boot/initramfs-0-rescue-b7f83ca165964a47b8b283907b126140.img  
+done</code></pre>
+
+<p>（4）重启系统</p>
+
+<pre>
+<code class="language-bash">[root@localhost network-scripts]# reboot</code></pre>
+
+<p>&nbsp;</p>
+
+<p>&nbsp;</p>
+
+<p>&nbsp;</p>
+
+<p>&nbsp;</p>
+
+<p>&nbsp;</p>
+
+<p>&nbsp;</p>
+
+				    </section>
+					</article>
+				</main>
+            </div>
+        </div>
+    </section>
+    <a href="#top" id="goTop" ><i class="fa fa-angle-up fa-3x"></i></a>
+	<script src="../js/jquery.min.js"></script>
+    <script type="text/javascript" src="../js/datas/detailAngularJs.js"></script>
+    <script src="../plugins/scrolltopcontrol.js"></script>
+</body>
+</html>

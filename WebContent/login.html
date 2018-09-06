@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+<title>后台登录</title>
+
+<link rel="stylesheet" href="css/front/login.css">
+</head>
+<body ng-app="login" ng-controller="loginCtrl" ng-init="loginData.UserName=&#39;输入ID或用户名登录&#39;">
+	<div class="logo_box">
+		<h3>Administrator Login</h3>
+		<div class="input_outer">
+			<span class="u_user"></span> 
+			<input name="logname" class="text"
+			 	ng-model="loginData.username" id="userName"
+				onfocus=" if(this.value==&#39;输入ID或用户名登录&#39;) this.value=&#39;&#39;"
+				onblur="if(this.value==&#39;&#39;) this.value=&#39;输入ID或用户名登录&#39;"
+				style="color: #FFFFFF !important;" 
+				type="text"
+			>
+		</div>
+		<div class="input_outer">
+			<span class="us_uer"></span> <label class="l-login login_password"
+				style="color: rgb(255, 255, 255); display: block;">输入密码</label> 
+			<input
+				ng-model="loginData.password"
+				name="logpass" class="text"
+				style="color: #FFFFFF !important; position: absolute; z-index: 100;"
+				onfocus="$(&#39;.login_password&#39;).hide()" 
+				onblur="if(this.value==&#39;&#39;) $(&#39;.login_password&#39;).show()" 
+				type="password" 
+			>
+		</div>
+		<div class="mb2">
+			<a class="act-but submit" href="javascript:;" style="color: #FFFFFF" ng-click="login()">登录</a>
+		</div>
+	</div>
+</body>
+	<script src="js/jquery.min.js"></script>
+	<script src="js/angular.min.js"></script>
+	<script type="text/javascript" src="js/datas/loginAngularjs.js"></script>
+	<script type="text/javascript" src="jsplug/jparticle.jquery.js"></script>
+</html>

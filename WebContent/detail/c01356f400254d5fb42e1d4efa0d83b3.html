@@ -1,0 +1,249 @@
+<html>
+<!DOCTYPE html>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <title>Elasticsearch（二十一）</title>
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link rel="stylesheet" href="../css/bootstrap.min.css">
+	<link rel="stylesheet" href="../css/font-awesome.min.css">
+    <link rel="stylesheet" href="../plugins/ckeditor/plugins/codesnippet/lib/highlight/styles/googlecode.css">
+    <link rel="stylesheet" type="text/css" href="../css/front/screen.css">
+    <script src="../plugins/ckeditor/plugins/codesnippet/lib/highlight/highlight.pack.js"></script>
+	<style type="text/css">
+		.list{
+			margin-top:5em;
+			position: fixed;
+		}
+		
+		.list h4{
+			padding-bottom:0.5em;
+			border-bottom:2px solid lightgray;
+		}
+		
+		.list .readTitle li{
+			margin-top:0.4em;
+			padding-left:1em;
+			border:2px solid white;
+		}
+		.list .readTitle li:hover{
+			border-left:2px solid black;
+			color:blue;
+		}
+		.liHover{
+			border-left:2px solid black !important;
+		}
+		.aHover{
+			color:blue;
+		}
+		.list .readTitle li a:hover{
+			color:blue;
+			text-decoration: none;
+		}
+	</style>
+</head>
+<body>
+    <section class="content-wrap container-fluid">
+        <div class="container">
+            <div class="row">
+				<div class="col-md-3 visible-lg-block visible-md-block">
+					<div class="list">
+						<h4>阅读目录</h4>
+						<div>
+							<ul class="readTitle list-unstyled"></ul>
+						</div>
+					</div>
+				</div>
+                 <main class="col-md-19 main-content">
+					<article class="post row">
+					<header class="post-head">
+				        <h1 class="post-title">Elasticsearch（二十一）</h1>
+				        <section class="post-meta">
+					        <span><span class="glyphicon glyphicon-user"></span>:<span>c</span></span>|
+				            <span><span class="glyphicon glyphicon-bookmark"></span>:<span>Elasticsearch</span></span>|
+				            <span><span class="glyphicon glyphicon-time"></span>:<span>2017-07-27</span></span>
+				        </section>
+				    </header>
+				    <section class="post-content"><p>对相关度评分进行调节和优化的常见的4种方法</p>
+
+<p><a id="query-time boost" name="query-time boost"></a>1、query-time boost</p>
+
+<pre>
+<code class="language-json">GET /e/p/_search {
+  "query": {
+    "bool": {
+      "should": [
+        {
+          "match": {
+            "title": { "query": "java spark","boost": 2 }
+          }
+        },
+        {
+          "match": {
+            "content": "java spark"
+          }
+        }
+      ]
+    }
+  }
+}</code></pre>
+
+<p><a id="重构查询结构" name="重构查询结构"></a>2、重构查询结构</p>
+
+<p>重构查询结果，在es新版本中，影响越来越小了。一般情况下，没什么必要的话，大家不用也行。</p>
+
+<pre>
+<code class="language-json">GET /e/p/_search {
+  "query": {
+    "bool": {
+      "should": [
+        {
+          "match": {
+            "content": "java"
+          }
+        }
+        {
+          "bool": {
+            "should": [
+              {
+                "match": {
+                  "content": "solution"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    }
+  }
+}</code></pre>
+
+<p><a id="negative boost" name="negative boost"></a>3、negative boost</p>
+
+<pre>
+<code class="language-json">搜索包含java，尽量不包含spark的doc，如果包含了spark，不会说排除掉这个doc，而是说将这个doc的分数降低
+包含了negative term的doc，分数乘以negative boost，分数降低
+
+GET /forum/article/_search {
+  "query": {
+    "bool": {
+      "must": [
+        {
+          "match": {
+            "content": "java"
+          }
+        }
+      ],
+      "must_not": [
+        {
+          "match": {
+            "content": "spark"
+          }
+        }
+      ]
+    }
+  }
+}
+
+GET /forum/article/_search {
+  "query": {
+    "boosting": {
+      "positive": {
+        "match": {
+          "content": "java"
+        }
+      },
+      "negative": {
+        "match": {
+          "content": "spark"
+        }
+      },
+      "negative_boost": 0.2
+    }
+  }
+}
+
+negative的doc，会乘以negative_boost，降低分数</code></pre>
+
+<p><a id="constant_score" name="constant_score"></a>4、constant_score</p>
+
+<pre>
+<code class="language-json">如果你压根儿不需要相关度评分，直接走constant_score加filter，所有的doc分数都是1，没有评分的概念了
+
+GET /forum/article/_search {
+  "query": {
+    "bool": {
+      "should": [
+        {
+          "constant_score": {
+            "query": {
+              "match": {
+                "title": "java"
+              }
+            }
+          }
+        },
+        {
+          "constant_score": {
+            "query": {
+              "match": {
+                "title": "spark"
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+}
+</code></pre>
+
+<p><a id="用function_score自定义相关度分数算法" name="用function_score自定义相关度分数算法"></a>用function_score自定义相关度分数算法</p>
+
+<pre>
+<code class="language-json">例如：Blog数据中有Click字段，这样在关键字查询的时候，可以在关键字相关度分数的基础上乘以他的Click数量，得到Click数量越高的博客匹配度越高的效果
+GET /e/p/_search
+{
+  "query": {
+    "function_score": {
+      "query": {
+        "multi_match": {
+          "query": "java spark",
+          "fields": ["tile", "content"]
+        }
+      },
+      "field_value_factor": {
+        "field": "Click",
+        "modifier": "log1p",
+        "factor": 0.5
+      },
+      "boost_mode": "sum",
+      "max_boost": 2
+    }
+  }
+}
+问题一：如果Click为0，那么匹配度也会变为0，有的是100w，分数会变得很夸张，效果不好
+加个log1p函数，公式会变为，new_score = old_score * log(1 + number_of_votes)，这样出来的分数会比较合理
+再加个factor，添加权重进一步影响分数，new_score = old_score * log(1 + factor * number_of_votes)
+boost_mode，决定分数与指定字段的值如何计算，multiply，sum，min，max，replace
+max_boost，限制计算出来的分数不要超过max_boost指定的值</code></pre>
+
+<p>&nbsp;</p>
+
+<p>&nbsp;</p>
+
+<p>&nbsp;</p>
+
+				    </section>
+					</article>
+				</main>
+            </div>
+        </div>
+    </section>
+    <a href="#top" id="goTop" ><i class="fa fa-angle-up fa-3x"></i></a>
+	<script src="../js/jquery.min.js"></script>
+    <script type="text/javascript" src="../js/datas/detailAngularJs.js"></script>
+    <script src="../plugins/scrolltopcontrol.js"></script>
+</body>
+</html>

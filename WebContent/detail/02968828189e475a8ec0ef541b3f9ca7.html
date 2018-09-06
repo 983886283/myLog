@@ -1,0 +1,498 @@
+<html>
+<!DOCTYPE html>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <title>Linux命令记录</title>
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link rel="stylesheet" href="../css/bootstrap.min.css">
+	<link rel="stylesheet" href="../css/font-awesome.min.css">
+    <link rel="stylesheet" href="../plugins/ckeditor/plugins/codesnippet/lib/highlight/styles/googlecode.css">
+    <link rel="stylesheet" type="text/css" href="../css/front/screen.css">
+    <script src="../plugins/ckeditor/plugins/codesnippet/lib/highlight/highlight.pack.js"></script>
+	<style type="text/css">
+		.list{
+			margin-top:5em;
+			position: fixed;
+		}
+		
+		.list h4{
+			padding-bottom:0.5em;
+			border-bottom:2px solid lightgray;
+		}
+		
+		.list .readTitle li{
+			margin-top:0.4em;
+			padding-left:1em;
+			border:2px solid white;
+		}
+		.list .readTitle li:hover{
+			border-left:2px solid black;
+			color:blue;
+		}
+		.liHover{
+			border-left:2px solid black !important;
+		}
+		.aHover{
+			color:blue;
+		}
+		.list .readTitle li a:hover{
+			color:blue;
+			text-decoration: none;
+		}
+	</style>
+</head>
+<body>
+    <section class="content-wrap container-fluid">
+        <div class="container">
+            <div class="row">
+				<div class="col-md-3 visible-lg-block visible-md-block">
+					<div class="list">
+						<h4>阅读目录</h4>
+						<div>
+							<ul class="readTitle list-unstyled"></ul>
+						</div>
+					</div>
+				</div>
+                 <main class="col-md-19 main-content">
+					<article class="post row">
+					<header class="post-head">
+				        <h1 class="post-title">Linux命令记录</h1>
+				        <section class="post-meta">
+					        <span><span class="glyphicon glyphicon-user"></span>:<span>c</span></span>|
+				            <span><span class="glyphicon glyphicon-bookmark"></span>:<span>Linux</span></span>|
+				            <span><span class="glyphicon glyphicon-time"></span>:<span>2018-02-23</span></span>
+				        </section>
+				    </header>
+				    <section class="post-content"><pre>
+<code class="language-bash">$0 		文件名（包括路径）
+$1    ${10}	第几个参数
+$#		命令行参数总个数
+$*		显示所有参数(等同于$1$2$3)
+$@		显示所有参数(等同于$1 $2 $3)
+shift	将参数指向向前一位(shift$2就是$1)</code></pre>
+
+<p>#用于把名称和路径分开</p>
+
+<pre>
+<code>dirname $0        路径
+basename $0        名称</code></pre>
+
+<p>#进程状态变量</p>
+
+<pre>
+<code>$?		0为成功非0失败
+$$		获取当前shell的进程号</code></pre>
+
+<p>#查看进程</p>
+
+<pre>
+<code>ps -ef|grep 运行文件名称</code></pre>
+
+<p>#字符串处理</p>
+
+<pre>
+<code>str="string"
+${str}		结果string
+${str:2}		结果ring(第二个开始取不包括第2个)
+${str:2:2}		结果ri(第二个开始取不包括第2个,取2个)
+${str}|cut -c 3-4	结果ri(第二个开始取不包括第2个,取2个)
+
+${str#str}		结果ing（开头开始删除最短匹配的字符串）
+${str##str}		结果ing（开头开始删除最长匹配的字符串）
+
+${str%ing}		结果str（结尾开始删除最短匹配的字符串）
+${str%%ing}		结果str（结尾开始删除最长匹配的字符串）
+
+${str/ing/my}	结果strmy（替换）
+${str/#ing/my}	结果strmy（从开头开始替换）
+${str/%ing/my}	结果strmy（从结尾开始替换）
+
+${#str}				结果为变量的长度5(推荐)
+${str}|wc -m		结果为变量的长度6（算入$）
+expr length "$str"	结果为变量的长度5</code></pre>
+
+<p>#匹配行数</p>
+
+<pre>
+<code>wc -l 文件名					结果为文件行数</code></pre>
+
+<p>#重命名</p>
+
+<pre>
+<code>rename:用字符串替换的方式批量改变文件/文件名。
+?  可替代单个字符
+*  可替代多个字符
+
+rename 被替换词 替换词 文件名
+
+eg:
+rename es se test1    test 中es字符串替换为se
+rename es se test?    test+一位其他字符 中es字符串替换为se
+rename es se test??    test+两位其他字符 中es字符串替换为se
+...
+rename es se test*    test+多位（包括0位）其他字符 中es字符串替换为se</code></pre>
+
+<p>#批量创建图片</p>
+
+<pre>
+<code>name=cuijianpeng
+for f in 1 2 3 4 5 6 7 8 9 10
+do
+touch ${name}${f}".jpg"
+done</code></pre>
+
+<p>#result=${value-word}格式（变量功能可以解决空字符串的问题，确保变量有值）</p>
+
+<pre>
+<code>result=${oldgirl-UNSET}
+echo $oldgirl        没有值
+echo $result        值为UNSET
+如果oldgirl没有值result结果为UNSET，有值的话结果为值的内容</code></pre>
+
+<p>#unset&nbsp;变量名</p>
+
+<pre>
+<code>取消变量的值</code></pre>
+
+<p>#result=${value=word}格式（变量功能可以解决空字符串的问题，确保变量有值）</p>
+
+<pre>
+<code class="language-bash">result=${oldgirl=UNSET}
+echo $oldgirl        值为UNSET
+echo $result        值为UNSET
+如果oldgirl没有值oldgirl和result结果均为UNSET，有值的话结果为值的内容</code></pre>
+
+<p><br />
+#${value?&quot;not defined&quot;}格式（如果变量未定义则退出程序）</p>
+
+<pre>
+<code>如果变量值存在，返回变量的值，如果value未定义则显示-bash：value：not defined并退出</code></pre>
+
+<p>#result=${value+1}格式（测试变量是否存在）<br />
+&nbsp;&nbsp; &nbsp;测试变量是否存在</p>
+
+<p><br />
+#以&quot; &quot;为分割从1数到3<br />
+&nbsp;&nbsp; &nbsp;seq -s &quot; &quot; 3</p>
+
+<p><br />
+#测试函数的执行速度<br />
+&nbsp;&nbsp; &nbsp;time for i in $(seq 11111);do count=${#string};done;</p>
+
+<p><br />
+#资料<br />
+&nbsp;&nbsp; &nbsp;man bash命令<br />
+&nbsp;&nbsp; &nbsp;搜索&nbsp;&nbsp; &nbsp;/word<br />
+&nbsp;&nbsp; &nbsp;www.cnblogs.com/chengmo/archive/2010/10/02/1841355.html<br />
+&nbsp;&nbsp; &nbsp;less /etc/init.d/functions<br />
+&nbsp;&nbsp; &nbsp;less /etc/rc.sysinit<br />
+&nbsp;&nbsp; &nbsp;less /etc/init.d/nfs<br />
+&nbsp;&nbsp; &nbsp;less /etc/init.d/portmap<br />
+&nbsp;&nbsp; &nbsp;less /etc/init.d/httpd<br />
+&nbsp;&nbsp; &nbsp;<br />
+&nbsp;&nbsp; &nbsp;<br />
+#变量的数值计算<br />
+&nbsp;&nbsp; &nbsp;(())&nbsp;&nbsp; &nbsp;let&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;expr&nbsp;&nbsp; &nbsp;bc&nbsp;&nbsp; &nbsp;$[]</p>
+
+<p>&nbsp;&nbsp; &nbsp;(())命令&nbsp;&nbsp; &nbsp;常用效率高，执行简单的整数计算<br />
+&nbsp;&nbsp; &nbsp;++&nbsp;&nbsp; &nbsp;--&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;自增自减<br />
+&nbsp;&nbsp; &nbsp;+&nbsp;&nbsp; &nbsp;-&nbsp;&nbsp; &nbsp;!&nbsp;&nbsp; &nbsp;~&nbsp;&nbsp; &nbsp;正号、负号;逻辑与位的取反<br />
+&nbsp;&nbsp; &nbsp;+&nbsp;&nbsp; &nbsp;-&nbsp;&nbsp; &nbsp;*&nbsp;&nbsp; &nbsp;/&nbsp;&nbsp; &nbsp;%&nbsp;&nbsp; &nbsp;加减乘除余<br />
+&nbsp;&nbsp; &nbsp;&lt;&nbsp;&nbsp; &nbsp;&lt;=&nbsp;&nbsp; &nbsp;&gt;&nbsp;&nbsp; &nbsp;&gt;=&nbsp;&nbsp; &nbsp;比较符号<br />
+&nbsp;&nbsp; &nbsp;==&nbsp;&nbsp; &nbsp;！=&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;相等与不相等<br />
+&nbsp;&nbsp; &nbsp;&lt;&lt;&nbsp;&nbsp; &nbsp;&gt;&gt;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;向左位移，向右位移<br />
+&nbsp;&nbsp; &nbsp;&amp;&nbsp;&nbsp; &nbsp;^&nbsp;&nbsp; &nbsp;|&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;位的AND/异或/或<br />
+&nbsp;&nbsp; &nbsp;&amp;&amp;&nbsp;&nbsp; &nbsp;||&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;逻辑的AND/OR<br />
+&nbsp;&nbsp; &nbsp;?:&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;条件表达式<br />
+&nbsp;&nbsp; &nbsp;=&nbsp;&nbsp; &nbsp;+=&nbsp;&nbsp; &nbsp;-=&nbsp;&nbsp; &nbsp;*=&nbsp;&nbsp; &nbsp;/=&nbsp;&nbsp; &nbsp;%=&nbsp;&nbsp; &nbsp;&amp;=&nbsp;&nbsp; &nbsp;^=&nbsp;&nbsp; &nbsp;&lt;&lt;=&nbsp;&nbsp; &nbsp;&gt;&gt;=&nbsp;&nbsp; &nbsp;|=&nbsp;&nbsp; &nbsp;赋值运算符</p>
+
+<p>&nbsp;&nbsp; &nbsp;举例：((a=1+2**3-4%3))&nbsp;&nbsp; &nbsp;相当于a=1+23-(4%3)<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;b=$((1+2**3-4%3))&nbsp;&nbsp; &nbsp;<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;echo $((1+2**3-4%3))</p>
+
+<p>&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;echo $((a+=1))<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;echo $((a++))<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;echo $((a--))<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;echo $((3&gt;2))&nbsp;&nbsp; &nbsp;返回值1为true/2为false</p>
+
+<p>&nbsp;&nbsp; &nbsp;<br />
+#let命令&nbsp;&nbsp; &nbsp;效率低于(())<br />
+&nbsp;&nbsp; &nbsp;举例：i=2<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;let i++;<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;echo $i<br />
+&nbsp;&nbsp; &nbsp;</p>
+
+<p>#expr命令&nbsp;&nbsp; &nbsp;一般用于整数，也可用于字符串<br />
+&nbsp;&nbsp; &nbsp;举例：&nbsp;&nbsp; &nbsp;expr 2 + 2<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;expr 2 - 2<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;expr 2 \* 2&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;expr 2 / 2</p>
+
+<p><br />
+#bc命令&nbsp;&nbsp; &nbsp;可用于小数(可直接输入bc进入计算器默认保留计算数的最多位可通过scale=2；设置保留位数)<br />
+&nbsp;&nbsp; &nbsp;举例：i=1.1<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;echo 1.3+$1|bc<br />
+&nbsp;&nbsp; &nbsp;举例： seq -s &quot;+&quot; 100|bc<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;<br />
+&nbsp;&nbsp; &nbsp;$[]<br />
+&nbsp;&nbsp; &nbsp;举例：echo $[2+3]&nbsp;&nbsp; &nbsp;</p>
+
+<p><br />
+#read命令&nbsp;&nbsp; &nbsp;-p设置提示信息&nbsp;&nbsp; &nbsp;-t设置输入等待时间<br />
+&nbsp;&nbsp; &nbsp;举例：read -t 10 -p &quot;pls input two number:&quot; a1 a2</p>
+
+<p><br />
+#判断是不是整数&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;<br />
+&nbsp;&nbsp; &nbsp;举例：&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;read aa<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;(($aa+1))&amp;&gt;/dev/null<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;if [ $? -ne 0 ]<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;then<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;echo &quot;false&quot;<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;else<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;echo &quot;true&quot;<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;fi</p>
+
+<p><br />
+#条件测试<br />
+&nbsp;&nbsp; &nbsp;格式1：test&lt;测试表达式&gt;<br />
+&nbsp;&nbsp; &nbsp;格式2：[ &lt;测试表达式&gt; ]<br />
+&nbsp;&nbsp; &nbsp;格式3：[[ &lt;测试表达式&gt; ]]&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;<br />
+&nbsp;&nbsp; &nbsp;格式1等价格式2，格式3为扩展的test命令</p>
+
+<p>#举例：test -f sum.sh &amp;&amp; echo &quot;1&quot;||echo &quot;0&quot;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;<br />
+&nbsp;&nbsp; &nbsp;test ！ -f sum.sh &amp;&amp; echo &quot;1&quot;||echo &quot;0&quot;&nbsp;&nbsp; &nbsp;<br />
+&nbsp;&nbsp; &nbsp;[ -f sum.sh ]&amp;&amp; echo &quot;true&quot;||&quot;false&quot;<br />
+&nbsp;&nbsp; &nbsp;[ ！ -f sum.sh ]&amp;&amp; echo &quot;true&quot;||&quot;false&quot;&nbsp;&nbsp; &nbsp;<br />
+&nbsp;&nbsp; &nbsp;[ -f sum.sh -a -d myshell ]&amp;&amp; echo &quot;true&quot;||&quot;false&quot;&nbsp;&nbsp; &nbsp;<br />
+&nbsp;&nbsp; &nbsp;[[ -f sum.sh ]]&amp;&amp; echo &quot;true&quot;||&quot;false&quot;<br />
+&nbsp;&nbsp; &nbsp;[[ -f sum.sh &amp;&amp; -d myshell ]]&amp;&amp; echo &quot;true&quot;||&quot;false&quot;<br />
+&nbsp;&nbsp; &nbsp;<br />
+#常用文件测试操作符(文件路径为变量需要&quot;&quot;或者{}括起来)<br />
+&nbsp;&nbsp; &nbsp;-f 文件&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;若文件存在且为普通文件为真<br />
+&nbsp;&nbsp; &nbsp;-d 文件&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;若文件存在且为目录文件为真<br />
+&nbsp;&nbsp; &nbsp;-s 文件&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;若文件存在且不为空(文件大小非0)为真<br />
+&nbsp;&nbsp; &nbsp;-e 文件&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;若文件存在则真(区别-f)<br />
+&nbsp;&nbsp; &nbsp;-r 文件&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;若文件存在且可读则真<br />
+&nbsp;&nbsp; &nbsp;-w 文件&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;若文件存在且可写则真<br />
+&nbsp;&nbsp; &nbsp;-x 文件&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;若文件存在且可执行则真<br />
+&nbsp;&nbsp; &nbsp;-L 文件&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;若文件存在且为链接文件为真<br />
+&nbsp;&nbsp; &nbsp;f1 -nt f2 文件&nbsp;&nbsp; &nbsp;若文件f1比文件f2新则真<br />
+&nbsp;&nbsp; &nbsp;f1 -ot f2 文件&nbsp;&nbsp; &nbsp;若文件f1比文件f2旧则真<br />
+&nbsp;&nbsp; &nbsp;<br />
+#字符串测试操作符(注意：需要使用&quot;&quot;否则容易报错)<br />
+&nbsp;&nbsp; &nbsp;-z&quot;字符串&quot;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;若串长度为0则真<br />
+&nbsp;&nbsp; &nbsp;-n&quot;字符串&quot;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;若串长度不为0则真<br />
+&nbsp;&nbsp; &nbsp;&quot;串1&quot;=&quot;串2&quot;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;若串1等于串2则真<br />
+&nbsp;&nbsp; &nbsp;&quot;串1&quot;!=&quot;串2&quot;&nbsp;&nbsp; &nbsp;若串1不等于串2则真<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;<br />
+#整数二元比较操作符&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;<br />
+&nbsp;&nbsp; &nbsp;在[]中使用的比较符&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;在(())和[[]]中使用的比较符&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;说明&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;-eq&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;==&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;equals<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;-ne&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;!=&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;not equals&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;-gt&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&gt;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;greater than&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;-ge&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&gt;=&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;greater equals&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;-lt&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&lt;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;less than&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;-le&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&lt;=&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;less equals&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;<br />
+#逻辑操作符<br />
+&nbsp;&nbsp; &nbsp;在[]中使用的比较符&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;在[[]]中使用的比较符&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;说明&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;-a&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&amp;&amp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;与，两端都为真<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;-o&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;||&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;或，一个为真<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;！&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;！&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;非，相反</p>
+
+<p>#打印时单行使用echo，多行使用cat<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;echo &#39;aa&#39;<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;echo &#39;bb&#39;<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;echo &#39;cc&#39;<br />
+&nbsp;&nbsp; &nbsp;等同于<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;cat &lt;&lt;END<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;aa<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;bb<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;cc<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;END</p>
+
+<p>#grep&nbsp;&nbsp; &nbsp;文本搜索工具，它能使用正则表达式搜索文本，并把匹配的行打印出来<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;-c：只输出匹配行的计数。<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;-I：不区分大小写(只适用于单字符)。<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;-h：查询多文件时不显示文件名。<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;-l：查询多文件时只输出包含匹配字符的文件名。<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;-n：显示匹配行及行号。<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;-s：不显示不存在或无匹配文本的错误信息。<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;-v：取反,显示不包含匹配文本的所有行。<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;pattern正则表达式主要参数：<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;\： 忽略正则表达式中特殊字符的原有含义。<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;^：匹配正则表达式的开始行。<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;$: 匹配正则表达式的结束行。<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;\&lt;：从匹配正则表达 式的行开始。<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;\&gt;：到匹配正则表达式的行结束。<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;[ ]：单个字符，如[A]即A符合要求 。<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;[ - ]：范围，如[A-Z]，即A、B、C一直到Z都符合要求 。<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;。：所有的单个字符。<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;* ：有字符，长度可以为0。</p>
+
+<p>#sleep&nbsp;&nbsp; &nbsp;睡眠（秒为单位）<br />
+#usleep 睡眠（微秒为单位）<br />
+#break&nbsp;&nbsp; &nbsp;跳出循环</p>
+
+<p>#远端执行任务最好后台执行进程<br />
+&nbsp;sh 文件名 &amp;&nbsp;&nbsp; &nbsp;执行时后台运行进程<br />
+&nbsp;fg&nbsp;&nbsp; &nbsp;任务编号（可省略）&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;将进程后台执行转为前台执行<br />
+&nbsp;&nbsp; &nbsp;<br />
+如果任务在前台启动<br />
+&nbsp;ctrl+Z&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;暂停当前任务<br />
+&nbsp;bg&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;切换任务到后台<br />
+&nbsp;jobs&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;查看后台执行的任务<br />
+&nbsp;&nbsp; &nbsp;<br />
+&nbsp;&nbsp; &nbsp;<br />
+#重定向&gt;及&gt;&gt;的区别(没有文件就创建文件)<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&gt;是覆盖，&gt;&gt;是追加</p>
+
+<p>#检查远程端口是否连通的方法<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;nmap 127.0.0.1 -p 80<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;wget -T 10 -q --spider http://127.0.0.1&gt;/dev/null echo $?&nbsp;&nbsp; &nbsp;(-T超时设置-q执行时不显示执行结果信息)<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;curl -I -s http://127.0.0.1 echo $?<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;telnet 127.0.0.1 80<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;nc -w 5 127.0.0.1 80&nbsp;&nbsp; &nbsp;(-w为超时时间)<br />
+&nbsp;&nbsp; &nbsp;<br />
+&nbsp;&nbsp; &nbsp;<br />
+#cat&nbsp;&nbsp; &nbsp;<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;1.一次显示整个文件：cat a.sh<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;2.从键盘创建一个文件：cat /dev/null &gt; a.sh<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;3.将几个文件合并为一个文件：$cat file1 file2 &gt; a.sh</p>
+
+<p>#head 默认是查看文件的前10行<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;head -n 15&nbsp;&nbsp; &nbsp;查看文件的前15行<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;head -c 15&nbsp;&nbsp; &nbsp;查看文件的前15字节<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;head -q&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;不显示结果</p>
+
+<p>#tail 默认是查看文件的后10行<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;tail -n 15&nbsp;&nbsp; &nbsp;查看文件的后15行<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;tail -c 15&nbsp;&nbsp; &nbsp;查看文件的后15字节<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;tail -q&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;不显示结果<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;tail -f&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;动态跟踪文件的后10行</p>
+
+<p>#cut 可以只显示某一列的内容<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;cut -d &quot; &quot; -f2&nbsp;&nbsp; &nbsp;按空格切割列，去第二列</p>
+
+<p>#echo 在显示器上显示一段文字，一般起到一个提示的作用。<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;参　　&nbsp;数：-n 不要在最后自动换行<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;-e 若字符串中出现以下字符，则特别加以处理，而不会将它当成一般<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;文字输出：<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp; &nbsp; \a 发出警告声；<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp; &nbsp; \b 删除前一个字符；<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp; &nbsp; \c 最后不加上换行符号；<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp; &nbsp; \f 换行但光标仍旧停留在原来的位置；<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp; &nbsp; \n 换行且光标移至行首；<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp; &nbsp; \r 光标移至行首，但不换行；<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp; &nbsp; \t 插入tab；<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp; &nbsp; \v 与\f相同；<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp; &nbsp; \\ 插入\字符；<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp; &nbsp; \nnn 插入nnn（八进制）所代表的ASCII字符；<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&ndash;help 显示帮助<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&ndash;version 显示版本信息<br />
+&nbsp;&nbsp; &nbsp;<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;<br />
+#exit 退出当前shell<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;0表示成功<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;非0表示失败<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;2表示用法不当<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;127表示命令没有找到<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;126表示不是可执行的<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&gt;=128 信号产生 &nbsp; &nbsp;&nbsp;</p>
+
+<p>#case&nbsp;&nbsp; &nbsp;条件选择<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;case &quot;a&quot; in<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;1|10) echo &quot;1&quot;<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;;;<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;2) echo &quot;2&quot;<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;;;<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;3) echo &quot;3&quot;<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;;;<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;*) echo &quot;*&quot;<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;esac&nbsp;&nbsp; &nbsp;</p>
+
+<p>#给字符串加颜色<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;echo -e &quot;\033[30m 黑色字 \033[0m&quot;<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;echo -e &quot;\033[31m 红色字 \033[0m&quot;<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;echo -e &quot;\033[32m 绿色字 \033[0m&quot;<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;echo -e &quot;\033[33m 黄色字 \033[0m&quot;<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;echo -e &quot;\033[34m 蓝色字 \033[0m&quot;<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;echo -e &quot;\033[35m 紫色字 \033[0m&quot;<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;echo -e &quot;\033[36m 天蓝字 \033[0m&quot;<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;echo -e &quot;\033[37m 白色字 \033[0m&quot;</p>
+
+<p>#当型循环语法&nbsp;&nbsp; &nbsp;while条件句&nbsp;&nbsp; &nbsp;条件满足执行<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;while 条件<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;do<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;指令...<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;done</p>
+
+<p>#!/bin/sh<br />
+while true<br />
+&nbsp;&nbsp; &nbsp;do<br />
+&nbsp;&nbsp; &nbsp;uptime<br />
+&nbsp;&nbsp; &nbsp;sleep 2<br />
+done<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;<br />
+#直到型循环语法&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;<br />
+&nbsp;&nbsp; &nbsp;until条件句（应用场合不多见，了解） 条件满足退出<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;until 条件<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;do<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;指令...<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;done<br />
+&nbsp;&nbsp; &nbsp;<br />
+#实战处理日志<br />
+&nbsp;&nbsp; &nbsp;将apache日志每行大小相加（案例仅供参考，未执行）<br />
+&nbsp;&nbsp; &nbsp;eg1：&nbsp;&nbsp; &nbsp;echo `awk &#39;{print $10}&#39; access.log |grep -v -|tr &quot;\n&quot; &quot;+&quot;|sed &#39;s#117+##117#g&#39;`|bc<br />
+&nbsp;&nbsp; &nbsp;<br />
+&nbsp;&nbsp; &nbsp;eg2：&nbsp;&nbsp; &nbsp;sum=0<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;while read line<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;do<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;size=`echo $line|awk &#39;{print $10}&#39;`<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;[ &quot;$size&quot; == &quot;-&quot; ] &amp;&amp; continue<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;((sum+=$size))<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;done&lt;access.log<br />
+&nbsp;&nbsp; &nbsp;<br />
+&nbsp;&nbsp; &nbsp;eg3：&nbsp;&nbsp; &nbsp;exec&lt;access.log<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;sum=0<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;while read line<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;do<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;size=`echo $line|awk &#39;{print $10}&#39;`<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;[ &quot;$size&quot; == &quot;-&quot; ] &amp;&amp; continue<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;((sum+=$size))<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;done<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;<br />
+&nbsp;&nbsp; &nbsp;eg4：&nbsp;&nbsp; &nbsp;sum=0<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;cat access.log|while line<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;do<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;size=`echo $line|awk &#39;{print $10}&#39;`<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;[ &quot;$size&quot; == &quot;-&quot; ] &amp;&amp; continue<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;((sum+=$size))<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;done&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;<br />
+<br />
+&nbsp;&nbsp; &nbsp;解析：awk将access.log中每行第10个提取出来<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;grep将-去除<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;tr将换行\n替换为+<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;sed将结尾的+去掉<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;echo将生成的字符串打印<br />
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;bc执行运算</p>
+
+<p>查找文件</p>
+
+<p>find / -name&nbsp;文件名</p>
+				    </section>
+					</article>
+				</main>
+            </div>
+        </div>
+    </section>
+    <a href="#top" id="goTop" ><i class="fa fa-angle-up fa-3x"></i></a>
+	<script src="../js/jquery.min.js"></script>
+    <script type="text/javascript" src="../js/datas/detailAngularJs.js"></script>
+    <script src="../plugins/scrolltopcontrol.js"></script>
+</body>
+</html>

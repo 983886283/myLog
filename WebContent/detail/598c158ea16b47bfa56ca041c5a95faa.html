@@ -1,0 +1,190 @@
+<html>
+<!DOCTYPE html>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <title>支持向量机(SVM)算法应用笔记二</title>
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link rel="stylesheet" href="../css/bootstrap.min.css">
+	<link rel="stylesheet" href="../css/font-awesome.min.css">
+    <link rel="stylesheet" href="../plugins/ckeditor/plugins/codesnippet/lib/highlight/styles/googlecode.css">
+    <link rel="stylesheet" type="text/css" href="../css/front/screen.css">
+    <script src="../plugins/ckeditor/plugins/codesnippet/lib/highlight/highlight.pack.js"></script>
+	<style type="text/css">
+		.list{
+			margin-top:5em;
+			position: fixed;
+		}
+		
+		.list h4{
+			padding-bottom:0.5em;
+			border-bottom:2px solid lightgray;
+		}
+		
+		.list .readTitle li{
+			margin-top:0.4em;
+			padding-left:1em;
+			border:2px solid white;
+		}
+		.list .readTitle li:hover{
+			border-left:2px solid black;
+			color:blue;
+		}
+		.liHover{
+			border-left:2px solid black !important;
+		}
+		.aHover{
+			color:blue;
+		}
+		.list .readTitle li a:hover{
+			color:blue;
+			text-decoration: none;
+		}
+	</style>
+</head>
+<body>
+    <section class="content-wrap container-fluid">
+        <div class="container">
+            <div class="row">
+				<div class="col-md-3 visible-lg-block visible-md-block">
+					<div class="list">
+						<h4>阅读目录</h4>
+						<div>
+							<ul class="readTitle list-unstyled"></ul>
+						</div>
+					</div>
+				</div>
+                 <main class="col-md-19 main-content">
+					<article class="post row">
+					<header class="post-head">
+				        <h1 class="post-title">支持向量机(SVM)算法应用笔记二</h1>
+				        <section class="post-meta">
+					        <span><span class="glyphicon glyphicon-user"></span>:<span>c</span></span>|
+				            <span><span class="glyphicon glyphicon-bookmark"></span>:<span>MachineLearning</span></span>|
+				            <span><span class="glyphicon glyphicon-time"></span>:<span>2017-11-22</span></span>
+				        </section>
+				    </header>
+				    <section class="post-content"><p><a id="Python环境" name="Python环境"></a>Python环境</p>
+
+<pre>
+<code>Windows版 Python 3.6.2</code></pre>
+
+<p><a id="Python代码实现" name="Python代码实现"></a>Python代码实现</p>
+
+<pre>
+<code># -*- coding:utf8 -*-
+
+from __future__ import print_function
+
+from time import time
+import logging
+import matplotlib.pyplot as plt
+
+from sklearn.cross_validation import train_test_split
+from sklearn.datasets import fetch_lfw_people
+from sklearn.grid_search import GridSearchCV
+from sklearn.metrics import classification_report
+from sklearn.metrics import confusion_matrix
+from sklearn.decomposition import RandomizedPCA
+from sklearn.svm import SVC
+
+logging.basicConfig(level=logging.INFO, format='%(asctime)s %(message)s')
+
+lfw_people = fetch_lfw_people(min_faces_per_person=70, resize=0.4)#下载人脸数据集
+
+n_samples, h, w = lfw_people.images.shape
+
+X = lfw_people.data#获取特征向量的矩阵（人脸的特征向量）
+n_features = X.shape[1]
+
+y = lfw_people.target#归类标记（对应哪个人）
+target_names = lfw_people.target_names#类别中的名字
+n_classes = target_names.shape[0]
+
+print("Total dataset size:")
+print("n_samples: %d" % n_samples)#实例数
+print("n_features: %d" % n_features)#特征维度数
+print("n_classes: %d" % n_classes)#类别中的名字数量（多少个人）
+
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.25)#通过train_test_split将数据集分成训练集和测试集
+
+####PCA降维处理####
+n_components = 150
+print("Extracting the top %d eigenfaces from %d faces"% (n_components, X_train.shape[0]))
+t0 = time()
+pca = RandomizedPCA(n_components=n_components, whiten=True).fit(X_train)
+print("done in %0.3fs" % (time() - t0))
+eigenfaces = pca.components_.reshape((n_components, h, w))
+t0 = time()
+X_train_pca = pca.transform(X_train)
+X_test_pca = pca.transform(X_test)
+print("done in %0.3fs" % (time() - t0))
+####降维完成####
+####使用SVM分类####
+t0 = time()
+param_grid = {'C': [1e3, 5e3, 1e4, 5e4, 1e5],
+              'gamma': [0.0001, 0.0005, 0.001, 0.005, 0.01, 0.1], }
+clf = GridSearchCV(SVC(kernel='rbf', class_weight='auto'), param_grid)
+clf = clf.fit(X_train_pca, y_train)
+print("done in %0.3fs" % (time() - t0))
+print("Best estimator found by grid search:")
+print(clf.best_estimator_)
+
+print("Predicting people's names on the test set")
+t0 = time()
+y_pred = clf.predict(X_test_pca)
+print("done in %0.3fs" % (time() - t0))
+
+print(classification_report(y_test, y_pred, target_names=target_names))
+print(confusion_matrix(y_test, y_pred, labels=range(n_classes)))
+
+def plot_gallery(images, titles, h, w, n_row=3, n_col=4):
+    """Helper function to plot a gallery of portraits"""
+    plt.figure(figsize=(1.8 * n_col, 2.4 * n_row))
+    plt.subplots_adjust(bottom=0, left=.01, right=.99, top=.90, hspace=.35)
+    for i in range(n_row * n_col):
+        plt.subplot(n_row, n_col, i + 1)
+        plt.imshow(images[i].reshape((h, w)), cmap=plt.cm.gray)
+        plt.title(titles[i], size=12)
+        plt.xticks(())
+        plt.yticks(())
+
+def title(y_pred, y_test, target_names, i):
+    pred_name = target_names[y_pred[i]].rsplit(' ', 1)[-1]
+    true_name = target_names[y_test[i]].rsplit(' ', 1)[-1]
+    return 'predicted: %s\ntrue:      %s' % (pred_name, true_name)
+
+prediction_titles = [title(y_pred, y_test, target_names, i)
+                     for i in range(y_pred.shape[0])]
+
+plot_gallery(X_test, prediction_titles, h, w)
+
+eigenface_titles = ["eigenface %d" % i for i in range(eigenfaces.shape[0])]
+plot_gallery(eigenfaces, eigenface_titles, h, w)
+
+plt.show()</code></pre>
+
+<pre>
+<code>注意：
+由于在启动程序的时候会下载一个图片库，耗时比较长，如果中途停止程序，可能导致lfw-funneled.tgz文件损坏
+异常如下：
+    raise EOFError("Compressed file ended before the "
+EOFError: Compressed file ended before the end-of-stream marker was reached
+解决：
+找到lfw-funneled.tgz及解压的文件夹lfw-funneled并删除。</code></pre>
+
+<p>&nbsp;</p>
+
+				    </section>
+					</article>
+				</main>
+            </div>
+        </div>
+    </section>
+    <a href="#top" id="goTop" ><i class="fa fa-angle-up fa-3x"></i></a>
+	<script src="../js/jquery.min.js"></script>
+    <script type="text/javascript" src="../js/datas/detailAngularJs.js"></script>
+    <script src="../plugins/scrolltopcontrol.js"></script>
+</body>
+</html>

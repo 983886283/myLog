@@ -1,0 +1,258 @@
+<html>
+<!DOCTYPE html>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <title>tkinter图形化界面及打包笔记</title>
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link rel="stylesheet" href="../css/bootstrap.min.css">
+	<link rel="stylesheet" href="../css/font-awesome.min.css">
+    <link rel="stylesheet" href="../plugins/ckeditor/plugins/codesnippet/lib/highlight/styles/googlecode.css">
+    <link rel="stylesheet" type="text/css" href="../css/front/screen.css">
+    <script src="../plugins/ckeditor/plugins/codesnippet/lib/highlight/highlight.pack.js"></script>
+	<style type="text/css">
+		.list{
+			margin-top:5em;
+			position: fixed;
+		}
+		
+		.list h4{
+			padding-bottom:0.5em;
+			border-bottom:2px solid lightgray;
+		}
+		
+		.list .readTitle li{
+			margin-top:0.4em;
+			padding-left:1em;
+			border:2px solid white;
+		}
+		.list .readTitle li:hover{
+			border-left:2px solid black;
+			color:blue;
+		}
+		.liHover{
+			border-left:2px solid black !important;
+		}
+		.aHover{
+			color:blue;
+		}
+		.list .readTitle li a:hover{
+			color:blue;
+			text-decoration: none;
+		}
+	</style>
+</head>
+<body>
+    <section class="content-wrap container-fluid">
+        <div class="container">
+            <div class="row">
+				<div class="col-md-3 visible-lg-block visible-md-block">
+					<div class="list">
+						<h4>阅读目录</h4>
+						<div>
+							<ul class="readTitle list-unstyled"></ul>
+						</div>
+					</div>
+				</div>
+                 <main class="col-md-19 main-content">
+					<article class="post row">
+					<header class="post-head">
+				        <h1 class="post-title">tkinter图形化界面及打包笔记</h1>
+				        <section class="post-meta">
+					        <span><span class="glyphicon glyphicon-user"></span>:<span>c</span></span>|
+				            <span><span class="glyphicon glyphicon-bookmark"></span>:<span>Python</span></span>|
+				            <span><span class="glyphicon glyphicon-time"></span>:<span>2017-08-17</span></span>
+				        </section>
+				    </header>
+				    <section class="post-content"><p><a id="Python环境" name="Python环境"></a>Python环境</p>
+
+<pre>
+<code class="language-bash">Windows版 3.5.4</code></pre>
+
+<p><a id="demo" name="demo"></a>demo，可执行</p>
+
+<pre>
+<code class="language-python"># -*- coding:utf8 -*-
+from tkinter import *
+from tkinter import filedialog,messagebox
+
+filePath = ''
+checkAll = True
+def openfile():
+    global filePath
+    filePath = filedialog.askopenfilename(title='打开文件', filetypes=[('Excel', '*.xls *.xlsx'), ('All Files', '*')])
+    strvar.set(filePath)
+def cheAll():
+    global checkAll
+    if checkAll:
+        checkAll = False
+    else:
+        checkAll = True
+
+####提交####
+def subm():
+    flag = messagebox.askokcancel('导出', '确认导出')
+    if not flag:
+        return
+    t.delete(1.0,END)
+    baseUrl = e1.get()
+    detailTrue = var.get()
+    entryId = e2.get()
+    randomOrNot = var2.get()
+    randomNum = int(s2.get())
+    t.insert(END, '基本链接:'+str(baseUrl)+'\n')
+    t.insert(END, '是否详情:'+str(detailTrue)+'\n')
+    t.insert(END, '详情主键Id:'+str(entryId)+'\n')
+    t.insert(END, '是否随机:'+str(randomOrNot)+'\n')
+    t.insert(END, '随机数:'+str(randomNum)+'\n')
+    t.insert(END, 'Excel上传路径:'+str(filePath)+'\n')
+    t.insert(END, '是否勾选全部:'+str(checkAll)+'\n')
+    root.update()
+
+####界面区####
+if __name__ == "__main__":
+    root = Tk()
+    root.title("数据导出")
+    root.geometry('600x700')
+    Label(root, text='数据导出', font=('宋体', 15)).grid(row=0, column=0, columnspan=4, sticky=N)
+    Label(root, text='—————————————————————————————————————————————').grid(row=1, column=0, columnspan=4, sticky=NW)
+    
+    L0 = Label(root)
+    l1 = Label(L0, text='基本链接: ', font=('宋体', 10))
+    l1.pack(side=LEFT)
+    e1 = Entry(L0,width=70)
+    e1.pack(side=LEFT)
+    L0.grid(row=2, column=0, columnspan=4, sticky=NW,pady=7)
+    
+    L1 = Label(root)
+    l2 = Label(L1, text='是否需要详情:', font=('宋体', 10))
+    l2.pack(side=LEFT)
+    var = BooleanVar()
+    R1 = Radiobutton(L1, text="是", variable=var, value=True)
+    R1.pack(side=LEFT)
+    R2 = Radiobutton(L1, text="否", variable=var, value=False)
+    R2.select()
+    R2.pack(side=LEFT)
+    l3 = Label(L1)#空行
+    l3.pack(side=LEFT,padx=50)
+    l4 = Label(L1, text='是否随机取页:', font=('宋体', 10))
+    l4.pack(side=LEFT)
+    var2 = BooleanVar()
+    R3 = Radiobutton(L1, text="是", variable=var2, value=True)
+    R3.pack(side=LEFT)
+    R4 = Radiobutton(L1, text="否", variable=var2, value=False)
+    R4.select()
+    R4.pack(side=LEFT)
+    L1.grid(row=3, column=0, columnspan=4, sticky=NW,pady=7)
+    
+    L3 = Label(root)
+    l6 = Label(L3, text='详情主键Id:', font=('宋体', 10))
+    l6.pack(side=LEFT)
+    e2 = Entry(L3,width=10)
+    e2.pack(side=LEFT)
+    l5 = Label(L3)#空行
+    l5.pack(side=LEFT,padx=60)
+    l8 = Label(L3, text='随机页数:', font=('宋体', 10))
+    l8.pack(side=LEFT)
+    s2 = Spinbox(L3,from_ = 0,to = 1000,width=5)
+    s2.pack(side=LEFT)
+    c = Checkbutton(L3,text='全部', command=cheAll)
+    c.select()
+    c.pack()
+    L3.grid(row=4, column=0, columnspan=4, sticky=NW,pady=7)
+    
+    L5 = Label(root)
+    l9 = Label(L5, text='上传公司Excel:', font=('宋体', 10))
+    l9.pack(side=LEFT)
+    strvar = StringVar()
+    strvar.set("Excel上传")
+    btn = Button(L5, textvariable=strvar, command=openfile,width=50)
+    btn.pack(side=LEFT)
+    L5.grid(row=5, column=0, columnspan=3, sticky=NW,pady=7)
+    
+    buttontext = StringVar()
+    buttontext.set('导出Excel')
+    button = Button(root, textvariable=buttontext, width=60, command=subm)
+    button.grid(row=6, column=0, columnspan=3, sticky=NW,pady=7,padx=80)
+    
+    t = Text(root)
+    t.grid(row=7, column=0, columnspan=3, sticky=NW,pady=7,padx=16)
+    root.mainloop()</code></pre>
+
+<p>额外参考：<a href="https://my.oschina.net/TyLucifer/blog/112961">Python Tkinter参考资料之（通用控件属性）</a></p>
+
+<p><a id="打包exe文件" name="打包exe文件"></a>打包exe文件</p>
+
+<p>打包使用PyInstaller</p>
+
+<p>查看是否已安装</p>
+
+<pre>
+<code class="language-bash">pip3 list</code></pre>
+
+<p>如果没有，可以pip安装，如果安装失败自行百度</p>
+
+<pre>
+<code class="language-bash">pip3 install PyInstaller</code></pre>
+
+<p>开始打包（python单文件打包，比较基础，仅供参考）</p>
+
+<pre>
+<code class="language-bash">进入指定py文件的目录，然后执行
+pyinstaller -F -w pyExpor.py</code></pre>
+
+<p><a id="参数简单解释" name="参数简单解释"></a>参数简单解释</p>
+
+<table align="left" border="2" cellspacing="0" style="border-collapse:collapse; border:none; width:500pt">
+	<tbody>
+		<tr>
+			<td style="height:14.25pt; vertical-align:bottom; white-space:nowrap; width:450pt"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">-h, --help</span></span></span></td>
+			<td style="height:14.25pt; vertical-align:bottom; white-space:nowrap; width:278pt"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">参数介绍</span></span></span></td>
+		</tr>
+		<tr>
+			<td style="height:14.25pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">-v, --version</span></span></span></td>
+			<td style="height:14.25pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">展示版本</span></span></span></td>
+		</tr>
+		<tr>
+			<td style="height:14.25pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">-D, --onedir</span></span></span></td>
+			<td style="height:14.25pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">生成一个包含可执行文件的文件夹（好多文件）</span></span></span></td>
+		</tr>
+		<tr>
+			<td style="height:14.25pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">-F, --onefile</span></span></span></td>
+			<td style="height:14.25pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">只生成一个可执行文件（只有一个文件）</span></span></span></td>
+		</tr>
+		<tr>
+			<td style="height:14.25pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">--specpath DIR</span></span></span></td>
+			<td style="height:14.25pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">存储生成的spec文件的文件夹(默认:当前目录)</span></span></span></td>
+		</tr>
+		<tr>
+			<td style="height:14.25pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">-c, --console, --nowindowed</span></span></span></td>
+			<td style="height:14.25pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">打开exe文件操作时后台显示cmd窗口打印输出</span></span></span></td>
+		</tr>
+		<tr>
+			<td style="height:14.25pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">-w, --windowed, --noconsole</span></span></span></td>
+			<td style="height:14.25pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">打开exe文件操作时隐藏cmd窗口</span></span></span></td>
+		</tr>
+		<tr>
+			<td style="height:14.25pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">-i &lt;FILE.ico or FILE.exe,ID or FILE.icns&gt;, --icon &lt;FILE.ico or FILE.exe,ID or FILE.icns&gt;</span></span></span></td>
+			<td style="height:14.25pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">指定ico图标文件</span></span></span></td>
+		</tr>
+	</tbody>
+</table>
+
+<p>&nbsp;</p>
+
+<p>&nbsp;</p>
+				    </section>
+					</article>
+				</main>
+            </div>
+        </div>
+    </section>
+    <a href="#top" id="goTop" ><i class="fa fa-angle-up fa-3x"></i></a>
+	<script src="../js/jquery.min.js"></script>
+    <script type="text/javascript" src="../js/datas/detailAngularJs.js"></script>
+    <script src="../plugins/scrolltopcontrol.js"></script>
+</body>
+</html>

@@ -1,0 +1,667 @@
+<html>
+<!DOCTYPE html>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <title>六、请求体查询</title>
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link rel="stylesheet" href="../css/bootstrap.min.css">
+	<link rel="stylesheet" href="../css/font-awesome.min.css">
+    <link rel="stylesheet" href="../plugins/ckeditor/plugins/codesnippet/lib/highlight/styles/googlecode.css">
+    <link rel="stylesheet" type="text/css" href="../css/front/screen.css">
+    <script src="../plugins/ckeditor/plugins/codesnippet/lib/highlight/highlight.pack.js"></script>
+	<style type="text/css">
+		.list{
+			margin-top:5em;
+			position: fixed;
+		}
+		
+		.list h4{
+			padding-bottom:0.5em;
+			border-bottom:2px solid lightgray;
+		}
+		
+		.list .readTitle li{
+			margin-top:0.4em;
+			padding-left:1em;
+			border:2px solid white;
+		}
+		.list .readTitle li:hover{
+			border-left:2px solid black;
+			color:blue;
+		}
+		.liHover{
+			border-left:2px solid black !important;
+		}
+		.aHover{
+			color:blue;
+		}
+		.list .readTitle li a:hover{
+			color:blue;
+			text-decoration: none;
+		}
+	</style>
+</head>
+<body>
+    <section class="content-wrap container-fluid">
+        <div class="container">
+            <div class="row">
+				<div class="col-md-3 visible-lg-block visible-md-block">
+					<div class="list">
+						<h4>阅读目录</h4>
+						<div>
+							<ul class="readTitle list-unstyled"></ul>
+						</div>
+					</div>
+				</div>
+                 <main class="col-md-19 main-content">
+					<article class="post row">
+					<header class="post-head">
+				        <h1 class="post-title">六、请求体查询</h1>
+				        <section class="post-meta">
+					        <span><span class="glyphicon glyphicon-user"></span>:<span>c</span></span>|
+				            <span><span class="glyphicon glyphicon-bookmark"></span>:<span>Elasticsearch</span></span>|
+				            <span><span class="glyphicon glyphicon-time"></span>:<span>2018-06-14</span></span>
+				        </section>
+				    </header>
+				    <section class="post-content"><h2>请求体查询</h2>
+
+<p><em>简易</em>&nbsp;查询 &mdash;<a href="https://www.elastic.co/guide/cn/elasticsearch/guide/current/search-lite.html" title="轻量 搜索">query-string search</a>&mdash; 对于用命令行进行即席查询（ad-hoc）是非常有用的。&nbsp;然而，为了充分利用查询的强大功能，你应该使用&nbsp;<em>请求体</em>&nbsp;<code>search</code>&nbsp;API， 之所以称之为请求体查询(Full-Body Search)，因为大部分参数是通过 Http 请求体而非查询字符串来传递的。</p>
+
+<p>请求体查询 &mdash;下文简称&nbsp;<em>查询</em>&mdash;不仅可以处理自身的查询请求，还允许你对结果进行片段强调（高亮）、对所有或部分结果进行聚合分析，同时还可以给出&nbsp;<em>你是不是想找</em>&nbsp;的建议，这些建议可以引导使用者快速找到他想要的结果。</p>
+
+<h2>空查询</h2>
+
+<p>让我们以&nbsp;最简单的&nbsp;<code>search</code>&nbsp;API 的形式开启我们的旅程，空查询将返回所有索引库（indices)中的所有文档：</p>
+
+<pre>
+GET /_search
+{} <img alt="" src="https://www.elastic.co/guide/cn/elasticsearch/guide/current/images/icons/callouts/1.png" />
+</pre>
+
+<table border="0" summary="Callout list">
+	<tbody>
+		<tr>
+			<td style="vertical-align:top">
+			<p><a href="https://www.elastic.co/guide/cn/elasticsearch/guide/current/_empty_search.html#CO22-1"><img alt="" src="https://www.elastic.co/guide/cn/elasticsearch/guide/current/images/icons/callouts/1.png" /></a></p>
+			</td>
+			<td style="vertical-align:top">
+			<p>这是一个空的请求体。</p>
+			</td>
+		</tr>
+	</tbody>
+</table>
+
+<p>只用一个查询字符串，你就可以在一个、多个或者&nbsp;<code>_all</code>&nbsp;索引库（indices）和一个、多个或者所有types中查询：</p>
+
+<pre>
+GET /index_2014*/type1,type2/_search
+{}</pre>
+
+<p>同时你可以使用&nbsp;<code>from</code>&nbsp;和&nbsp;<code>size</code>&nbsp;参数来分页：</p>
+
+<pre>
+GET /_search
+{
+  &quot;from&quot;: 30,
+  &quot;size&quot;: 10
+}</pre>
+
+<p><strong>一个带请求体的 GET 请求？</strong></p>
+
+<p>某些特定语言（特别是 JavaScript）的 HTTP 库是不允许&nbsp;<code>GET</code>&nbsp;请求带有请求体的。&nbsp;事实上，一些使用者对于&nbsp;<code>GET</code>&nbsp;请求可以带请求体感到非常的吃惊。</p>
+
+<p>而事实是这个RFC文档&nbsp;<a href="http://tools.ietf.org/html/rfc7231#page-24" target="_top">RFC 7231</a>&mdash; 一个专门负责处理 HTTP 语义和内容的文档&thinsp;&mdash;&thinsp;并没有规定一个带有请求体的&nbsp;<code>GET</code>&nbsp;请求应该如何处理！结果是，一些 HTTP 服务器允许这样子，而有一些&thinsp;&mdash;&thinsp;特别是一些用于缓存和代理的服务器&thinsp;&mdash;&thinsp;则不允许。</p>
+
+<p>对于一个查询请求，Elasticsearch 的工程师偏向于使用&nbsp;<code>GET</code>&nbsp;方式，因为他们觉得它比&nbsp;<code>POST</code>&nbsp;能更好的描述信息检索（retrieving information）的行为。然而，因为带请求体的&nbsp;<code>GET</code>&nbsp;请求并不被广泛支持，所以&nbsp;<code>search</code>&nbsp;API&nbsp;同时支持&nbsp;<code>POST</code>&nbsp;请求：</p>
+
+<pre>
+POST /_search
+{
+  &quot;from&quot;: 30,
+  &quot;size&quot;: 10
+}</pre>
+
+<p>类似的规则可以应用于任何需要带请求体的&nbsp;<code>GET</code>&nbsp;API。</p>
+
+<p>我们将深入介绍聚合（aggregations），而现在，我们将聚焦在查询。</p>
+
+<p>相对于使用晦涩难懂的查询字符串的方式，一个带请求体的查询允许我们使用&nbsp;<em>查询领域特定语言（query domain-specific language）</em>&nbsp;或者 Query DSL 来写查询语句。</p>
+
+<h2>查询表达式</h2>
+
+<p>查询表达式(Query DSL)是一种非常灵活又富有表现力的&nbsp;查询语言。 Elasticsearch 使用它可以以简单的 JSON 接口来展现 Lucene 功能的绝大部分。在你的应用中，你应该用它来编写你的查询语句。它可以使你的查询语句更灵活、更精确、易读和易调试。</p>
+
+<p>要使用这种查询表达式，只需将查询语句传递给&nbsp;<code>query</code>&nbsp;参数：</p>
+
+<pre>
+GET /_search
+{
+    &quot;query&quot;: YOUR_QUERY_HERE
+}</pre>
+
+<p><em>空查询（empty search）</em>&nbsp;&mdash;<code>{}</code>&mdash;&nbsp;在功能上等价于使用&nbsp;<code>match_all</code>&nbsp;查询，&nbsp;正如其名字一样，匹配所有文档：</p>
+
+<pre>
+GET /_search
+{
+    &quot;query&quot;: {
+        &quot;match_all&quot;: {}
+    }
+}
+</pre>
+
+<h3>查询语句的结构</h3>
+
+<p>一个查询语句&nbsp;的典型结构：</p>
+
+<pre>
+{
+    QUERY_NAME: {
+        ARGUMENT: VALUE,
+        ARGUMENT: VALUE,...
+    }
+}</pre>
+
+<p>如果是针对某个字段，那么它的结构如下：</p>
+
+<pre>
+{
+    QUERY_NAME: {
+        FIELD_NAME: {
+            ARGUMENT: VALUE,
+            ARGUMENT: VALUE,...
+        }
+    }
+}</pre>
+
+<p>举个例子，你可以使用&nbsp;<code>match</code>&nbsp;查询语句&nbsp;来查询&nbsp;<code>tweet</code>&nbsp;字段中包含&nbsp;<code>elasticsearch</code>&nbsp;的 tweet：</p>
+
+<pre>
+{
+    &quot;match&quot;: {
+        &quot;tweet&quot;: &quot;elasticsearch&quot;
+    }
+}</pre>
+
+<p>完整的查询请求如下：</p>
+
+<pre>
+GET /_search
+{
+    &quot;query&quot;: {
+        &quot;match&quot;: {
+            &quot;tweet&quot;: &quot;elasticsearch&quot;
+        }
+    }
+}
+</pre>
+
+<h3>合并查询语句</h3>
+
+<p><em>查询语句(Query clauses)</em>&nbsp;就像一些简单的组合块&nbsp;，这些组合块可以彼此之间合并组成更复杂的查询。这些语句可以是如下形式：</p>
+
+<ul style="list-style-type:disc">
+	<li><em>叶子语句（Leaf clauses）</em>&nbsp;(就像&nbsp;<code>match</code>&nbsp;语句)&nbsp;被用于将查询字符串和一个字段（或者多个字段）对比。</li>
+	<li><em>复合(Compound)</em>&nbsp;语句 主要用于&nbsp;合并其它查询语句。 比如，一个&nbsp;<code>bool</code>&nbsp;语句&nbsp;允许在你需要的时候组合其它语句，无论是&nbsp;<code>must</code>&nbsp;匹配、&nbsp;<code>must_not</code>&nbsp;匹配还是&nbsp;<code>should</code>&nbsp;匹配，同时它可以包含不评分的过滤器（filters）：</li>
+</ul>
+
+<pre>
+{
+    &quot;bool&quot;: {
+        &quot;must&quot;:     { &quot;match&quot;: { &quot;tweet&quot;: &quot;elasticsearch&quot; }},
+        &quot;must_not&quot;: { &quot;match&quot;: { &quot;name&quot;:  &quot;mary&quot; }},
+        &quot;should&quot;:   { &quot;match&quot;: { &quot;tweet&quot;: &quot;full text&quot; }},
+        &quot;filter&quot;:   { &quot;range&quot;: { &quot;age&quot; : { &quot;gt&quot; : 30 }} }
+    }
+}
+</pre>
+
+<p>一条复合语句可以合并&nbsp;<em>任何</em>&nbsp;其它查询语句，包括复合语句，了解这一点是很重要的。这就意味着，复合语句之间可以互相嵌套，可以表达非常复杂的逻辑。</p>
+
+<p>例如，以下查询是为了找出信件正文包含&nbsp;<code>business opportunity</code>&nbsp;的星标邮件，或者在收件箱正文包含<code>business opportunity</code>&nbsp;的非垃圾邮件：</p>
+
+<pre>
+{
+    &quot;bool&quot;: {
+        &quot;must&quot;: { &quot;match&quot;:   { &quot;email&quot;: &quot;business opportunity&quot; }},
+        &quot;should&quot;: [
+            { &quot;match&quot;:       { &quot;starred&quot;: true }},
+            { &quot;bool&quot;: {
+                &quot;must&quot;:      { &quot;match&quot;: { &quot;folder&quot;: &quot;inbox&quot; }},
+                &quot;must_not&quot;:  { &quot;match&quot;: { &quot;spam&quot;: true }}
+            }}
+        ],
+        &quot;minimum_should_match&quot;: 1
+    }
+}</pre>
+
+<p>到目前为止，你不必太在意这个例子的细节，我们会在后面详细解释。最重要的是你要理解到，一条复合语句可以将多条语句&thinsp;&mdash;&thinsp;叶子语句和其它复合语句&thinsp;&mdash;&thinsp;合并成一个单一的查询语句。</p>
+
+<h2>查询与过滤</h2>
+
+<p>Elasticsearch 使用的查询语言（DSL）&nbsp;拥有一套查询组件，这些组件可以以无限组合的方式进行搭配。这套组件可以在以下两种情况下使用：过滤情况（filtering context）和查询情况（query context）。</p>
+
+<p>当使用于&nbsp;<em>过滤情况</em>&nbsp;时，查询被设置成一个&ldquo;不评分&rdquo;或者&ldquo;过滤&rdquo;查询。即，这个查询只是简单的问一个问题：&ldquo;这篇文档是否匹配？&rdquo;。回答也是非常的简单，yes 或者 no ，二者必居其一。</p>
+
+<ul style="list-style-type:disc">
+	<li><code>created</code>&nbsp;时间是否在&nbsp;<code>2013</code>&nbsp;与&nbsp;<code>2014</code>&nbsp;这个区间？</li>
+	<li><code>status</code>&nbsp;字段是否包含&nbsp;<code>published</code>&nbsp;这个单词？</li>
+	<li><code>lat_lon</code>&nbsp;字段表示的位置是否在指定点的&nbsp;<code>10km</code>&nbsp;范围内？</li>
+</ul>
+
+<p>当使用于&nbsp;<em>查询情况</em>&nbsp;时，查询就变成了一个&ldquo;评分&rdquo;的查询。和不评分的查询类似，也要去判断这个文档是否匹配，同时它还需要判断这个文档匹配的有 _多好_（匹配程度如何）。 此查询的典型用法是用于查找以下文档：</p>
+
+<ul style="list-style-type:disc">
+	<li>查找与&nbsp;<code>full text search</code>&nbsp;这个词语最佳匹配的文档</li>
+	<li>包含&nbsp;<code>run</code>&nbsp;这个词，也能匹配&nbsp;<code>runs</code>&nbsp;、&nbsp;<code>running</code>&nbsp;、&nbsp;<code>jog</code>&nbsp;或者&nbsp;<code>sprint</code></li>
+	<li>包含&nbsp;<code>quick</code>&nbsp;、&nbsp;<code>brown</code>&nbsp;和&nbsp;<code>fox</code>&nbsp;这几个词 &mdash; 词之间离的越近，文档相关性越高</li>
+	<li>标有&nbsp;<code>lucene</code>&nbsp;、&nbsp;<code>search</code>&nbsp;或者&nbsp;<code>java</code>&nbsp;标签 &mdash; 标签越多，相关性越高</li>
+</ul>
+
+<p>一个评分查询计算每一个文档与此查询的 _相关程度_，同时将这个相关程度分配给表示相关性的字段 `_score`，并且按照相关性对匹配到的文档进行排序。这种相关性的概念是非常适合全文搜索的情况，因为全文搜索几乎没有完全 &ldquo;正确&rdquo; 的答案。</p>
+
+<p><img alt="注意" src="https://www.elastic.co/guide/cn/elasticsearch/guide/current/images/icons/note.png" /></p>
+
+<p>自 Elasticsearch 问世以来，查询与过滤（queries and filters）就独自成为 Elasticsearch 的组件。但从 Elasticsearch 2.0 开始，过滤（filters）已经从技术上被排除了，同时所有的查询（queries）拥有变成不评分查询的能力。</p>
+
+<p>然而，为了明确和简单，我们用 &quot;filter&quot; 这个词表示不评分、只过滤情况下的查询。你可以把 &quot;filter&quot; 、 &quot;filtering query&quot; 和 &quot;non-scoring query&quot; 这几个词视为相同的。</p>
+
+<p>相似的，如果单独地不加任何修饰词地使用 &quot;query&quot; 这个词，我们指的是 &quot;scoring query&quot; 。</p>
+
+<h3>性能差异</h3>
+
+<p>过滤查询（Filtering queries）只是简单的检查包含或者排除，这就使得计算起来非常快。考虑到至少有一个过滤查询（filtering query）的结果是 &ldquo;稀少的&rdquo;（很少匹配的文档），并且经常使用不评分查询（non-scoring queries），结果会被缓存到内存中以便快速读取，所以有各种各样的手段来优化查询结果。</p>
+
+<p>相反，评分查询（scoring queries）不仅仅要找出&nbsp;匹配的文档，还要计算每个匹配文档的相关性，计算相关性使得它们比不评分查询费力的多。同时，查询结果并不缓存。</p>
+
+<p>多亏倒排索引（inverted index），一个简单的评分查询在匹配少量文档时可能与一个涵盖百万文档的filter表现的一样好，甚至会更好。但是在一般情况下，一个filter 会比一个评分的query性能更优异，并且每次都表现的很稳定。</p>
+
+<p>过滤（filtering）的目标是减少那些需要通过评分查询（scoring queries）进行检查的文档。</p>
+
+<h3>如何选择查询与过滤</h3>
+
+<p>通常的规则是，使用&nbsp;查询（query）语句来进行&nbsp;<em>全文</em>&nbsp;搜索或者其它任何需要影响&nbsp;<em>相关性得分</em>&nbsp;的搜索。除此以外的情况都使用过滤（filters)。</p>
+
+<h2>最重要的查询</h2>
+
+<p>虽然 Elasticsearch 自带了很多的查询，但经常用到的也就那么几个。我们将详细讨论那些查询的细节，接下来我们对最重要的几个查询进行简单介绍。</p>
+
+<h3>match_all 查询</h3>
+
+<p><code>match_all</code>&nbsp;查询简单的&nbsp;匹配所有文档。在没有指定查询方式时，它是默认的查询：</p>
+
+<pre>
+{ &quot;match_all&quot;: {}}</pre>
+
+<p>它经常与 filter 结合使用--例如，检索收件箱里的所有邮件。所有邮件被认为具有相同的相关性，所以都将获得分值为&nbsp;<code>1</code>&nbsp;的中性 `_score`。</p>
+
+<h3>match 查询</h3>
+
+<p>无论你在任何字段上进行的是全文搜索还是精确查询，<code>match</code>&nbsp;查询是你可用的标准查询。</p>
+
+<p>如果你在一个全文字段上使用&nbsp;<code>match</code>&nbsp;查询，在执行查询前，它将用正确的分析器去分析查询字符串：</p>
+
+<pre>
+{ &quot;match&quot;: { &quot;tweet&quot;: &quot;About Search&quot; }}</pre>
+
+<p>如果在一个精确值的字段上使用它，&nbsp;例如数字、日期、布尔或者一个&nbsp;<code>not_analyzed</code>&nbsp;字符串字段，那么它将会精确匹配给定的值：</p>
+
+<pre>
+{ &quot;match&quot;: { &quot;age&quot;:    26           }}
+{ &quot;match&quot;: { &quot;date&quot;:   &quot;2014-09-01&quot; }}
+{ &quot;match&quot;: { &quot;public&quot;: true         }}
+{ &quot;match&quot;: { &quot;tag&quot;:    &quot;full_text&quot;  }}</pre>
+
+<p><img alt="提示" src="https://www.elastic.co/guide/cn/elasticsearch/guide/current/images/icons/tip.png" /></p>
+
+<p>对于精确值的查询，你可能需要使用 filter 语句来取代 query，因为 filter 将会被缓存。接下来，我们将看到一些关于 filter 的例子。</p>
+
+<p>不像我们介绍的字符串查询（query-string search），&nbsp;<code>match</code>&nbsp;查询不使用类似<code>+user_id:2 +tweet:search</code>&nbsp;的查询语法。它只是去查找给定的单词。这就意味着将查询字段暴露给你的用户是安全的；你需要控制那些允许被查询字段，不易于抛出语法异常。</p>
+
+<h3>multi_match 查询</h3>
+
+<p><code>multi_match</code>&nbsp;查询可以在多个字段上执行相同的&nbsp;<code>match</code>&nbsp;查询：</p>
+
+<pre>
+{
+    &quot;multi_match&quot;: {
+        &quot;query&quot;:    &quot;full text search&quot;,
+        &quot;fields&quot;:   [ &quot;title&quot;, &quot;body&quot; ]
+    }
+}</pre>
+
+<p>range 查询</p>
+
+<p><code>range</code>&nbsp;查询找出那些落在指定区间内的数字或者时间：</p>
+
+<pre>
+{
+    &quot;range&quot;: {
+        &quot;age&quot;: {
+            &quot;gte&quot;:  20,
+            &quot;lt&quot;:   30
+        }
+    }
+}</pre>
+
+<p>被允许的操作符如下：</p>
+
+<p><code>gt</code></p>
+
+<p>大于</p>
+
+<p><code>gte</code></p>
+
+<p>大于等于</p>
+
+<p><code>lt</code></p>
+
+<p>小于</p>
+
+<p><code>lte</code></p>
+
+<p>小于等于</p>
+
+<h3>term 查询</h3>
+
+<p><code>term</code>&nbsp;查询被用于精确值&nbsp;匹配，这些精确值可能是数字、时间、布尔或者那些&nbsp;<code>not_analyzed</code>&nbsp;的字符串：</p>
+
+<pre>
+{ &quot;term&quot;: { &quot;age&quot;:    26           }}
+{ &quot;term&quot;: { &quot;date&quot;:   &quot;2014-09-01&quot; }}
+{ &quot;term&quot;: { &quot;public&quot;: true         }}
+{ &quot;term&quot;: { &quot;tag&quot;:    &quot;full_text&quot;  }}</pre>
+
+<p><code>term</code>&nbsp;查询对于输入的文本不&nbsp;<em>分析</em>&nbsp;，所以它将给定的值进行精确查询。</p>
+
+<h3>terms 查询</h3>
+
+<p><code>terms</code>&nbsp;查询和&nbsp;<code>term</code>&nbsp;查询一样，但它允许你指定多值进行匹配。如果这个字段包含了指定值中的任何一个值，那么这个文档满足条件：</p>
+
+<pre>
+{ &quot;terms&quot;: { &quot;tag&quot;: [ &quot;search&quot;, &quot;full_text&quot;, &quot;nosql&quot; ] }}</pre>
+
+<p>和&nbsp;<code>term</code>&nbsp;查询一样，<code>terms</code>&nbsp;查询对于输入的文本不分析。它查询那些精确匹配的值（包括在大小写、重音、空格等方面的差异）。</p>
+
+<h3>exists 查询和 missing 查询</h3>
+
+<p><code>exists</code>&nbsp;查询和&nbsp;<code>missing</code>&nbsp;查询被用于查找那些指定字段中有值 (<code>exists</code>) 或无值 (<code>missing</code>) 的文档。这与SQL中的&nbsp;<code>IS_NULL</code>&nbsp;(<code>missing</code>) 和&nbsp;<code>NOT IS_NULL</code>&nbsp;(<code>exists</code>) 在本质上具有共性：</p>
+
+<pre>
+{
+    &quot;exists&quot;:   {
+        &quot;field&quot;:    &quot;title&quot;
+    }
+}</pre>
+
+<p>这些查询经常用于某个字段有值的情况和某个字段缺值的情况。</p>
+
+<h2>组合多查询</h2>
+
+<p>现实的查询需求从来都没有那么简单；它们需要在多个字段上查询多种多样的文本，并且根据一系列的标准来过滤。为了构建类似的高级查询，你需要一种能够将多查询组合成单一查询的查询方法。</p>
+
+<p>你可以用&nbsp;<code>bool</code>&nbsp;查询来实现你的需求。这种查询将多查询组合在一起，成为用户自己想要的布尔查询。它接收以下参数：</p>
+
+<p><code>must</code></p>
+
+<p>文档&nbsp;<em>必须</em>&nbsp;匹配这些条件才能被包含进来。</p>
+
+<p><code>must_not</code></p>
+
+<p>文档&nbsp;<em>必须不</em>&nbsp;匹配这些条件才能被包含进来。</p>
+
+<p><code>should</code></p>
+
+<p>如果满足这些语句中的任意语句，将增加&nbsp;<code>_score</code>&nbsp;，否则，无任何影响。它们主要用于修正每个文档的相关性得分。</p>
+
+<p><code>filter</code></p>
+
+<p><em>必须</em>&nbsp;匹配，但它以不评分、过滤模式来进行。这些语句对评分没有贡献，只是根据过滤标准来排除或包含文档。</p>
+
+<p>由于这是我们看到的第一个包含多个查询的查询，所以有必要讨论一下相关性得分是如何组合的。每一个子查询都独自地计算文档的相关性得分。一旦他们的得分被计算出来，&nbsp;<code>bool</code>&nbsp;查询就将这些得分进行合并并且返回一个代表整个布尔操作的得分。</p>
+
+<p>下面的查询用于查找&nbsp;<code>title</code>&nbsp;字段匹配&nbsp;<code>how to make millions</code>&nbsp;并且不被标识为&nbsp;<code>spam</code>&nbsp;的文档。那些被标识为&nbsp;<code>starred</code>&nbsp;或在2014之后的文档，将比另外那些文档拥有更高的排名。如果 _两者_ 都满足，那么它排名将更高：</p>
+
+<pre>
+{
+    &quot;bool&quot;: {
+        &quot;must&quot;:     { &quot;match&quot;: { &quot;title&quot;: &quot;how to make millions&quot; }},
+        &quot;must_not&quot;: { &quot;match&quot;: { &quot;tag&quot;:   &quot;spam&quot; }},
+        &quot;should&quot;: [
+            { &quot;match&quot;: { &quot;tag&quot;: &quot;starred&quot; }},
+            { &quot;range&quot;: { &quot;date&quot;: { &quot;gte&quot;: &quot;2014-01-01&quot; }}}
+        ]
+    }
+}
+</pre>
+
+<p><img alt="提示" src="https://www.elastic.co/guide/cn/elasticsearch/guide/current/images/icons/tip.png" /></p>
+
+<p>如果没有&nbsp;<code>must</code>&nbsp;语句，那么至少需要能够匹配其中的一条&nbsp;<code>should</code>&nbsp;语句。但，如果存在至少一条&nbsp;<code>must</code>&nbsp;语句，则对&nbsp;<code>should</code>&nbsp;语句的匹配没有要求。</p>
+
+<h3>增加带过滤器（filtering）的查询</h3>
+
+<p>如果我们不想因为文档的时间而影响得分，可以用&nbsp;<code>filter</code>&nbsp;语句来重写前面的例子：</p>
+
+<pre>
+{
+    &quot;bool&quot;: {
+        &quot;must&quot;:     { &quot;match&quot;: { &quot;title&quot;: &quot;how to make millions&quot; }},
+        &quot;must_not&quot;: { &quot;match&quot;: { &quot;tag&quot;:   &quot;spam&quot; }},
+        &quot;should&quot;: [
+            { &quot;match&quot;: { &quot;tag&quot;: &quot;starred&quot; }}
+        ],
+        &quot;filter&quot;: {
+          &quot;range&quot;: { &quot;date&quot;: { &quot;gte&quot;: &quot;2014-01-01&quot; }} <img alt="" src="https://www.elastic.co/guide/cn/elasticsearch/guide/current/images/icons/callouts/1.png" />
+        }
+    }
+}
+</pre>
+
+<table border="0" summary="Callout list">
+	<tbody>
+		<tr>
+			<td style="vertical-align:top">
+			<p><a href="https://www.elastic.co/guide/cn/elasticsearch/guide/current/combining-queries-together.html#CO23-1"><img alt="" src="https://www.elastic.co/guide/cn/elasticsearch/guide/current/images/icons/callouts/1.png" /></a></p>
+			</td>
+			<td style="vertical-align:top">
+			<p>range 查询已经从&nbsp;<code>should</code>&nbsp;语句中移到&nbsp;<code>filter</code>&nbsp;语句</p>
+			</td>
+		</tr>
+	</tbody>
+</table>
+
+<p>通过将 range 查询移到&nbsp;<code>filter</code>&nbsp;语句中，我们将它转成不评分的查询，将不再影响文档的相关性排名。由于它现在是一个不评分的查询，可以使用各种对 filter 查询有效的优化手段来提升性能。</p>
+
+<p>所有查询都可以借鉴这种方式。将查询移到&nbsp;<code>bool</code>&nbsp;查询的&nbsp;<code>filter</code>&nbsp;语句中，这样它就自动的转成一个不评分的 filter 了。</p>
+
+<p>如果你需要通过多个不同的标准来过滤你的文档，<code>bool</code>&nbsp;查询本身也可以被用做不评分的查询。简单地将它放置到&nbsp;<code>filter</code>&nbsp;语句中并在内部构建布尔逻辑：</p>
+
+<pre>
+{
+    &quot;bool&quot;: {
+        &quot;must&quot;:     { &quot;match&quot;: { &quot;title&quot;: &quot;how to make millions&quot; }},
+        &quot;must_not&quot;: { &quot;match&quot;: { &quot;tag&quot;:   &quot;spam&quot; }},
+        &quot;should&quot;: [
+            { &quot;match&quot;: { &quot;tag&quot;: &quot;starred&quot; }}
+        ],
+        &quot;filter&quot;: {
+          &quot;bool&quot;: { <img alt="" src="https://www.elastic.co/guide/cn/elasticsearch/guide/current/images/icons/callouts/1.png" />
+              &quot;must&quot;: [
+                  { &quot;range&quot;: { &quot;date&quot;: { &quot;gte&quot;: &quot;2014-01-01&quot; }}},
+                  { &quot;range&quot;: { &quot;price&quot;: { &quot;lte&quot;: 29.99 }}}
+              ],
+              &quot;must_not&quot;: [
+                  { &quot;term&quot;: { &quot;category&quot;: &quot;ebooks&quot; }}
+              ]
+          }
+        }
+    }
+}
+</pre>
+
+<table border="0" summary="Callout list">
+	<tbody>
+		<tr>
+			<td style="vertical-align:top">
+			<p><a href="https://www.elastic.co/guide/cn/elasticsearch/guide/current/combining-queries-together.html#CO24-1"><img alt="" src="https://www.elastic.co/guide/cn/elasticsearch/guide/current/images/icons/callouts/1.png" /></a></p>
+			</td>
+			<td style="vertical-align:top">
+			<p>将&nbsp;<code>bool</code>&nbsp;查询包裹在&nbsp;<code>filter</code>&nbsp;语句中，我们可以在过滤标准中增加布尔逻辑</p>
+			</td>
+		</tr>
+	</tbody>
+</table>
+
+<p>通过混合布尔查询，我们可以在我们的查询请求中灵活地编写 scoring 和 filtering 查询逻辑。</p>
+
+<h3>constant_score 查询</h3>
+
+<p>尽管没有&nbsp;<code>bool</code>&nbsp;查询使用这么频繁，<code>constant_score</code>&nbsp;查询也是你工具箱里有用的查询工具。它将一个不变的常量评分应用于所有匹配的文档。它被经常用于你只需要执行一个 filter 而没有其它查询（例如，评分查询）的情况下。</p>
+
+<p>可以使用它来取代只有 filter 语句的&nbsp;<code>bool</code>&nbsp;查询。在性能上是完全相同的，但对于提高查询简洁性和清晰度有很大帮助。</p>
+
+<pre>
+{
+    &quot;constant_score&quot;:   {
+        &quot;filter&quot;: {
+            &quot;term&quot;: { &quot;category&quot;: &quot;ebooks&quot; } <img alt="" src="https://www.elastic.co/guide/cn/elasticsearch/guide/current/images/icons/callouts/1.png" />
+        }
+    }
+}
+</pre>
+
+<table border="0" summary="Callout list">
+	<tbody>
+		<tr>
+			<td style="vertical-align:top">
+			<p><a href="https://www.elastic.co/guide/cn/elasticsearch/guide/current/combining-queries-together.html#CO25-1"><img alt="" src="https://www.elastic.co/guide/cn/elasticsearch/guide/current/images/icons/callouts/1.png" /></a></p>
+			</td>
+			<td style="vertical-align:top">
+			<p><code>term</code>&nbsp;查询被放置在&nbsp;<code>constant_score</code>&nbsp;中，转成不评分的 filter。这种方式可以用来取代只有 filter 语句的&nbsp;<code>bool</code>&nbsp;查询。</p>
+			</td>
+		</tr>
+	</tbody>
+</table>
+
+<h2>验证查询</h2>
+
+<p>查询可以变得非常的复杂，尤其&nbsp;和不同的分析器与不同的字段映射结合时，理解起来就有点困难了。不过<code>validate-query</code>&nbsp;API 可以用来验证查询是否合法。</p>
+
+<pre>
+GET /gb/tweet/_validate/query
+{
+   &quot;query&quot;: {
+      &quot;tweet&quot; : {
+         &quot;match&quot; : &quot;really powerful&quot;
+      }
+   }
+}
+</pre>
+
+<p>以上&nbsp;<code>validate</code>&nbsp;请求的应答告诉我们这个查询是不合法的：</p>
+
+<pre>
+{
+  &quot;valid&quot; :         false,
+  &quot;_shards&quot; : {
+    &quot;total&quot; :       1,
+    &quot;successful&quot; :  1,
+    &quot;failed&quot; :      0
+  }
+}</pre>
+
+<h3>理解错误信息</h3>
+
+<p>为了找出&nbsp;查询不合法的原因，可以将&nbsp;<code>explain</code>&nbsp;参数&nbsp;加到查询字符串中：</p>
+
+<pre>
+GET /gb/tweet/_validate/query?explain <img alt="" src="https://www.elastic.co/guide/cn/elasticsearch/guide/current/images/icons/callouts/1.png" />
+{
+   &quot;query&quot;: {
+      &quot;tweet&quot; : {
+         &quot;match&quot; : &quot;really powerful&quot;
+      }
+   }
+}
+</pre>
+
+<table border="0" summary="Callout list">
+	<tbody>
+		<tr>
+			<td style="vertical-align:top">
+			<p><a href="https://www.elastic.co/guide/cn/elasticsearch/guide/current/validating-queries.html#CO26-1"><img alt="" src="https://www.elastic.co/guide/cn/elasticsearch/guide/current/images/icons/callouts/1.png" /></a></p>
+			</td>
+			<td style="vertical-align:top">
+			<p><code>explain</code>&nbsp;参数可以提供更多关于查询不合法的信息。</p>
+			</td>
+		</tr>
+	</tbody>
+</table>
+
+<p>很明显，我们将查询类型(<code>match</code>)与字段名称 (<code>tweet</code>)搞混了：</p>
+
+<pre>
+{
+  &quot;valid&quot; :     false,
+  &quot;_shards&quot; :   { ... },
+  &quot;explanations&quot; : [ {
+    &quot;index&quot; :   &quot;gb&quot;,
+    &quot;valid&quot; :   false,
+    &quot;error&quot; :   &quot;org.elasticsearch.index.query.QueryParsingException:
+                 [gb] No query registered for [tweet]&quot;
+  } ]
+}</pre>
+
+<h3>理解查询语句</h3>
+
+<p>对于合法查询，使用&nbsp;<code>explain</code>&nbsp;参数将返回可读的描述，这对准确理解 Elasticsearch 是如何解析你的 query 是非常有用的：</p>
+
+<pre>
+GET /_validate/query?explain
+{
+   &quot;query&quot;: {
+      &quot;match&quot; : {
+         &quot;tweet&quot; : &quot;really powerful&quot;
+      }
+   }
+}
+</pre>
+
+<p>我们查询的每一个 index&nbsp;都会返回对应的&nbsp;<code>explanation</code>&nbsp;，因为每一个 index 都有自己的映射和分析器：</p>
+
+<pre>
+{
+  &quot;valid&quot; :         true,
+  &quot;_shards&quot; :       { ... },
+  &quot;explanations&quot; : [ {
+    &quot;index&quot; :       &quot;us&quot;,
+    &quot;valid&quot; :       true,
+    &quot;explanation&quot; : &quot;tweet:really tweet:powerful&quot;
+  }, {
+    &quot;index&quot; :       &quot;gb&quot;,
+    &quot;valid&quot; :       true,
+    &quot;explanation&quot; : &quot;tweet:realli tweet:power&quot;
+  } ]
+}</pre>
+
+<p>从&nbsp;<code>explanation</code>&nbsp;中可以看出，匹配&nbsp;<code>really powerful</code>&nbsp;的&nbsp;<code>match</code>&nbsp;查询被重写为两个针对&nbsp;<code>tweet</code>&nbsp;字段的 single-term 查询，一个single-term查询对应查询字符串分出来的一个term。</p>
+
+<p>当然，对于索引&nbsp;<code>us</code>&nbsp;，这两个 term 分别是&nbsp;<code>really</code>&nbsp;和&nbsp;<code>powerful</code>&nbsp;，而对于索引&nbsp;<code>gb</code>&nbsp;，term 则分别是<code>realli</code>&nbsp;和&nbsp;<code>power</code>&nbsp;。之所以出现这个情况，是由于我们将索引&nbsp;<code>gb</code>&nbsp;中&nbsp;<code>tweet</code>&nbsp;字段的分析器修改为&nbsp;<code>english</code>分析器。</p>
+
+<p>&nbsp;</p>
+
+				    </section>
+					</article>
+				</main>
+            </div>
+        </div>
+    </section>
+    <a href="#top" id="goTop" ><i class="fa fa-angle-up fa-3x"></i></a>
+	<script src="../js/jquery.min.js"></script>
+    <script type="text/javascript" src="../js/datas/detailAngularJs.js"></script>
+    <script src="../plugins/scrolltopcontrol.js"></script>
+</body>
+</html>

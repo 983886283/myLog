@@ -1,0 +1,124 @@
+<html>
+<!DOCTYPE html>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <title>ES基础理论（六）</title>
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link rel="stylesheet" href="../css/bootstrap.min.css">
+	<link rel="stylesheet" href="../css/font-awesome.min.css">
+    <link rel="stylesheet" href="../plugins/ckeditor/plugins/codesnippet/lib/highlight/styles/googlecode.css">
+    <link rel="stylesheet" type="text/css" href="../css/front/screen.css">
+    <script src="../plugins/ckeditor/plugins/codesnippet/lib/highlight/highlight.pack.js"></script>
+	<style type="text/css">
+		.list{
+			margin-top:5em;
+			position: fixed;
+		}
+		
+		.list h4{
+			padding-bottom:0.5em;
+			border-bottom:2px solid lightgray;
+		}
+		
+		.list .readTitle li{
+			margin-top:0.4em;
+			padding-left:1em;
+			border:2px solid white;
+		}
+		.list .readTitle li:hover{
+			border-left:2px solid black;
+			color:blue;
+		}
+		.liHover{
+			border-left:2px solid black !important;
+		}
+		.aHover{
+			color:blue;
+		}
+		.list .readTitle li a:hover{
+			color:blue;
+			text-decoration: none;
+		}
+	</style>
+</head>
+<body>
+    <section class="content-wrap container-fluid">
+        <div class="container">
+            <div class="row">
+				<div class="col-md-3 visible-lg-block visible-md-block">
+					<div class="list">
+						<h4>阅读目录</h4>
+						<div>
+							<ul class="readTitle list-unstyled"></ul>
+						</div>
+					</div>
+				</div>
+                 <main class="col-md-19 main-content">
+					<article class="post row">
+					<header class="post-head">
+				        <h1 class="post-title">ES基础理论（六）</h1>
+				        <section class="post-meta">
+					        <span><span class="glyphicon glyphicon-user"></span>:<span>c</span></span>|
+				            <span><span class="glyphicon glyphicon-bookmark"></span>:<span>Elasticsearch</span></span>|
+				            <span><span class="glyphicon glyphicon-time"></span>:<span>2017-07-12</span></span>
+				        </section>
+				    </header>
+				    <section class="post-content"><p><a name="shard&amp;replica机制再次梳理"></a>1、shard&amp;replica机制再次梳理</p>
+
+<p>（1）index包含多个shard</p>
+
+<p>（2）每个shard都是一个最小工作单元，承载部分数据，每个shard都是一个lucene实例，具备完整的建立索引和处理请求的能力</p>
+
+<p>（3）增减节点时，shard会自动在nodes中负载均衡</p>
+
+<p>（4）primary shard和replica shard，每个document肯定只存在于某一个primary shard以及其对应的replica shard中，不可能存在多个primary shard</p>
+
+<p>（5）replica shard是primary shard的副本，负责容错，以及承担读请求负载</p>
+
+<p>（6）primary shard的数量在创建索引的时候就固定了，replica shard的数量可以随时修改</p>
+
+<p>（7）primary shard的默认数量是5，replica默认是1，默认有10个shard，5个primary shard，5个replica shard</p>
+
+<p>（8）primary shard不能和自己的replica shard放在同一个节点上（否则节点宕机，primary shard和副本都丢失，起不到容错的作用），但是可以和其他primary shard的replica shard放在同一个节点上</p>
+
+<p><a name="单node环境下创建index"></a>2、单node环境下创建index是什么样子的</p>
+
+<p>（1）单node环境下，创建一个index，有3个primary shard，3个replica shard</p>
+
+<p>（2）集群status是yellow</p>
+
+<p>（3）这个时候，只会将3个primary shard分配到仅有的一个node上去，另外3个replica shard是无法分配的</p>
+
+<p>（4）集群可以正常工作，但是一旦出现节点宕机，数据将全部丢失，集群将不可用，无法承接任何请求</p>
+
+<pre>
+<code class="language-json">PUT /test_index
+{
+    "settings":{
+        "number_of_shards":3,
+        "number_of_replicas":1
+    }
+}</code></pre>
+
+<p><a name="2个node环境下replica shard分配"></a>3、2个node环境下replica shard是如何分配的</p>
+
+<p>（1）replica shard分配：3个primary shard，3个replica shard，1 node</p>
+
+<p>（2）primary ---&gt; replica同步</p>
+
+<p>（3）读请求：primary/replica</p>
+
+				    </section>
+					</article>
+				</main>
+            </div>
+        </div>
+    </section>
+    <a href="#top" id="goTop" ><i class="fa fa-angle-up fa-3x"></i></a>
+	<script src="../js/jquery.min.js"></script>
+    <script type="text/javascript" src="../js/datas/detailAngularJs.js"></script>
+    <script src="../plugins/scrolltopcontrol.js"></script>
+</body>
+</html>

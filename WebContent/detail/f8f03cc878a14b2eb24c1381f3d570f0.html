@@ -1,0 +1,167 @@
+<html>
+<!DOCTYPE html>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <title>高性能Mysql笔记八</title>
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link rel="stylesheet" href="../css/bootstrap.min.css">
+	<link rel="stylesheet" href="../css/font-awesome.min.css">
+    <link rel="stylesheet" href="../plugins/ckeditor/plugins/codesnippet/lib/highlight/styles/googlecode.css">
+    <link rel="stylesheet" type="text/css" href="../css/front/screen.css">
+    <script src="../plugins/ckeditor/plugins/codesnippet/lib/highlight/highlight.pack.js"></script>
+	<style type="text/css">
+		.list{
+			margin-top:5em;
+			position: fixed;
+		}
+		
+		.list h4{
+			padding-bottom:0.5em;
+			border-bottom:2px solid lightgray;
+		}
+		
+		.list .readTitle li{
+			margin-top:0.4em;
+			padding-left:1em;
+			border:2px solid white;
+		}
+		.list .readTitle li:hover{
+			border-left:2px solid black;
+			color:blue;
+		}
+		.liHover{
+			border-left:2px solid black !important;
+		}
+		.aHover{
+			color:blue;
+		}
+		.list .readTitle li a:hover{
+			color:blue;
+			text-decoration: none;
+		}
+	</style>
+</head>
+<body>
+    <section class="content-wrap container-fluid">
+        <div class="container">
+            <div class="row">
+				<div class="col-md-3 visible-lg-block visible-md-block">
+					<div class="list">
+						<h4>阅读目录</h4>
+						<div>
+							<ul class="readTitle list-unstyled"></ul>
+						</div>
+					</div>
+				</div>
+                 <main class="col-md-19 main-content">
+					<article class="post row">
+					<header class="post-head">
+				        <h1 class="post-title">高性能Mysql笔记八</h1>
+				        <section class="post-meta">
+					        <span><span class="glyphicon glyphicon-user"></span>:<span>c</span></span>|
+				            <span><span class="glyphicon glyphicon-bookmark"></span>:<span>Database</span></span>|
+				            <span><span class="glyphicon glyphicon-time"></span>:<span>2018-09-03</span></span>
+				        </section>
+				    </header>
+				    <section class="post-content"><p>可扩展性: 通过增加资源提升容量的能力</p>
+
+<h2>考虑负载</h2>
+
+<pre>
+<code>容量可以简单地认为是处理负载的能力,考虑负载可从以下几个角度
+数据量: 很多应用从不物理删除任何数据,应用所积累的数据量是可扩展的普遍挑战
+用户量: 更多的用户意味着更多的事务,更多的复杂查询
+用户活跃度
+相关数据集的大小</code></pre>
+
+<h2>规划可扩展性</h2>
+
+<pre>
+<code>估算需要承担的负载到底有多少
+大致正确地估计日程表
+应用的功能完成多少
+预期的最大负载是多少
+如果依赖系统的每个部分分担负载,某个部分失效时会发生什么</code></pre>
+
+<h2>向上扩展(垂直扩展)</h2>
+
+<pre>
+<code>性价比低，难度越来越高
+无法无限制向上扩展</code></pre>
+
+<h2>向外扩展</h2>
+
+<pre>
+<code>策略: 复制,拆分,数据分片
+按功能拆分: 常见做法,根据功能将应用部署在不同服务器,并使用专用的数据库服务器</code></pre>
+
+<ol>
+</ol>
+
+<h2>通过集群扩展</h2>
+
+<pre>
+<code>可以使用集群或数据库分布式技术根据场景适当解决一些问题
+NDB Cluster, Clustrix等技术</code></pre>
+
+<ol>
+</ol>
+
+<h2>向内扩展</h2>
+
+<pre>
+<code>对不再需要的数据进行归档和清理
+需要考虑对应用的影响
+需要考虑数据逻辑的一致性,例如清理A表历史数据时需要考虑所有关联数据的处理
+冷热数据分离</code></pre>
+
+<h2>负载均衡</h2>
+
+<pre>
+<code>目的
+可扩展性: 如读写分离时从备库读数据
+高效性: 把更多工作分配给更好的机器
+可用性: 使用时刻保持可用的服务器
+透明性: 客户端无需知道服务器
+一致性: 如果应用是有状态的,负载均衡器就应该将相关的查询指向同一个服务器
+
+直接连接
+
+复制上的读写分离
+基于查询分离: 将不能容忍脏数据的查询分配到主库,其他分配到备库
+基于脏数据分离: 让应用检查复制延迟,许多报表类应用使用这个策略
+基于会话分离: 可以在会话层做一个标记,如果用户修改了数据,则一段时间内总是指向主库
+基于版本分离: 给用户的操作增加版本号,检查版本号决定从主库还是备库读取数据
+
+修改DNS名
+通过变更DNS名指定的服务器实现
+缺点很多,不建议
+
+转移IP地址
+在服务器之间转移虚拟地址
+给服务器分配固定的ip地址,为每个逻辑上的服务使用一个虚拟ip地址
+
+引入中间件
+负载均衡器,如HAproxy
+负载均衡算法: 随机, 轮询,最少连接数,最快响应,哈希,权重
+服务器池中增加或移除服务器: 在配置连接池中的服务器时,要保证有足够多未使用的容量</code></pre>
+
+<p>&nbsp;</p>
+
+<p>&nbsp;</p>
+
+<p>&nbsp;</p>
+				    </section>
+					</article>
+				</main>
+            </div>
+        </div>
+    </section>
+    <a href="#top" id="goTop" ><i class="fa fa-angle-up fa-3x"></i></a>
+	<script src="../js/jquery.min.js"></script>
+    <script type="text/javascript" src="../js/datas/detailAngularJs.js"></script>
+    <script src="../plugins/scrolltopcontrol.js"></script>
+</body>
+</html>

@@ -1,0 +1,307 @@
+<html>
+<!DOCTYPE html>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <title>监督学习之决策树算法笔记</title>
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link rel="stylesheet" href="../css/bootstrap.min.css">
+	<link rel="stylesheet" href="../css/font-awesome.min.css">
+    <link rel="stylesheet" href="../plugins/ckeditor/plugins/codesnippet/lib/highlight/styles/googlecode.css">
+    <link rel="stylesheet" type="text/css" href="../css/front/screen.css">
+    <script src="../plugins/ckeditor/plugins/codesnippet/lib/highlight/highlight.pack.js"></script>
+	<style type="text/css">
+		.list{
+			margin-top:5em;
+			position: fixed;
+		}
+		
+		.list h4{
+			padding-bottom:0.5em;
+			border-bottom:2px solid lightgray;
+		}
+		
+		.list .readTitle li{
+			margin-top:0.4em;
+			padding-left:1em;
+			border:2px solid white;
+		}
+		.list .readTitle li:hover{
+			border-left:2px solid black;
+			color:blue;
+		}
+		.liHover{
+			border-left:2px solid black !important;
+		}
+		.aHover{
+			color:blue;
+		}
+		.list .readTitle li a:hover{
+			color:blue;
+			text-decoration: none;
+		}
+	</style>
+</head>
+<body>
+    <section class="content-wrap container-fluid">
+        <div class="container">
+            <div class="row">
+				<div class="col-md-3 visible-lg-block visible-md-block">
+					<div class="list">
+						<h4>阅读目录</h4>
+						<div>
+							<ul class="readTitle list-unstyled"></ul>
+						</div>
+					</div>
+				</div>
+                 <main class="col-md-19 main-content">
+					<article class="post row">
+					<header class="post-head">
+				        <h1 class="post-title">监督学习之决策树算法笔记</h1>
+				        <section class="post-meta">
+					        <span><span class="glyphicon glyphicon-user"></span>:<span>c</span></span>|
+				            <span><span class="glyphicon glyphicon-bookmark"></span>:<span>MachineLearning</span></span>|
+				            <span><span class="glyphicon glyphicon-time"></span>:<span>2017-10-26</span></span>
+				        </section>
+				    </header>
+				    <section class="post-content"><p><a id="分类和预测算法评估" name="分类和预测算法评估"></a>机器学习中分类和预测算法的评估：</p>
+
+<pre>
+<code>准确率：算法达到的准确率是多少。
+速度：算法复杂度高不高，速度快不快。
+强壮行：当数据有一些缺失或者有一些干扰时，算法的表现是不是非常好。
+可规模性：不仅在小规模范围使用在数量指数级增长的大规模范围是否依然适用。
+可解释性：是否容易观察解释</code></pre>
+
+<p><a id="决策树/判定树" name="决策树/判定树"></a>什么是决策树/判定树（decision tree)? &nbsp; &nbsp; &nbsp;<br />
+判定树是一个类似于流程图的树结构：其中，每个内部结点表示在一个属性上的测试，每个分支代表一个属性输出，而每个树叶结点代表类或类分布。树的最顶层是根结点。</p>
+
+<p><img src="https://gss0.bdstatic.com/-4o3dSag_xI4khGkpoWK1HF6hhy/baike/c0%3Dbaike80%2C5%2C5%2C80%2C26/sign=89c8d6461138534398c28f73f27adb1b/c2cec3fdfc0392456a6ac4258694a4c27d1e2538.jpg" style="height:212px; width:300px" /></p>
+
+<p><a id="熵（entropy）概念" name="熵（entropy）概念"></a>熵（entropy）概念：</p>
+
+<pre>
+<code>信息和抽象，如何度量？
+1948年，香农提出了 ”信息熵(entropy)“的概念，一条信息的信息量大小和它的不确定性有直接的关系，即要搞清楚的事情不确定性越大，我们需要了解的信息量越大。
+计算公式（比特(bit)来衡量信息的多少）
+H(x) = E[I(xi)] = E[ log(2,1/p(xi)) ] = -∑p(xi)log(2,p(xi)) (i=1,2,..n)
+变量的不确定性越大，熵值越大</code></pre>
+
+<p><a id="决策树归纳算法之ID3" name="决策树归纳算法之ID3"></a>决策树归纳算法之ID3</p>
+
+<pre>
+<code>选择属性判断结点（节点的选择）
+
+根据信息获取量来进行选择
+信息获取量(Information Gain)：
+Gain(A) = Info(D) - Infor_A(D)
+通过A来作为节点分类获取了多少信息（原始获得的信息量减去加上该属性后获得的信息量，得到该属性的信息获取量）</code></pre>
+
+<p><a id="例子" name="例子"></a>例子：</p>
+
+<table border="1" cellpadding="1" cellspacing="1" style="width:500px">
+	<tbody>
+		<tr>
+			<td>RID</td>
+			<td>age</td>
+			<td>income</td>
+			<td>student</td>
+			<td>credit_rating</td>
+			<td>Class:buy_computer</td>
+		</tr>
+		<tr>
+			<td>1</td>
+			<td>youth</td>
+			<td>high</td>
+			<td>no</td>
+			<td>fair</td>
+			<td>no</td>
+		</tr>
+		<tr>
+			<td>2</td>
+			<td>youth</td>
+			<td>high</td>
+			<td>no</td>
+			<td>excellent</td>
+			<td>no</td>
+		</tr>
+		<tr>
+			<td>3</td>
+			<td>middle_aged</td>
+			<td>high</td>
+			<td>no</td>
+			<td>fair</td>
+			<td>yes</td>
+		</tr>
+		<tr>
+			<td>4</td>
+			<td>senior</td>
+			<td>medium</td>
+			<td>no</td>
+			<td>fair</td>
+			<td>yes</td>
+		</tr>
+		<tr>
+			<td>5</td>
+			<td>senior</td>
+			<td>low</td>
+			<td>yes</td>
+			<td>fair</td>
+			<td>yes</td>
+		</tr>
+		<tr>
+			<td>6</td>
+			<td>senior</td>
+			<td>low</td>
+			<td>yes</td>
+			<td>excellent</td>
+			<td>no</td>
+		</tr>
+		<tr>
+			<td>7</td>
+			<td>middle_aged</td>
+			<td>low</td>
+			<td>yes</td>
+			<td>excellent</td>
+			<td>yes</td>
+		</tr>
+		<tr>
+			<td>8</td>
+			<td>youth</td>
+			<td>medium</td>
+			<td>no</td>
+			<td>fair</td>
+			<td>no</td>
+		</tr>
+		<tr>
+			<td>9</td>
+			<td>youth</td>
+			<td>low</td>
+			<td>yes</td>
+			<td>fair</td>
+			<td>yes</td>
+		</tr>
+		<tr>
+			<td>10</td>
+			<td>senior</td>
+			<td>medium</td>
+			<td>yes</td>
+			<td>fair</td>
+			<td>yes</td>
+		</tr>
+		<tr>
+			<td>11</td>
+			<td>youth</td>
+			<td>medium</td>
+			<td>yes</td>
+			<td>excellent</td>
+			<td>yes</td>
+		</tr>
+		<tr>
+			<td>12</td>
+			<td>middle_aged</td>
+			<td>medium</td>
+			<td>no</td>
+			<td>excellent</td>
+			<td>yes</td>
+		</tr>
+		<tr>
+			<td>13</td>
+			<td>middle_aged</td>
+			<td>high</td>
+			<td>yes</td>
+			<td>fair</td>
+			<td>yes</td>
+		</tr>
+		<tr>
+			<td>14</td>
+			<td>senior</td>
+			<td>medium</td>
+			<td>no</td>
+			<td>excellent</td>
+			<td>no</td>
+		</tr>
+	</tbody>
+</table>
+
+<pre>
+<code>首先不按任何属性分，按目标函数（标记）即Class:buy_computer来分信息度是多少
+
+14人9个yes、5个no，即
+Info(D)=-(9/14)log2(9/14)-(5/14)log2(5/14)=0.940bits
+
+如果以age来分
+age中14人中5个yonth(其中3个no、2个yes)；4个middle_aged(其中0个no、4个yes)；5个senior(其中2个no、3个yes)；
+Info(D)=(5/14)×(-(2/5)log2(2/5)-(3/5)log2(3/5)) + (4/14)×(-(4/4)log2(4/4)-(0/4)log2(0/4)) + (5/14)×(-(3/5)log2(3/5)-(2/5)log2(2/5)) = 0.694
+
+Gain(age) = Info(D)-Info_age(D) = 0.940 - 0.694 = 0.246 bits
+同理：Gain(income) = 0.029; Gain(student) = 0.151; Gain(credit_rating) = 0.048;
+
+Gain(age)&gt;Gain(student)&gt;Gain(credit_rating)&gt;Gain(income)
+所以选择age作为第一个根节点
+
+重复。。。</code></pre>
+
+<pre>
+<code>树以代表训练样本的单个结点开始。
+
+如果样本都在同一个类，则该结点成为树叶，并用该类标号。
+
+否则，算法使用称为信息增益的基于熵的度量作为启发信息，选择能够最好地将样本分类的属性。该属性成为该结点的“测试”或“判定”属性。在算法的该版本中，
+
+所有的属性都是分类的，即离散值。连续属性必须离散化。
+
+对测试属性的每个已知的值，创建一个分枝，并据此划分样本。
+
+算法使用同样的过程，递归地形成每个划分上的样本判定树。一旦一个属性出现在一个结点上，就不必该结点的任何后代上考虑它。
+
+递归划分步骤仅当下列条件之一成立停止：
+(a) 给定结点的所有样本属于同一类。
+(b) 没有剩余属性可以用来进一步划分样本。在此情况下，使用多数表决。
+这涉及将给定的结点转换成树叶，并用样本中的多数所在的类标记它。替换地，可以存放结
+点样本的类分布。
+(c) 分枝
+test_attribute = a i 没有样本。在这种情况下，以 samples 中的多数类
+创建一个树叶</code></pre>
+
+<p><a id="其他算法" name="其他算法"></a>其他算法</p>
+
+<pre>
+<code>C4.5、 Classification and Regression Trees (CART)
+共同点：都是贪心算法，自上而下(Top-down approach)
+区别：属性选择度量方法不同： C4.5 (gain ratio), CART(gini index), ID3 (Information Gain)</code></pre>
+
+<p><a id="树剪枝叶" name="树剪枝叶"></a>树剪枝叶 （避免overfitting)</p>
+
+<pre>
+<code>如果树的深度太大，可能导致在训练集上表现很好，但是在测试集上表现不是很理想，这时一般采用两种方式：
+先剪枝：分到一定程度就不在分了；
+后剪枝：先完全建好，然后再把叶子减掉；</code></pre>
+
+<p><a id="决策树的优缺点" name="决策树的优缺点"></a>决策树的优点：</p>
+
+<pre>
+<code>直观，便于理解，小规模数据集有效</code></pre>
+
+<p>决策树的缺点：</p>
+
+<pre>
+<code>处理连续变量不好（离散化的阈值对结果影响较大）
+类别较多时，错误增加的比较快
+可规模性一般（小规模的数据表现非常好，大规模的数据算法复杂度增加非常大，对每一个属性都需要去测试）</code></pre>
+
+<p>&nbsp;</p>
+
+				    </section>
+					</article>
+				</main>
+            </div>
+        </div>
+    </section>
+    <a href="#top" id="goTop" ><i class="fa fa-angle-up fa-3x"></i></a>
+	<script src="../js/jquery.min.js"></script>
+    <script type="text/javascript" src="../js/datas/detailAngularJs.js"></script>
+    <script src="../plugins/scrolltopcontrol.js"></script>
+</body>
+</html>

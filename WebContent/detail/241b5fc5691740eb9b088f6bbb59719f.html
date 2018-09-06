@@ -1,0 +1,282 @@
+<html>
+<!DOCTYPE html>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <title>Elasticsearch（十一）</title>
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link rel="stylesheet" href="../css/bootstrap.min.css">
+	<link rel="stylesheet" href="../css/font-awesome.min.css">
+    <link rel="stylesheet" href="../plugins/ckeditor/plugins/codesnippet/lib/highlight/styles/googlecode.css">
+    <link rel="stylesheet" type="text/css" href="../css/front/screen.css">
+    <script src="../plugins/ckeditor/plugins/codesnippet/lib/highlight/highlight.pack.js"></script>
+	<style type="text/css">
+		.list{
+			margin-top:5em;
+			position: fixed;
+		}
+		
+		.list h4{
+			padding-bottom:0.5em;
+			border-bottom:2px solid lightgray;
+		}
+		
+		.list .readTitle li{
+			margin-top:0.4em;
+			padding-left:1em;
+			border:2px solid white;
+		}
+		.list .readTitle li:hover{
+			border-left:2px solid black;
+			color:blue;
+		}
+		.liHover{
+			border-left:2px solid black !important;
+		}
+		.aHover{
+			color:blue;
+		}
+		.list .readTitle li a:hover{
+			color:blue;
+			text-decoration: none;
+		}
+	</style>
+</head>
+<body>
+    <section class="content-wrap container-fluid">
+        <div class="container">
+            <div class="row">
+				<div class="col-md-3 visible-lg-block visible-md-block">
+					<div class="list">
+						<h4>阅读目录</h4>
+						<div>
+							<ul class="readTitle list-unstyled"></ul>
+						</div>
+					</div>
+				</div>
+                 <main class="col-md-19 main-content">
+					<article class="post row">
+					<header class="post-head">
+				        <h1 class="post-title">Elasticsearch（十一）</h1>
+				        <section class="post-meta">
+					        <span><span class="glyphicon glyphicon-user"></span>:<span>c</span></span>|
+				            <span><span class="glyphicon glyphicon-bookmark"></span>:<span>Elasticsearch</span></span>|
+				            <span><span class="glyphicon glyphicon-time"></span>:<span>2017-07-10</span></span>
+				        </section>
+				    </header>
+				    <section class="post-content"><p><a name="mget批量查询"></a>1、mget批量查询</p>
+
+<p>&nbsp;</p>
+
+<p>优势：查询100条数据，就要发送100次网络请求，如果进行批量查询的话，查询100条数据，就只要发送1次网络请求，网络请求的性能开销缩减100倍</p>
+
+<p>&nbsp;</p>
+
+<p>（1）一条一条的查询</p>
+
+<pre>
+<code class="language-json">GET e/p/1
+GET e/p/2</code></pre>
+
+<p>（2）mget批量查询</p>
+
+<pre>
+<code class="language-json">GET /_mget
+{
+  "docs":[
+     {
+      "_index":"e",
+      "_type":"p",
+      "_id":1
+     },
+     {
+      "_index":"e",
+      "_type":"p",
+      "_id":2
+     }
+  ]
+}
+=====结果======
+{
+  "docs": [
+    {
+      "_index": "e",
+      "_type": "p",
+      "_id": "1",
+      "_version": 1,
+      "found": true,
+      "_source": {
+        "name": "gaolujie yagao",
+        "desc": "gaoxiao meibai",
+        "price": 30,
+        "producer": "gaolujie producer",
+        "tags": [
+          "meibai",
+          "fangzhu"
+        ]
+      }
+    },
+    {
+      "_index": "e",
+      "_type": "p",
+      "_id": "2",
+      "_version": 1,
+      "found": true,
+      "_source": {
+        "name": "jiajieshi yagao",
+        "desc": "youxiao fangzhu",
+        "price": 25,
+        "producer": "jiajieshi producer",
+        "tags": [
+          "fangzhu"
+        ]
+      }
+    }
+  ]
+}</code></pre>
+
+<p>（3）如果查询的document是index或者type相同的话，可以提取到上面去</p>
+
+<pre>
+<code class="language-json">GET /p/_mget
+{
+  "docs":[
+     {
+      "_index":"e",
+      "_id":1
+     },
+     {
+      "_index":"e",
+      "_id":2
+     }
+  ]
+}
+单独提取index或者type或者全部都可以</code></pre>
+
+<p>（4）如果查询的数据都在同一个index下的同一个type下，最简单了</p>
+
+<pre>
+<code class="language-json">GET /test_index/test_type/_mget
+{
+   "ids": [1, 2]
+}</code></pre>
+
+<p><a name="bulk批量增删改"></a>2、bulk批量增删改</p>
+
+<pre>
+<code class="language-json">语法（每个json串不能换行，只能放一行，同时一个json串和一个json串之间，必须有一个换行）
+POST /_bulk
+{ "delete": { "_index": "e", "_type": "p", "_id": "1" }} 
+{ "create": { "_index": "e", "_type": "p", "_id": "1" }}
+{ "test_field":    "test12" }
+{ "index":  { "_index": "e", "_type": "p", "_id": "1" }}
+{ "test_field":    "replaced test2" }
+{ "update": { "_index": "e", "_type": "p", "_id": "1", "_retry_on_conflict" : 3} }
+{ "doc" : {"test_field2" : "bulk test1"} }</code></pre>
+
+<pre>
+<code class="language-json">一般每个操作要两个json串（除delete），语法如下：
+
+{"action动作": {"metadata"}}
+{"data数据"}
+
+举例，比如你现在要创建一个文档，放bulk里面，看起来会是这样子的：
+
+{"index": {"_index": "e", "_type", "p", "_id": "1"}}
+{"test_field1": "test1", "test_field2": "test2"}
+
+有哪些类型的action操作可以执行呢？
+（1）delete：删除一个文档，只要1个json串就可以了
+（2）create：PUT /index/type/id/_create，强制创建
+（3）index：普通的put操作，可以是创建文档，也可以是全量替换文档
+（4）update：执行的partial update操作</code></pre>
+
+<pre>
+<code class="language-json">bulk操作中，任意一个操作失败，是不会影响其他的操作的，但是在返回结果里，会告诉你异常日志
+如果修改的document是index或者type相同的话，可以提取到上面去</code></pre>
+
+<pre>
+
+（1）bulk size最佳大小</pre>
+
+<p>bulk request会加载到内存里，如果太大的话，性能反而会下降，因此需要反复尝试一个最佳的bulk size。一般从1000~5000条数据开始，尝试逐渐增加。另外，如果看大小的话，最好是在5~15MB之间。</p>
+
+<p>（2）bulk api的奇特json格式与底层性能优化关系大揭秘</p>
+
+<p>bulk中的每个操作都可能要转发到不同的node的shard去执行</p>
+
+<p>如果采用比较良好的json数组格式，要按照下述流程去进行处理</p>
+
+<p>将json数组解析为JSONArray对象，这个时候，整个数据，就会在内存中出现一份一模一样的拷贝，一份数据是json文本，一份数据是JSONArray对象</p>
+
+<p>解析json数组里的每个json，对每个请求中的document进行路由</p>
+
+<p>为路由到同一个shard上的多个请求，创建一个请求数组</p>
+
+<p>将这个请求数组序列化</p>
+
+<p>将序列化后的请求数组发送到对应的节点上去</p>
+
+<p>&nbsp;</p>
+
+<p>耗费更多内存，更多的jvm gc开销</p>
+
+<p>我们之前提到过bulk size最佳大小的那个问题，一般建议说在几千条那样，然后大小在10MB左右，所以说，可怕的事情来了。假设说现在100个bulk请求发送到了一个节点上去，然后每个请求是10MB，100个请求，就是1000MB = 1GB，然后每个请求的json都copy一份为jsonarray对象，此时内存中的占用就会翻倍，就会占用2GB的内存，甚至还不止。因为弄成jsonarray之后，还可能会多搞一些其他的数据结构，2GB+的内存占用。</p>
+
+<p>&nbsp;</p>
+
+<p>占用更多的内存可能就会积压其他请求的内存使用量，比如说最重要的搜索请求，分析请求，等等，此时就可能会导致其他请求的性能急速下降</p>
+
+<p>另外的话，占用内存更多，就会导致java虚拟机的垃圾回收次数更多，跟频繁，每次要回收的垃圾对象更多，耗费的时间更多，导致es的java虚拟机停止工作线程的时间更多</p>
+
+<p>&nbsp;</p>
+
+<p>现在的奇特格式</p>
+
+<p>{&quot;action&quot;: {&quot;meta&quot;}}\n</p>
+
+<p>{&quot;data&quot;}\n</p>
+
+<p>{&quot;action&quot;: {&quot;meta&quot;}}\n</p>
+
+<p>{&quot;data&quot;}\n</p>
+
+<p>不用将其转换为json对象，不会出现内存中的相同数据的拷贝，直接按照换行符切割json</p>
+
+<p>对每两个一组的json，读取meta，进行document路由</p>
+
+<p>直接将对应的json发送到node上去</p>
+
+<p>&nbsp;</p>
+
+<p>最大的优势在于，不需要将json数组解析为一个JSONArray对象，形成一份大数据的拷贝，浪费内存空间，尽可能地保证性能</p>
+
+<p>&nbsp;</p>
+
+<p>&nbsp;</p>
+
+<p>&nbsp;</p>
+
+<p>&nbsp;</p>
+
+<p>&nbsp;</p>
+
+<p>&nbsp;</p>
+
+<p>&nbsp;</p>
+
+<p>&nbsp;</p>
+
+				    </section>
+					</article>
+				</main>
+            </div>
+        </div>
+    </section>
+    <a href="#top" id="goTop" ><i class="fa fa-angle-up fa-3x"></i></a>
+	<script src="../js/jquery.min.js"></script>
+    <script type="text/javascript" src="../js/datas/detailAngularJs.js"></script>
+    <script src="../plugins/scrolltopcontrol.js"></script>
+</body>
+</html>

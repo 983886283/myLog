@@ -1,0 +1,332 @@
+<html>
+<!DOCTYPE html>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <title>监督学习之决策树算法应用笔记</title>
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link rel="stylesheet" href="../css/bootstrap.min.css">
+	<link rel="stylesheet" href="../css/font-awesome.min.css">
+    <link rel="stylesheet" href="../plugins/ckeditor/plugins/codesnippet/lib/highlight/styles/googlecode.css">
+    <link rel="stylesheet" type="text/css" href="../css/front/screen.css">
+    <script src="../plugins/ckeditor/plugins/codesnippet/lib/highlight/highlight.pack.js"></script>
+	<style type="text/css">
+		.list{
+			margin-top:5em;
+			position: fixed;
+		}
+		
+		.list h4{
+			padding-bottom:0.5em;
+			border-bottom:2px solid lightgray;
+		}
+		
+		.list .readTitle li{
+			margin-top:0.4em;
+			padding-left:1em;
+			border:2px solid white;
+		}
+		.list .readTitle li:hover{
+			border-left:2px solid black;
+			color:blue;
+		}
+		.liHover{
+			border-left:2px solid black !important;
+		}
+		.aHover{
+			color:blue;
+		}
+		.list .readTitle li a:hover{
+			color:blue;
+			text-decoration: none;
+		}
+	</style>
+</head>
+<body>
+    <section class="content-wrap container-fluid">
+        <div class="container">
+            <div class="row">
+				<div class="col-md-3 visible-lg-block visible-md-block">
+					<div class="list">
+						<h4>阅读目录</h4>
+						<div>
+							<ul class="readTitle list-unstyled"></ul>
+						</div>
+					</div>
+				</div>
+                 <main class="col-md-19 main-content">
+					<article class="post row">
+					<header class="post-head">
+				        <h1 class="post-title">监督学习之决策树算法应用笔记</h1>
+				        <section class="post-meta">
+					        <span><span class="glyphicon glyphicon-user"></span>:<span>c</span></span>|
+				            <span><span class="glyphicon glyphicon-bookmark"></span>:<span>MachineLearning</span></span>|
+				            <span><span class="glyphicon glyphicon-time"></span>:<span>2017-10-28</span></span>
+				        </section>
+				    </header>
+				    <section class="post-content"><p><a id="Python环境" name="Python环境"></a>Python环境</p>
+
+<pre>
+<code>Windows版 Python 3.6.2</code></pre>
+
+<p><a id="机器学习的库" name="机器学习的库"></a>Python机器学习的库：scikit-learn</p>
+
+<pre>
+<code>特性：
+简单高效的数据挖掘和机器学习分析
+对所有用户开放，根据不同需求高度可重用性
+基于Numpy, SciPy和matplotlib
+开源，商用级别：获得 BSD许可
+
+覆盖问题领域：
+分类（classification), 回归（regression), 聚类（clustering), 降维(dimensionality reduction)
+模型选择(model selection), 预处理(preprocessing)</code></pre>
+
+<p><a id="安装scikit-learn" name="安装scikit-learn"></a>安装scikit-learn</p>
+
+<p>参考<a href="http://www.cnblogs.com/LuffySir/p/6054238.html" id="cb_post_title_url">Python 安装scikit-learn</a></p>
+
+<p><a id="代码实现" name="代码实现"></a>决策树Python代码实现(买电脑的人群分析)</p>
+
+<table border="1" cellpadding="1" cellspacing="1" style="width:500px">
+	<tbody>
+		<tr>
+			<td>RID</td>
+			<td>age</td>
+			<td>income</td>
+			<td>student</td>
+			<td>credit_rating</td>
+			<td>Class:buy_computer</td>
+		</tr>
+		<tr>
+			<td>1</td>
+			<td>youth</td>
+			<td>high</td>
+			<td>no</td>
+			<td>fair</td>
+			<td>no</td>
+		</tr>
+		<tr>
+			<td>2</td>
+			<td>youth</td>
+			<td>high</td>
+			<td>no</td>
+			<td>excellent</td>
+			<td>no</td>
+		</tr>
+		<tr>
+			<td>3</td>
+			<td>middle_aged</td>
+			<td>high</td>
+			<td>no</td>
+			<td>fair</td>
+			<td>yes</td>
+		</tr>
+		<tr>
+			<td>4</td>
+			<td>senior</td>
+			<td>medium</td>
+			<td>no</td>
+			<td>fair</td>
+			<td>yes</td>
+		</tr>
+		<tr>
+			<td>5</td>
+			<td>senior</td>
+			<td>low</td>
+			<td>yes</td>
+			<td>fair</td>
+			<td>yes</td>
+		</tr>
+		<tr>
+			<td>6</td>
+			<td>senior</td>
+			<td>low</td>
+			<td>yes</td>
+			<td>excellent</td>
+			<td>no</td>
+		</tr>
+		<tr>
+			<td>7</td>
+			<td>middle_aged</td>
+			<td>low</td>
+			<td>yes</td>
+			<td>excellent</td>
+			<td>yes</td>
+		</tr>
+		<tr>
+			<td>8</td>
+			<td>youth</td>
+			<td>medium</td>
+			<td>no</td>
+			<td>fair</td>
+			<td>no</td>
+		</tr>
+		<tr>
+			<td>9</td>
+			<td>youth</td>
+			<td>low</td>
+			<td>yes</td>
+			<td>fair</td>
+			<td>yes</td>
+		</tr>
+		<tr>
+			<td>10</td>
+			<td>senior</td>
+			<td>medium</td>
+			<td>yes</td>
+			<td>fair</td>
+			<td>yes</td>
+		</tr>
+		<tr>
+			<td>11</td>
+			<td>youth</td>
+			<td>medium</td>
+			<td>yes</td>
+			<td>excellent</td>
+			<td>yes</td>
+		</tr>
+		<tr>
+			<td>12</td>
+			<td>middle_aged</td>
+			<td>medium</td>
+			<td>no</td>
+			<td>excellent</td>
+			<td>yes</td>
+		</tr>
+		<tr>
+			<td>13</td>
+			<td>middle_aged</td>
+			<td>high</td>
+			<td>yes</td>
+			<td>fair</td>
+			<td>yes</td>
+		</tr>
+		<tr>
+			<td>14</td>
+			<td>senior</td>
+			<td>medium</td>
+			<td>no</td>
+			<td>excellent</td>
+			<td>no</td>
+		</tr>
+	</tbody>
+</table>
+
+<p>图表即为AllElectronics.csv</p>
+
+<pre>
+<code class="language-python"># -*- coding: utf-8 -*- 
+from sklearn.feature_extraction import DictVectorizer
+import csv
+import numpy as np
+from sklearn import tree
+from sklearn import preprocessing
+from sklearn.externals.six import StringIO
+
+# Read in the csv file and put features into list of dict and list of class label
+allElectronicsData = open(r'D://deepLearning/AllElectronics.csv', 'rt')
+reader = csv.reader(allElectronicsData)
+headers = next(reader)
+
+#['RID', 'age', 'income', 'student', 'credit_rating', 'class_buys_computer']
+print(headers)
+featureList = []
+labelList = []
+
+for row in reader:
+    labelList.append(row[len(row)-1])
+    rowDict = {}
+    for i in range(1, len(row)-1):
+        rowDict[headers[i]] = row[i]
+    featureList.append(rowDict)
+#[{'age': 'youth', 'income': 'high', 'student': 'no', 'credit_rating': 'fair'}, {'age': 'youth', 'income': 'high', 'student': 'no', 'credit_rating': 'excellent'}, {'age': 'middle_aged', 'income': 'high', 'student': 'no', 'credit_rating': 'fair'}, {'age': 'senior', 'income': 'medium', 'student': 'no', 'credit_rating': 'fair'}, {'age': 'senior', 'income': 'low', 'student': 'yes', 'credit_rating': 'fair'}, {'age': 'senior', 'income': 'low', 'student': 'yes', 'credit_rating': 'excellent'}, {'age': 'middle_aged', 'income': 'low', 'student': 'yes', 'credit_rating': 'excellent'}, {'age': 'youth', 'income': 'medium', 'student': 'no', 'credit_rating': 'fair'}, {'age': 'youth', 'income': 'low', 'student': 'yes', 'credit_rating': 'fair'}, {'age': 'senior', 'income': 'medium', 'student': 'yes', 'credit_rating': 'fair'}, {'age': 'youth', 'income': 'medium', 'student': 'yes', 'credit_rating': 'excellent'}, {'age': 'middle_aged', 'income': 'medium', 'student': 'no', 'credit_rating': 'excellent'}, {'age': 'middle_aged', 'income': 'high', 'student': 'yes', 'credit_rating': 'fair'}, {'age': 'senior', 'income': 'medium', 'student': 'no', 'credit_rating': 'excellent'}]
+print(featureList)
+#将文字转化为数字
+vec = DictVectorizer()
+dummyX = vec.fit_transform(featureList) .toarray()
+#dummyX: [[ 0.  0.  1.  0.  1.  1.  0.  0.  1.  0.]
+# [ 0.  0.  1.  1.  0.  1.  0.  0.  1.  0.]
+# [ 1.  0.  0.  0.  1.  1.  0.  0.  1.  0.]
+# [ 0.  1.  0.  0.  1.  0.  0.  1.  1.  0.]
+# [ 0.  1.  0.  0.  1.  0.  1.  0.  0.  1.]
+# [ 0.  1.  0.  1.  0.  0.  1.  0.  0.  1.]
+# [ 1.  0.  0.  1.  0.  0.  1.  0.  0.  1.]
+# [ 0.  0.  1.  0.  1.  0.  0.  1.  1.  0.]
+# [ 0.  0.  1.  0.  1.  0.  1.  0.  0.  1.]
+# [ 0.  1.  0.  0.  1.  0.  0.  1.  0.  1.]
+# [ 0.  0.  1.  1.  0.  0.  0.  1.  0.  1.]
+# [ 1.  0.  0.  1.  0.  0.  0.  1.  1.  0.]
+# [ 1.  0.  0.  0.  1.  1.  0.  0.  0.  1.]
+# [ 0.  1.  0.  1.  0.  0.  0.  1.  1.  0.]]
+print("dummyX: " + str(dummyX))
+#['age=middle_aged', 'age=senior', 'age=youth', 'credit_rating=excellent', 'credit_rating=fair', 'income=high', 'income=low', 'income=medium', 'student=no', 'student=yes']
+print(vec.get_feature_names())
+#labelList: ['no', 'no', 'yes', 'yes', 'yes', 'no', 'yes', 'no', 'yes', 'yes', 'yes', 'yes', 'yes', 'no']
+print("labelList: " + str(labelList))
+lb = preprocessing.LabelBinarizer()
+dummyY = lb.fit_transform(labelList)
+#dummyY: [[0]
+# [0]
+# [1]
+# [1]
+# [1]
+# [0]
+# [1]
+# [0]
+# [1]
+# [1]
+# [1]
+# [1]
+# [1]
+# [0]]
+print("dummyY: " + str(dummyY))
+
+clf = tree.DecisionTreeClassifier(criterion='entropy')
+clf = clf.fit(dummyX, dummyY)
+#clf: DecisionTreeClassifier(class_weight=None, criterion='entropy', max_depth=None,
+#            max_features=None, max_leaf_nodes=None,
+#            min_impurity_decrease=0.0, min_impurity_split=None,
+#            min_samples_leaf=1, min_samples_split=2,
+#            min_weight_fraction_leaf=0.0, presort=False, random_state=None,
+#            splitter='best')
+print("clf: " + str(clf))
+
+
+#将决策树的信息保存为dot文件，之后通过graphviz工具可直接生成pdf格式图形化决策树
+with open("D://deepLearning/allElectronicInformationGainOri.dot", 'w') as f:
+    f = tree.export_graphviz(clf, feature_names=vec.get_feature_names(), out_file=f)
+
+##拿出第一条数据测试结果
+newRowX = [1,0,0,0,1,1,0,0,1,0]
+predictedY = clf.predict(np.array(newRowX).reshape(1, -1))
+#predictedY: [1]
+print("predictedY: " + str(predictedY))
+</code></pre>
+
+<p><a id="安装graphviz" name="安装graphviz"></a>安装graphviz</p>
+
+<p>点击超链接进行安装<a href="http://dlsw.baidu.com/sw-search-sp/soft/d7/19179/graphviz-2.38.1401953780.msi" id="file-link" tabindex="0">graphviz</a>，如果安装失败可以在官网下载</p>
+
+<pre>
+<code>安装完成后，需要配置环境变量，在Path中加入
+C:\Program Files (x86)\Graphviz2.38\bin
+
+在生成dot文件的目录下执行
+dot -Tpdf xxx.dot -o xxx.pdf</code></pre>
+
+<p>&nbsp;</p>
+
+				    </section>
+					</article>
+				</main>
+            </div>
+        </div>
+    </section>
+    <a href="#top" id="goTop" ><i class="fa fa-angle-up fa-3x"></i></a>
+	<script src="../js/jquery.min.js"></script>
+    <script type="text/javascript" src="../js/datas/detailAngularJs.js"></script>
+    <script src="../plugins/scrolltopcontrol.js"></script>
+</body>
+</html>

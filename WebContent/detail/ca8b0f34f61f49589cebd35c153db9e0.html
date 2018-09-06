@@ -1,0 +1,133 @@
+<html>
+<!DOCTYPE html>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <title>Nginx日志模块（Log）</title>
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link rel="stylesheet" href="../css/bootstrap.min.css">
+	<link rel="stylesheet" href="../css/font-awesome.min.css">
+    <link rel="stylesheet" href="../plugins/ckeditor/plugins/codesnippet/lib/highlight/styles/googlecode.css">
+    <link rel="stylesheet" type="text/css" href="../css/front/screen.css">
+    <script src="../plugins/ckeditor/plugins/codesnippet/lib/highlight/highlight.pack.js"></script>
+	<style type="text/css">
+		.list{
+			margin-top:5em;
+			position: fixed;
+		}
+		
+		.list h4{
+			padding-bottom:0.5em;
+			border-bottom:2px solid lightgray;
+		}
+		
+		.list .readTitle li{
+			margin-top:0.4em;
+			padding-left:1em;
+			border:2px solid white;
+		}
+		.list .readTitle li:hover{
+			border-left:2px solid black;
+			color:blue;
+		}
+		.liHover{
+			border-left:2px solid black !important;
+		}
+		.aHover{
+			color:blue;
+		}
+		.list .readTitle li a:hover{
+			color:blue;
+			text-decoration: none;
+		}
+	</style>
+</head>
+<body>
+    <section class="content-wrap container-fluid">
+        <div class="container">
+            <div class="row">
+				<div class="col-md-3 visible-lg-block visible-md-block">
+					<div class="list">
+						<h4>阅读目录</h4>
+						<div>
+							<ul class="readTitle list-unstyled"></ul>
+						</div>
+					</div>
+				</div>
+                 <main class="col-md-19 main-content">
+					<article class="post row">
+					<header class="post-head">
+				        <h1 class="post-title">Nginx日志模块（Log）</h1>
+				        <section class="post-meta">
+					        <span><span class="glyphicon glyphicon-user"></span>:<span>c</span></span>|
+				            <span><span class="glyphicon glyphicon-bookmark"></span>:<span>Software</span></span>|
+				            <span><span class="glyphicon glyphicon-time"></span>:<span>2018-04-14</span></span>
+				        </section>
+				    </header>
+				    <section class="post-content"><p>日志模块（Log）：控制nginx如何记录请求日志。</p>
+
+<p>access_log</p>
+
+<pre>
+<code>语法：access_log path [format [buffer=size | off]] 
+默认值：access_log log/access.log combined 
+使用字段：http, server, location 
+参数为连接日志指定了路径，格式和缓冲区大小。使用“off”将在当前的字段中清除access_log的所有参数，如果没有指定日志格式，默认为“combined”。缓冲区大小不能超过写入磁盘文件的最小大小。
+日志文件路径可以包含变量（0.7.4以上版本），但是有一些限制：
+·nginx指定的用户必须有创建日志文件的权限。
+·缓冲区不会工作
+·每个到来的连接，日志文件将被打开并且在记录日志后迅速关闭，然而，频繁使用的文件描述符将被保存到open_log_file_cache中，关于日志的轮询记录，必须记住随着时间的过去（使用open_log_file_cache的valid参数设置），日志仍然在旧的文件中记录。
+
+nginx支持为每个location指定强大的日志记录。同样的连接可以在同一时间输出到不止一个的日志中，更多信息请查看Multiple access_log directives in different contexts</code></pre>
+
+<p>log_format</p>
+
+<pre>
+<code class="language-nginx">语法：log_format name format [format ...] 
+默认值：log_format combined "..." 
+使用字段：http server 
+描述记录日志的格式，格式中可以使用大多数变量，也包括一些在写入日志文件过程中定义的变量：
+·$body_bytes_sent，减去应答头后传送给客户端的字节数，这个变量兼容apache模块mod_log_config的%B参数（在0.3.10前这个变量为$apache_bytes_sent）。
+·$bytes_sent，传送给客户端的字节数。
+·$connection，连接数。
+·$msec，正在写入日志条目的当前时间（精确到百万分之一秒）
+·$pipe，如果请求为管道的。
+·$request_length，请求主体的长度。
+·$request_time，从一个请求发出到而使nginx工作的时间，单位为毫秒（0.5.19版本后可以使用秒为单位）。
+·$status，应答的状态（代码）。
+·$time_local，写入普通日志格式的当地时间（服务器时间）。
+
+传送到客户端的头中的变量以"sent_http_"标记开头，如：$sent_http_content_range。
+注意其他模块产生的变量同样可以写入日志，例如你可以记录前端负载均衡应答头使用“upstream_http_”开头的变量，具体请查看负载均衡模块。
+nginx有一个预定的日志格式称为combined：
+log_format combined '$remote_addr - $remote_user [$time_local]'
+                    '"$request" $status $body_bytes_sent'
+                    '"$http_referer" "$http_user_agent"';</code></pre>
+
+<p>open_log_file_cache</p>
+
+<pre>
+<code class="language-nginx">语法：open_log_file_cache max=N [inactive=time] [min_uses=N] [valid=time] | off 
+默认值：open_log_file_cache off 
+使用字段：http server location 
+这个指令为频繁使用的日志文件描述符所在的路径变量设置缓存。
+指令选项：
+·max - 缓存中存储的最大文件描述符数。
+·inactive - 设置缓存中在某个时间段内没有使用的文件描述符将被移除，默认为10秒。
+·min_uses - 在一定时间内（inactive指定），一个文件描述符最少使用多少次后被放入缓存，默认为1。
+·valid - 设置检查同名文件存在的时间，默认是60秒。
+·off - 关闭缓存。</code></pre>
+
+				    </section>
+					</article>
+				</main>
+            </div>
+        </div>
+    </section>
+    <a href="#top" id="goTop" ><i class="fa fa-angle-up fa-3x"></i></a>
+	<script src="../js/jquery.min.js"></script>
+    <script type="text/javascript" src="../js/datas/detailAngularJs.js"></script>
+    <script src="../plugins/scrolltopcontrol.js"></script>
+</body>
+</html>

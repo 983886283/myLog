@@ -1,0 +1,244 @@
+<html>
+<!DOCTYPE html>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <title>Elasticsearch（十）</title>
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link rel="stylesheet" href="../css/bootstrap.min.css">
+	<link rel="stylesheet" href="../css/font-awesome.min.css">
+    <link rel="stylesheet" href="../plugins/ckeditor/plugins/codesnippet/lib/highlight/styles/googlecode.css">
+    <link rel="stylesheet" type="text/css" href="../css/front/screen.css">
+    <script src="../plugins/ckeditor/plugins/codesnippet/lib/highlight/highlight.pack.js"></script>
+	<style type="text/css">
+		.list{
+			margin-top:5em;
+			position: fixed;
+		}
+		
+		.list h4{
+			padding-bottom:0.5em;
+			border-bottom:2px solid lightgray;
+		}
+		
+		.list .readTitle li{
+			margin-top:0.4em;
+			padding-left:1em;
+			border:2px solid white;
+		}
+		.list .readTitle li:hover{
+			border-left:2px solid black;
+			color:blue;
+		}
+		.liHover{
+			border-left:2px solid black !important;
+		}
+		.aHover{
+			color:blue;
+		}
+		.list .readTitle li a:hover{
+			color:blue;
+			text-decoration: none;
+		}
+	</style>
+</head>
+<body>
+    <section class="content-wrap container-fluid">
+        <div class="container">
+            <div class="row">
+				<div class="col-md-3 visible-lg-block visible-md-block">
+					<div class="list">
+						<h4>阅读目录</h4>
+						<div>
+							<ul class="readTitle list-unstyled"></ul>
+						</div>
+					</div>
+				</div>
+                 <main class="col-md-19 main-content">
+					<article class="post row">
+					<header class="post-head">
+				        <h1 class="post-title">Elasticsearch（十）</h1>
+				        <section class="post-meta">
+					        <span><span class="glyphicon glyphicon-user"></span>:<span>c</span></span>|
+				            <span><span class="glyphicon glyphicon-bookmark"></span>:<span>Elasticsearch</span></span>|
+				            <span><span class="glyphicon glyphicon-time"></span>:<span>2017-07-12</span></span>
+				        </section>
+				    </header>
+				    <section class="post-content"><p><a name="内置脚本"></a>1、内置脚本</p>
+
+<pre>
+<code class="language-json">es，其实是有个内置的脚本支持的，可以基于groovy脚本实现各种各样的复杂操作
+
+基于groovy脚本，如何执行partial update
+
+添加一条数据
+PUT e/p/4
+{
+  "num":0,
+  "tags":[]
+}
+使用partial update操作
+POST e/p/4/_update
+{
+    "doc": {
+      "num": "1"
+    }
+  
+}
+使用内置脚本操作
+POST e/p/4/_update
+{
+  "script": "ctx._source.num+=1"
+}
+=====结果=====
+{
+  "_index": "e",
+  "_type": "p",
+  "_id": "4",
+  "_version": 3,
+  "result": "updated",
+  "_shards": {
+    "total": 2,
+    "successful": 2,
+    "failed": 0
+  }
+}</code></pre>
+
+<p><a name="外部脚本"></a>2、外部脚本</p>
+
+<pre>
+<code class="language-json">用脚本添加字段内容
+在elasticsearch-5.2.0\config\scripts路径下，建立文件test-add-tags.groovy
+内容为ctx._source.tags+=new_tag
+保存
+POST /test_index/test_type/11/_update
+{
+  "script": {
+    "lang": "groovy", 
+    "file": "test-add-tags",
+    "params": {
+      "new_tag": "tag1"
+    }
+  }
+}
+======结果=======
+{
+  "_index": "e",
+  "_type": "p",
+  "_id": "4",
+  "_version": 5,
+  "found": true,
+  "_source": {
+    "num": "1",
+    "tags": [
+      "tag1"
+    ]
+  }
+}
+
+用脚本删除文档
+（删除失败版）
+POST e/p/4/_update
+{
+  "script": {
+    "lang": "groovy",
+    "file": "test-delete-document",
+    "params": {
+      "count":1
+    }
+  }
+}
+======结果未删除（count为“1”而不是1，result为“noop”）=====
+{
+  "_index": "e",
+  "_type": "p",
+  "_id": "4",
+  "_version": 5,
+  "result": "noop",
+  "_shards": {
+    "total": 0,
+    "successful": 0,
+    "failed": 0
+  }
+}
+（删除成功版）
+POST e/p/4/_update
+{
+  "script": {
+    "lang": "groovy",
+    "file": "test-delete-document",
+    "params": {
+      "count":"1"
+    }
+  }
+}
+======结果删除result为“deleted”=====
+{
+  "_index": "e",
+  "_type": "p",
+  "_id": "4",
+  "_version": 6,
+  "result": "deleted",
+  "_shards": {
+    "total": 2,
+    "successful": 2,
+    "failed": 0
+  }
+}</code></pre>
+
+<p><a name="upsert操作"></a>3、upsert操作</p>
+
+<pre>
+<code class="language-json">POST e/p/4/_update
+{
+  "doc": {
+    "num": 1
+  }
+}
+因为上面已经把数据删除了，所以会报错
+{
+  "error": {
+    "root_cause": [
+      {
+        "type": "document_missing_exception",
+        "reason": "[p][4]: document missing",
+        "index_uuid": "7Bg9e6aPSTOABbzuF5zafA",
+        "shard": "2",
+        "index": "e"
+      }
+    ],
+    "type": "document_missing_exception",
+    "reason": "[p][4]: document missing",
+    "index_uuid": "7Bg9e6aPSTOABbzuF5zafA",
+    "shard": "2",
+    "index": "e"
+  },
+  "status": 404
+}
+=======引出upsert=====
+POST e/p/4/_update
+{
+  "script" : "ctx._source.num+=1",
+  "upsert": {
+    "num":0,
+    "tags":[]
+  }
+}
+如果指定的document不存在，就执行upsert中的初始化操作；
+如果指定的document存在，就执行doc或者script指定的partial update操作</code></pre>
+
+<p>&nbsp;</p>
+
+				    </section>
+					</article>
+				</main>
+            </div>
+        </div>
+    </section>
+    <a href="#top" id="goTop" ><i class="fa fa-angle-up fa-3x"></i></a>
+	<script src="../js/jquery.min.js"></script>
+    <script type="text/javascript" src="../js/datas/detailAngularJs.js"></script>
+    <script src="../plugins/scrolltopcontrol.js"></script>
+</body>
+</html>

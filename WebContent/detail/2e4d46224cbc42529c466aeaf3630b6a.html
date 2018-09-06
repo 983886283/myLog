@@ -1,0 +1,322 @@
+<html>
+<!DOCTYPE html>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <title>八、执行分布式检索</title>
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link rel="stylesheet" href="../css/bootstrap.min.css">
+	<link rel="stylesheet" href="../css/font-awesome.min.css">
+    <link rel="stylesheet" href="../plugins/ckeditor/plugins/codesnippet/lib/highlight/styles/googlecode.css">
+    <link rel="stylesheet" type="text/css" href="../css/front/screen.css">
+    <script src="../plugins/ckeditor/plugins/codesnippet/lib/highlight/highlight.pack.js"></script>
+	<style type="text/css">
+		.list{
+			margin-top:5em;
+			position: fixed;
+		}
+		
+		.list h4{
+			padding-bottom:0.5em;
+			border-bottom:2px solid lightgray;
+		}
+		
+		.list .readTitle li{
+			margin-top:0.4em;
+			padding-left:1em;
+			border:2px solid white;
+		}
+		.list .readTitle li:hover{
+			border-left:2px solid black;
+			color:blue;
+		}
+		.liHover{
+			border-left:2px solid black !important;
+		}
+		.aHover{
+			color:blue;
+		}
+		.list .readTitle li a:hover{
+			color:blue;
+			text-decoration: none;
+		}
+	</style>
+</head>
+<body>
+    <section class="content-wrap container-fluid">
+        <div class="container">
+            <div class="row">
+				<div class="col-md-3 visible-lg-block visible-md-block">
+					<div class="list">
+						<h4>阅读目录</h4>
+						<div>
+							<ul class="readTitle list-unstyled"></ul>
+						</div>
+					</div>
+				</div>
+                 <main class="col-md-19 main-content">
+					<article class="post row">
+					<header class="post-head">
+				        <h1 class="post-title">八、执行分布式检索</h1>
+				        <section class="post-meta">
+					        <span><span class="glyphicon glyphicon-user"></span>:<span>c</span></span>|
+				            <span><span class="glyphicon glyphicon-bookmark"></span>:<span>Elasticsearch</span></span>|
+				            <span><span class="glyphicon glyphicon-time"></span>:<span>2018-06-27</span></span>
+				        </section>
+				    </header>
+				    <section class="post-content"><h2>执行分布式检索</h2>
+
+<p>在继续之前，我们将绕道讨论一下在分布式环境中搜索是怎么执行的。&nbsp;这比我们讨论的基本的&nbsp;<em>增-删-改-查</em>&nbsp;(CRUD)请求要复杂一些。</p>
+
+<p><strong>内容提示</strong></p>
+
+<p>你可以根据兴趣阅读本章内容。你并不需要为了使用 Elasticsearch 而理解和记住所有的细节。</p>
+
+<p>这章的阅读目的只为初步了解下工作原理，以便将来需要时可以及时找到这些知识， 但是不要被细节所困扰。</p>
+
+<p>一个 CRUD 操作只对单个文档进行处理，文档的唯一性由&nbsp;<code>_index</code>,&nbsp;<code>_type</code>, 和&nbsp;<a href="https://www.elastic.co/guide/cn/elasticsearch/guide/current/routing-value.html" title="路由一个文档到一个分片中"><code>routing</code>&nbsp;values</a>&nbsp;（通常默认是该文档的&nbsp;<code>_id</code>&nbsp;）的组合来确定。 这表示我们确切的知道集群中哪个分片含有此文档。</p>
+
+<p>搜索需要一种更加复杂的执行模型因为我们不知道查询会命中哪些文档: 这些文档有可能在集群的任何分片上。 一个搜索请求必须询问我们关注的索引（index or indices）的所有分片的某个副本来确定它们是否含有任何匹配的文档。</p>
+
+<p>但是找到所有的匹配文档仅仅完成事情的一半。 在&nbsp;<code>search</code>&nbsp;接口返回一个 ``page`` 结果之前，多分片中的结果必须组合成单个排序列表。 为此，搜索被执行成一个两阶段过程，我们称之为&nbsp;<em>query then fetch</em>&nbsp;。</p>
+
+<h2>查询阶段</h2>
+
+<p>在初始&nbsp;<em>查询阶段</em>&nbsp;时，&nbsp;查询会广播到索引中每一个分片拷贝（主分片或者副本分片）。 每个分片在本地执行搜索并构建一个匹配文档的 _优先队列_。</p>
+
+<p><strong>优先队列</strong></p>
+
+<p>一个&nbsp;<em>优先队列</em>&nbsp;仅仅是一个存有&nbsp;<em>top-n</em>&nbsp;匹配文档的有序列表。优先队列的大小取决于分页参数<code>from</code>&nbsp;和&nbsp;<code>size</code>&nbsp;。例如，如下搜索请求将需要足够大的优先队列来放入100条文档。</p>
+
+<pre>
+GET /_search
+{
+    &quot;from&quot;: 90,
+    &quot;size&quot;: 10
+}</pre>
+
+<p>这个查询阶段的过程如图&nbsp;<a href="https://www.elastic.co/guide/cn/elasticsearch/guide/current/_query_phase.html#img-distrib-search" title="图 14. 查询过程分布式搜索">图&nbsp;14 &ldquo;查询过程分布式搜索&rdquo;</a>&nbsp;所示。</p>
+
+<p>&nbsp;</p>
+
+<p><strong>图&nbsp;14.&nbsp;查询过程分布式搜索</strong></p>
+
+<p><img alt="查询过程分布式搜索" src="https://www.elastic.co/guide/cn/elasticsearch/guide/current/images/elas_0901.png" /></p>
+
+<p>&nbsp;</p>
+
+<p>查询阶段包含以下三个步骤:</p>
+
+<ol style="list-style-type:decimal">
+	<li>客户端发送一个&nbsp;<code>search</code>&nbsp;请求到&nbsp;<code>Node 3</code>&nbsp;，&nbsp;<code>Node 3</code>&nbsp;会创建一个大小为&nbsp;<code>from + size</code>&nbsp;的空优先队列。</li>
+	<li><code>Node 3</code>&nbsp;将查询请求转发到索引的每个主分片或副本分片中。每个分片在本地执行查询并添加结果到大小为&nbsp;<code>from + size</code>&nbsp;的本地有序优先队列中。</li>
+	<li>每个分片返回各自优先队列中所有文档的 ID 和排序值给协调节点，也就是&nbsp;<code>Node 3</code>&nbsp;，它合并这些值到自己的优先队列中来产生一个全局排序后的结果列表。</li>
+</ol>
+
+<p>当一个搜索请求被发送到某个节点时，这个节点就变成了协调节点。&nbsp;这个节点的任务是广播查询请求到所有相关分片并将它们的响应整合成全局排序后的结果集合，这个结果集合会返回给客户端。</p>
+
+<p>第一步是广播请求到索引中每一个节点的分片拷贝。就像&nbsp;<a href="https://www.elastic.co/guide/cn/elasticsearch/guide/current/distrib-read.html" title="取回一个文档">document&nbsp;<code>GET</code>&nbsp;requests</a>&nbsp;所描述的， 查询请求可以被某个主分片或某个副本分片处理，&nbsp;这就是为什么更多的副本（当结合更多的硬件）能够增加搜索吞吐率。 协调节点将在之后的请求中轮询所有的分片拷贝来分摊负载。</p>
+
+<p>每个分片在本地执行查询请求并且创建一个长度为&nbsp;<code>from + size</code>&nbsp;的优先队列&mdash;也就是说，每个分片创建的结果集足够大，均可以满足全局的搜索请求。 分片返回一个轻量级的结果列表到协调节点，它仅包含文档 ID 集合以及任何排序需要用到的值，例如&nbsp;<code>_score</code>&nbsp;。</p>
+
+<p>协调节点将这些分片级的结果合并到自己的有序优先队列里，它代表了全局排序结果集合。至此查询过程结束。</p>
+
+<p><img alt="注意" src="https://www.elastic.co/guide/cn/elasticsearch/guide/current/images/icons/note.png" /></p>
+
+<p>一个索引可以由一个或几个主分片组成，&nbsp;所以一个针对单个索引的搜索请求需要能够把来自多个分片的结果组合起来。 针对&nbsp;<em>multiple</em>&nbsp;或者&nbsp;<em>all</em>&nbsp;索引的搜索工作方式也是完全一致的--仅仅是包含了更多的分片而已。</p>
+
+<h2>取回阶段</h2>
+
+<p>查询阶段标识哪些文档满足&nbsp;搜索请求，但是我们仍然需要取回这些文档。这是取回阶段的任务, 正如&nbsp;<a href="https://www.elastic.co/guide/cn/elasticsearch/guide/current/_fetch_phase.html#img-distrib-fetch" title="图 15. 分布式搜索的取回阶段">图&nbsp;15 &ldquo;分布式搜索的取回阶段&rdquo;</a>&nbsp;所展示的。</p>
+
+<p>&nbsp;</p>
+
+<p><strong>图&nbsp;15.&nbsp;分布式搜索的取回阶段</strong></p>
+
+<p><img alt="分布式搜索的取回阶段" src="https://www.elastic.co/guide/cn/elasticsearch/guide/current/images/elas_0902.png" /></p>
+
+<p>&nbsp;</p>
+
+<p>分布式阶段由以下步骤构成：</p>
+
+<ol style="list-style-type:decimal">
+	<li>协调节点辨别出哪些文档需要被取回并向相关的分片提交多个&nbsp;<code>GET</code>&nbsp;请求。</li>
+	<li>每个分片加载并&nbsp;<em>丰富</em>&nbsp;文档，如果有需要的话，接着返回文档给协调节点。</li>
+	<li>一旦所有的文档都被取回了，协调节点返回结果给客户端。</li>
+</ol>
+
+<p>协调节点首先决定哪些文档&nbsp;<em>确实</em>&nbsp;需要被取回。例如，如果我们的查询指定了&nbsp;<code>{ &quot;from&quot;: 90, &quot;size&quot;: 10 }</code>&nbsp;，最初的90个结果会被丢弃，只有从第91个开始的10个结果需要被取回。这些文档可能来自和最初搜索请求有关的一个、多个甚至全部分片。</p>
+
+<p>协调节点给持有相关文档的每个分片创建一个&nbsp;<a href="https://www.elastic.co/guide/cn/elasticsearch/guide/current/distrib-multi-doc.html" title="多文档模式">multi-get request</a>&nbsp;，并发送请求给同样处理查询阶段的分片副本。</p>
+
+<p>分片加载文档体--&nbsp;<code>_source</code>&nbsp;字段--如果有需要，用元数据和&nbsp;<a href="https://www.elastic.co/guide/cn/elasticsearch/guide/current/highlighting-intro.html" title="高亮搜索">search snippet highlighting</a>&nbsp;丰富结果文档。 一旦协调节点接收到所有的结果文档，它就组装这些结果为单个响应返回给客户端。</p>
+
+<p><strong>深分页（Deep Pagination）</strong></p>
+
+<p>先查后取的过程支持用&nbsp;<code>from</code>&nbsp;和&nbsp;<code>size</code>&nbsp;参数分页，但是这是&nbsp;<em>有限制的</em>&nbsp;。&nbsp;要记住需要传递信息给协调节点的每个分片必须先创建一个&nbsp;<code>from + size</code>&nbsp;长度的队列，协调节点需要根据<code>number_of_shards * (from + size)</code>&nbsp;排序文档，来找到被包含在&nbsp;<code>size</code>&nbsp;里的文档。</p>
+
+<p>取决于你的文档的大小，分片的数量和你使用的硬件，给 10,000 到 50,000 的结果文档深分页（ 1,000 到 5,000 页）是完全可行的。但是使用足够大的&nbsp;<code>from</code>&nbsp;值，排序过程可能会变得非常沉重，使用大量的CPU、内存和带宽。因为这个原因，我们强烈建议你不要使用深分页。</p>
+
+<p>实际上， &ldquo;深分页&rdquo; 很少符合人的行为。当2到3页过去以后，人会停止翻页，并且改变搜索标准。会不知疲倦地一页一页的获取网页直到你的服务崩溃的罪魁祸首一般是机器人或者web spider。</p>
+
+<p>如果你&nbsp;<em>确实</em>&nbsp;需要从你的集群取回大量的文档，你可以通过用&nbsp;<code>scroll</code>&nbsp;查询禁用排序使这个取回行为更有效率。</p>
+
+<h2>搜索选项</h2>
+
+<p>有几个&nbsp;查询参数可以影响搜索过程。</p>
+
+<h3>偏好</h3>
+
+<p>偏好这个参数&nbsp;<code>preference</code>&nbsp;允许&nbsp;用来控制由哪些分片或节点来处理搜索请求。 它接受像&nbsp;<code>_primary</code>,<code>_primary_first</code>,&nbsp;<code>_local</code>,&nbsp;<code>_only_node:xyz</code>,&nbsp;<code>_prefer_node:xyz</code>, 和&nbsp;<code>_shards:2,3</code>&nbsp;这样的值, 这些值在<a href="https://www.elastic.co/guide/en/elasticsearch/reference/5.6/search-request-preference.html" target="_top">search&nbsp;<code>preference</code></a>&nbsp;文档页面被详细解释。</p>
+
+<p>但是最有用的值是某些随机字符串，它可以避免&nbsp;<em>bouncing results</em>&nbsp;问题。</p>
+
+<p>&nbsp;</p>
+
+<p><strong>Bouncing Results</strong></p>
+
+<p>想象一下有两个文档有同样值的时间戳字段，搜索结果用&nbsp;<code>timestamp</code>&nbsp;字段来排序。 由于搜索请求是在所有有效的分片副本间轮询的，那就有可能发生主分片处理请求时，这两个文档是一种顺序， 而副本分片处理请求时又是另一种顺序。</p>
+
+<p>这就是所谓的&nbsp;<em>bouncing results</em>&nbsp;问题: 每次用户刷新页面，搜索结果表现是不同的顺序。 让同一个用户始终使用同一个分片，这样可以避免这种问题， 可以设置&nbsp;<code>preference</code>&nbsp;参数为一个特定的任意值比如用户会话ID来解决。</p>
+
+<h3>超时问题</h3>
+
+<p>通常分片处理完它所有的数据后再把结果返回给协同节点，协同节点把收到的所有结果合并为最终结果。</p>
+
+<p>这意味着花费的时间是最慢分片的处理时间加结果合并的时间。如果有一个节点有问题，就会导致所有的响应缓慢。</p>
+
+<p>参数&nbsp;<code>timeout</code>&nbsp;告诉&nbsp;分片允许处理数据的最大时间。如果没有足够的时间处理所有数据，这个分片的结果可以是部分的，甚至是空数据。</p>
+
+<p>搜索的返回结果会用属性&nbsp;<code>timed_out</code>&nbsp;标明分片是否返回的是部分结果：</p>
+
+<pre>
+    ...
+    &quot;timed_out&quot;:     true,  <img alt="" src="https://www.elastic.co/guide/cn/elasticsearch/guide/current/images/icons/callouts/1.png" />
+    ...</pre>
+
+<table border="0" summary="Callout list">
+	<tbody>
+		<tr>
+			<td style="vertical-align:top">
+			<p><a href="https://www.elastic.co/guide/cn/elasticsearch/guide/current/_search_options.html#CO31-1"><img alt="" src="https://www.elastic.co/guide/cn/elasticsearch/guide/current/images/icons/callouts/1.png" /></a></p>
+			</td>
+			<td style="vertical-align:top">
+			<p>这个搜索请求超时了。</p>
+			</td>
+		</tr>
+	</tbody>
+</table>
+
+<p><img alt="警告" src="https://www.elastic.co/guide/cn/elasticsearch/guide/current/images/icons/warning.png" /></p>
+
+<p>超时仍然是一个最有效的操作，知道这一点很重要； 很可能查询会超过设定的超时时间。这种行为有两个原因：</p>
+
+<ol style="list-style-type:decimal">
+	<li>超时检查是基于每文档做的。 但是某些查询类型有大量的工作在文档评估之前需要完成。 这种 &quot;setup&quot; 阶段并不考虑超时设置，所以太长的建立时间会导致超过超时时间的整体延迟。</li>
+	<li>因为时间检查是基于每个文档的，一次长时间查询在单个文档上执行并且在下个文档被评估之前不会超时。 这也意味着差的脚本（比如带无限循环的脚本）将会永远执行下去。</li>
+</ol>
+
+<h3>路由</h3>
+
+<p>在&nbsp;<a href="https://www.elastic.co/guide/cn/elasticsearch/guide/current/routing-value.html" title="路由一个文档到一个分片中">路由一个文档到一个分片中</a>&nbsp;中, 我们解释过如何定制参数&nbsp;<code>routing</code>&nbsp;，它能够在索引时提供来确保相关的文档，比如属于某个用户的文档被存储在某个分片上。 在搜索的时候，不用搜索索引的所有分片，而是通过指定几个&nbsp;<code>routing</code>&nbsp;值来限定只搜索几个相关的分片：</p>
+
+<pre>
+GET /_search?routing=user_1,user2</pre>
+
+<p>这个技术在设计大规模搜索系统时就会派上用场。</p>
+
+<h3>搜索类型</h3>
+
+<p>缺省的搜索类型是&nbsp;<code>query_then_fetch</code>&nbsp;。 在某些情况下，你可能想明确设置&nbsp;<code>search_type</code>&nbsp;为<code>dfs_query_then_fetch</code>&nbsp;来改善相关性精确度：</p>
+
+<pre>
+GET /_search?search_type=dfs_query_then_fetch</pre>
+
+<p>搜索类型&nbsp;<code>dfs_query_then_fetch</code>&nbsp;有预查询阶段，这个阶段可以从所有相关分片获取词频来计算全局词频。&nbsp;</p>
+
+<h2>游标查询&nbsp;<em>Scroll</em></h2>
+
+<p><code>scroll</code>&nbsp;查询&nbsp;可以用来对 Elasticsearch 有效地执行大批量的文档查询，而又不用付出深度分页那种代价。</p>
+
+<p>游标查询允许我们&nbsp;先做查询初始化，然后再批量地拉取结果。 这有点儿像传统数据库中的&nbsp;<em>cursor</em>&nbsp;。</p>
+
+<p>游标查询会取某个时间点的快照数据。 查询初始化之后索引上的任何变化会被它忽略。 它通过保存旧的数据文件来实现这个特性，结果就像保留初始化时的索引&nbsp;<em>视图</em>&nbsp;一样。</p>
+
+<p>深度分页的代价根源是结果集全局排序，如果去掉全局排序的特性的话查询结果的成本就会很低。 游标查询用字段&nbsp;<code>_doc</code>&nbsp;来排序。 这个指令让 Elasticsearch 仅仅从还有结果的分片返回下一批结果。</p>
+
+<p>启用游标查询可以通过在查询的时候设置参数&nbsp;<code>scroll</code>&nbsp;的值为我们期望的游标查询的过期时间。 游标查询的过期时间会在每次做查询的时候刷新，所以这个时间只需要足够处理当前批的结果就可以了，而不是处理查询结果的所有文档的所需时间。 这个过期时间的参数很重要，因为保持这个游标查询窗口需要消耗资源，所以我们期望如果不再需要维护这种资源就该早点儿释放掉。 设置这个超时能够让 Elasticsearch 在稍后空闲的时候自动释放这部分资源。</p>
+
+<pre>
+GET /old_index/_search?scroll=1m <img alt="" src="https://www.elastic.co/guide/cn/elasticsearch/guide/current/images/icons/callouts/1.png" />
+{
+    &quot;query&quot;: { &quot;match_all&quot;: {}},
+    &quot;sort&quot; : [&quot;_doc&quot;], <img alt="" src="https://www.elastic.co/guide/cn/elasticsearch/guide/current/images/icons/callouts/2.png" />
+    &quot;size&quot;:  1000
+}</pre>
+
+<table border="0" summary="Callout list">
+	<tbody>
+		<tr>
+			<td style="vertical-align:top">
+			<p><a href="https://www.elastic.co/guide/cn/elasticsearch/guide/current/scroll.html#CO32-1"><img alt="" src="https://www.elastic.co/guide/cn/elasticsearch/guide/current/images/icons/callouts/1.png" /></a></p>
+			</td>
+			<td style="vertical-align:top">
+			<p>保持游标查询窗口一分钟。</p>
+			</td>
+		</tr>
+		<tr>
+			<td style="vertical-align:top">
+			<p><a href="https://www.elastic.co/guide/cn/elasticsearch/guide/current/scroll.html#CO32-2"><img alt="" src="https://www.elastic.co/guide/cn/elasticsearch/guide/current/images/icons/callouts/2.png" /></a></p>
+			</td>
+			<td style="vertical-align:top">
+			<p>关键字&nbsp;<code>_doc</code>&nbsp;是最有效的排序顺序。</p>
+			</td>
+		</tr>
+	</tbody>
+</table>
+
+<p>这个查询的返回结果包括一个字段&nbsp;<code>_scroll_id`， 它是一个base64编码的长字符串 (((&quot;scroll_id&quot;))) 。 现在我们能传递字段 `_scroll_id</code>&nbsp;到&nbsp;<code>_search/scroll</code>&nbsp;查询接口获取下一批结果：</p>
+
+<pre>
+GET /_search/scroll
+{
+    &quot;scroll&quot;: &quot;1m&quot;, <img alt="" src="https://www.elastic.co/guide/cn/elasticsearch/guide/current/images/icons/callouts/1.png" />
+    &quot;scroll_id&quot; : &quot;cXVlcnlUaGVuRmV0Y2g7NTsxMDk5NDpkUmpiR2FjOFNhNnlCM1ZDMWpWYnRROzEwOTk1OmRSamJHYWM4U2E2eUIzVkMxalZidFE7MTA5OTM6ZFJqYkdhYzhTYTZ5QjNWQzFqVmJ0UTsxMTE5MDpBVUtwN2lxc1FLZV8yRGVjWlI2QUVBOzEwOTk2OmRSamJHYWM4U2E2eUIzVkMxalZidFE7MDs=&quot;
+}</pre>
+
+<table border="0" summary="Callout list">
+	<tbody>
+		<tr>
+			<td style="vertical-align:top">
+			<p><a href="https://www.elastic.co/guide/cn/elasticsearch/guide/current/scroll.html#CO33-1"><img alt="" src="https://www.elastic.co/guide/cn/elasticsearch/guide/current/images/icons/callouts/1.png" /></a></p>
+			</td>
+			<td style="vertical-align:top">
+			<p>注意再次设置游标查询过期时间为一分钟。</p>
+			</td>
+		</tr>
+	</tbody>
+</table>
+
+<p>这个游标查询返回的下一批结果。 尽管我们指定字段&nbsp;<code>size</code>&nbsp;的值为1000，我们有可能取到超过这个值数量的文档。&nbsp;当查询的时候， 字段&nbsp;<code>size</code>&nbsp;作用于单个分片，所以每个批次实际返回的文档数量最大为&nbsp;<code>size * number_of_primary_shards</code>&nbsp;。</p>
+
+<p><img alt="注意" src="https://www.elastic.co/guide/cn/elasticsearch/guide/current/images/icons/note.png" /></p>
+
+<p>注意游标查询每次返回一个新字段&nbsp;<code>_scroll_id`。每次我们做下一次游标查询， 我们必须把前一次查询返回的字段 `_scroll_id</code>&nbsp;传递进去。 当没有更多的结果返回的时候，我们就处理完所有匹配的文档了。</p>
+
+<p><img alt="提示" src="https://www.elastic.co/guide/cn/elasticsearch/guide/current/images/icons/tip.png" /></p>
+
+<p>提示：某些官方的 Elasticsearch 客户端比如&nbsp;<a href="http://elasticsearch-py.readthedocs.org/en/master/helpers.html#scan" target="_top">Python 客户端</a>&nbsp;和&nbsp;<a href="https://metacpan.org/pod/Search::Elasticsearch::Scroll" target="_top">Perl 客户端</a>&nbsp;提供了这个功能易用的封装。</p>
+
+				    </section>
+					</article>
+				</main>
+            </div>
+        </div>
+    </section>
+    <a href="#top" id="goTop" ><i class="fa fa-angle-up fa-3x"></i></a>
+	<script src="../js/jquery.min.js"></script>
+    <script type="text/javascript" src="../js/datas/detailAngularJs.js"></script>
+    <script src="../plugins/scrolltopcontrol.js"></script>
+</body>
+</html>

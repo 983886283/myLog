@@ -1,0 +1,132 @@
+<html>
+<!DOCTYPE html>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <title>支持向量机(SVM)算法应用笔记一</title>
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link rel="stylesheet" href="../css/bootstrap.min.css">
+	<link rel="stylesheet" href="../css/font-awesome.min.css">
+    <link rel="stylesheet" href="../plugins/ckeditor/plugins/codesnippet/lib/highlight/styles/googlecode.css">
+    <link rel="stylesheet" type="text/css" href="../css/front/screen.css">
+    <script src="../plugins/ckeditor/plugins/codesnippet/lib/highlight/highlight.pack.js"></script>
+	<style type="text/css">
+		.list{
+			margin-top:5em;
+			position: fixed;
+		}
+		
+		.list h4{
+			padding-bottom:0.5em;
+			border-bottom:2px solid lightgray;
+		}
+		
+		.list .readTitle li{
+			margin-top:0.4em;
+			padding-left:1em;
+			border:2px solid white;
+		}
+		.list .readTitle li:hover{
+			border-left:2px solid black;
+			color:blue;
+		}
+		.liHover{
+			border-left:2px solid black !important;
+		}
+		.aHover{
+			color:blue;
+		}
+		.list .readTitle li a:hover{
+			color:blue;
+			text-decoration: none;
+		}
+	</style>
+</head>
+<body>
+    <section class="content-wrap container-fluid">
+        <div class="container">
+            <div class="row">
+				<div class="col-md-3 visible-lg-block visible-md-block">
+					<div class="list">
+						<h4>阅读目录</h4>
+						<div>
+							<ul class="readTitle list-unstyled"></ul>
+						</div>
+					</div>
+				</div>
+                 <main class="col-md-19 main-content">
+					<article class="post row">
+					<header class="post-head">
+				        <h1 class="post-title">支持向量机(SVM)算法应用笔记一</h1>
+				        <section class="post-meta">
+					        <span><span class="glyphicon glyphicon-user"></span>:<span>c</span></span>|
+				            <span><span class="glyphicon glyphicon-bookmark"></span>:<span>MachineLearning</span></span>|
+				            <span><span class="glyphicon glyphicon-time"></span>:<span>2017-11-19</span></span>
+				        </section>
+				    </header>
+				    <section class="post-content"><p><a id="Python环境" name="Python环境"></a>Python环境</p>
+
+<pre>
+<code>Windows版 Python 3.6.2</code></pre>
+
+<p><a id="Python代码实现" name="Python代码实现"></a>Python代码实现</p>
+
+<pre>
+<code># -*- coding:utf8 -*-
+import numpy as np
+import pylab as pl
+from sklearn import svm
+
+# 通过+-[2, 2],分别创造出20个在超平面上20个在超平面下的点
+X = np.r_[np.random.randn(20, 2) - [2, 2], np.random.randn(20, 2) + [2, 2]]
+Y = [0]*20 +[1]*20
+
+#建立模型
+clf = svm.SVC(kernel='linear')
+clf.fit(X, Y)
+
+#W0X + W1Y + W3 = 0 可以转化为Y = - ( W0 / W1 ) x + ( W3 / W1 )
+w = clf.coef_[0]                    #W的值即{W0,W1}
+a = -w[0]/w[1]                      #求斜率，即上方转化公式中(W0/W1)
+xx = np.linspace(-5, 5)             #在-5至5间随机取一些X
+yy = a*xx - (clf.intercept_[0])/w[1]#clf.intercept_[0]为W3，带入方程，求得Y
+
+#clf.support_vectors_[0]为clf.support_vectors_的第一个即最小值带入，求得超平面下方截距
+b = clf.support_vectors_[0]
+yy_down = a*xx + (b[1] - a*b[0])
+#clf.support_vectors_[-1]为clf.support_vectors_的最后一个即最大值带入，求得超平面上方截距
+b = clf.support_vectors_[-1]
+yy_up = a*xx + (b[1] - a*b[0])
+
+print("w: ", w)#w:  [ 0.57500546  0.89165015]
+print("a: ", a)#a:  -0.644877881431
+
+print("support_vectors_: ", clf.support_vectors_)   #support_vectors_:  [[-0.18935209 -0.76777052][ 0.83227026  0.81644003]]
+print("clf.coef_: ", clf.coef_)                     #clf.coef_:  [[ 0.57500546  0.89165015]]
+
+pl.plot(xx, yy, 'k-')       #超平面
+pl.plot(xx, yy_down, 'k--') #超平面下方的切线
+pl.plot(xx, yy_up, 'k--')   #超平面上方的切线
+
+pl.scatter(clf.support_vectors_[:, 0], clf.support_vectors_[:, 1],
+          s=80, facecolors='none')
+pl.scatter(X[:, 0], X[:, 1], c=Y, cmap=pl.cm.Paired)
+
+pl.axis('tight')
+pl.show()</code></pre>
+
+<p>&nbsp;</p>
+
+				    </section>
+					</article>
+				</main>
+            </div>
+        </div>
+    </section>
+    <a href="#top" id="goTop" ><i class="fa fa-angle-up fa-3x"></i></a>
+	<script src="../js/jquery.min.js"></script>
+    <script type="text/javascript" src="../js/datas/detailAngularJs.js"></script>
+    <script src="../plugins/scrolltopcontrol.js"></script>
+</body>
+</html>

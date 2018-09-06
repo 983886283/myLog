@@ -1,0 +1,344 @@
+<html>
+<!DOCTYPE html>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <title>Elasticsearch（十六）</title>
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link rel="stylesheet" href="../css/bootstrap.min.css">
+	<link rel="stylesheet" href="../css/font-awesome.min.css">
+    <link rel="stylesheet" href="../plugins/ckeditor/plugins/codesnippet/lib/highlight/styles/googlecode.css">
+    <link rel="stylesheet" type="text/css" href="../css/front/screen.css">
+    <script src="../plugins/ckeditor/plugins/codesnippet/lib/highlight/highlight.pack.js"></script>
+	<style type="text/css">
+		.list{
+			margin-top:5em;
+			position: fixed;
+		}
+		
+		.list h4{
+			padding-bottom:0.5em;
+			border-bottom:2px solid lightgray;
+		}
+		
+		.list .readTitle li{
+			margin-top:0.4em;
+			padding-left:1em;
+			border:2px solid white;
+		}
+		.list .readTitle li:hover{
+			border-left:2px solid black;
+			color:blue;
+		}
+		.liHover{
+			border-left:2px solid black !important;
+		}
+		.aHover{
+			color:blue;
+		}
+		.list .readTitle li a:hover{
+			color:blue;
+			text-decoration: none;
+		}
+	</style>
+</head>
+<body>
+    <section class="content-wrap container-fluid">
+        <div class="container">
+            <div class="row">
+				<div class="col-md-3 visible-lg-block visible-md-block">
+					<div class="list">
+						<h4>阅读目录</h4>
+						<div>
+							<ul class="readTitle list-unstyled"></ul>
+						</div>
+					</div>
+				</div>
+                 <main class="col-md-19 main-content">
+					<article class="post row">
+					<header class="post-head">
+				        <h1 class="post-title">Elasticsearch（十六）</h1>
+				        <section class="post-meta">
+					        <span><span class="glyphicon glyphicon-user"></span>:<span>c</span></span>|
+				            <span><span class="glyphicon glyphicon-bookmark"></span>:<span>Elasticsearch</span></span>|
+				            <span><span class="glyphicon glyphicon-time"></span>:<span>2017-07-12</span></span>
+				        </section>
+				    </header>
+				    <section class="post-content"><p><a name="倒排索引"></a>1、倒排索引</p>
+
+<p>（1）倒排索引的结构</p>
+
+<pre>
+包含这个关键词的document&nbsp;list
+包含这个关键词的所有document的数量：IDF（inverse&nbsp;document&nbsp;frequency）
+这个关键词在每个document中出现的次数：TF（term&nbsp;frequency）
+这个关键词在这个document中的次序
+每个document的长度：length&nbsp;norm
+包含这个关键词的所有document的平均长度</pre>
+
+<p>&nbsp;</p>
+
+<p>（2）倒排索引不可变的原因</p>
+
+<pre>
+倒排索引不可变的好处
+不需要锁，提升并发能力，避免锁的问题
+数据不变，一直保存在os&nbsp;cache中，只要cache内存足够
+filter&nbsp;cache一直驻留在内存，因为数据不变
+可以压缩，节省cpu和io开销
+
+倒排索引不可变的坏处：每次都要重新构建整个索引</pre>
+
+<p>&nbsp;</p>
+
+<pre>
+示例
+doc1：I&nbsp;liked&nbsp;small&nbsp;dogs,&nbsp;my&nbsp;mom&nbsp;also&nbsp;liked&nbsp;them.
+doc2：He&nbsp;never&nbsp;liked&nbsp;dogs,&nbsp;so&nbsp;I&nbsp;hope&nbsp;my&nbsp;mom&nbsp;will&nbsp;not&nbsp;liked&nbsp;him.
+
+分词，初步的倒排索引的建立
+I		doc1			doc2
+--------------------------------------------
+I		*			*
+liked		*			*
+small		*	
+dogs		*
+my		*			*
+mom		*			*
+also		*
+them		*	
+He					*
+never					*
+so					*
+hope					*
+will					*
+not					*
+him					*
+--------------------------------------------
+倒排索引最简单的建立的一个过程
+
+但是搜索mother&nbsp;like&nbsp;little&nbsp;dog，没有任何结果（没有任何匹配），这肯定不是我们想要的结果
+
+normalization，建立倒排索引的时候，会执行一个操作，也就是说对拆分出的各个单词进行相应的处理（时态的转换，单复数的转换，
+同义词的转换，大小写的转换），以提升后面搜索的时候能够搜索到相关联的文档的概率
+mom&nbsp;&mdash;&gt;&nbsp;mother
+liked&nbsp;&mdash;&gt;&nbsp;like
+small&nbsp;&mdash;&gt;&nbsp;little
+dogs&nbsp;&mdash;&gt;&nbsp;dog
+
+加入normalization，再次用mother&nbsp;liked&nbsp;little&nbsp;dog搜索，就可以搜索到了</pre>
+
+<p>&nbsp;</p>
+
+<p><a name="分词器"></a>2、分词器</p>
+
+<p>（1）什么是分词器</p>
+
+<p>切分词语，normalization（提升recall召回率）</p>
+
+<p>&nbsp;</p>
+
+<p>character filter：在一段文本进行分词之前，先进行预处理，常见有，过滤html标签（&lt;span&gt;hello&lt;span&gt; --&gt; hello），&amp; --&gt; and（I&amp;you --&gt; I and you）等</p>
+
+<p>tokenizer：分词，hello you --&gt; hello, you</p>
+
+<p>token filter：lowercase，stop word，synonymom，dogs --&gt; dog，liked --&gt; like，Tom --&gt; tom，a/the/an --&gt; 干掉（无意义），mother --&gt; mom</p>
+
+<p>&nbsp;</p>
+
+<p>将句子拆分成单个的单词，同时对每个单词进行normalization（时态转换，单复数转换），分词器</p>
+
+<p>recall，召回率：搜索的时候，增加能够搜索到的结果的数量</p>
+
+<p>&nbsp;</p>
+
+<p>（2）内置分词器的介绍</p>
+
+<pre>
+<code class="language-json">Set the shape to semi-transparent by calling set_trans(5)
+下面四种分词器对上句进行分词
+    &lt;1&gt;standard analyzer：set, the, shape, to, semi, transparent, by, calling, set_trans, 5
+        （默认的是standard）
+        standard tokenizer：以单词边界进行切分
+        standard token filter：什么都不做
+        lowercase token filter：将所有字母转换为小写
+        stop token filer（默认被禁用）：移除停用词，比如a the it等等
+    &lt;2&gt;simple analyzer：set, the, shape, to, semi, transparent, by, calling, set, trans
+    &lt;3&gt;whitespace analyzer：Set, the, shape, to, semi-transparent, by, calling, set_trans(5)
+    &lt;4&gt;language analyzer（特定的语言的分词器，比如说，english，英语分词器）：set, shape, semi, transpar, call, set_tran, 5
+
+修改分词器的设置（简单举例）
+    启用english停用词token filter
+    方式：新建一个叫es_std的分词器
+    PUT /my_index
+    {
+      "settings": {
+        "analysis": {
+          "analyzer": {
+            "es_std": {
+              "type": "standard",
+              "stopwords": "_english_"
+            }
+          }
+        }
+      }
+    }
+
+定制化自己的分词器（简单举例）
+PUT /my_index
+{
+  "settings": {
+    "analysis": {
+      "char_filter": {
+        "&amp;_to_and": {
+          "type": "mapping",
+          "mappings": ["&amp;=&gt; and"]
+        }
+      },
+      "filter": {
+        "my_stopwords": {
+          "type": "stop",
+          "stopwords": ["the", "a"]
+        }
+      },
+      "analyzer": {
+        "my_analyzer": {
+          "type": "custom",
+          "char_filter": ["html_strip", "&amp;_to_and"],
+          "tokenizer": "standard",
+          "filter": ["lowercase", "my_stopwords"]
+        }
+      }
+    }
+  }
+}
+=====测试=====
+GET /my_index/_analyze
+{
+  "text": "tom&amp;jerry are a friend in the house, &lt;a&gt;, HAHA!!",
+  "analyzer": "my_analyzer"
+}
+=====结果=====
+{
+  "tokens": [
+    {
+      "token": "tomandjerry",
+      "start_offset": 0,
+      "end_offset": 9,
+      "type": "&lt;ALPHANUM&gt;",
+      "position": 0
+    },
+    {
+      "token": "are",
+      "start_offset": 10,
+      "end_offset": 13,
+      "type": "&lt;ALPHANUM&gt;",
+      "position": 1
+    },
+    {
+      "token": "friend",
+      "start_offset": 16,
+      "end_offset": 22,
+      "type": "&lt;ALPHANUM&gt;",
+      "position": 3
+    },
+    {
+      "token": "in",
+      "start_offset": 23,
+      "end_offset": 25,
+      "type": "&lt;ALPHANUM&gt;",
+      "position": 4
+    },
+    {
+      "token": "house",
+      "start_offset": 30,
+      "end_offset": 35,
+      "type": "&lt;ALPHANUM&gt;",
+      "position": 6
+    },
+    {
+      "token": "haha",
+      "start_offset": 42,
+      "end_offset": 46,
+      "type": "&lt;ALPHANUM&gt;",
+      "position": 7
+    }
+  ]
+}</code></pre>
+
+<p><a name="doc values（正排索引）"></a>2、doc values（正排索引）</p>
+
+<p>在建立索引的时候，一方面会建立倒排索引，以供搜索用；一方面会建立正排索引，也就是doc values，以供排序，聚合，过滤等操作使用</p>
+
+<p>doc values是被保存在磁盘上的，此时如果内存足够，os会自动将其缓存在内存中，性能很高；如果内存不足够，os会将其写入磁盘上</p>
+
+<pre>
+示例
+doc1:&nbsp;{&nbsp;&quot;name&quot;:&nbsp;&quot;jack&quot;,&nbsp;&quot;age&quot;:&nbsp;27&nbsp;}
+doc2:&nbsp;{&nbsp;&quot;name&quot;:&nbsp;&quot;tom&quot;,&nbsp;&quot;age&quot;:&nbsp;30&nbsp;}
+
+分词，初步的正排索引的建立
+document	name		age
+--------------------------------------------
+doc1		jack		27
+doc2		tom		30	
+--------------------------------------------
+正排索引最简单的建立的一个过程</pre>
+
+<p>&nbsp;</p>
+
+<p><a name="filter执行原理"></a>3.filter执行原理</p>
+
+<p>filter，仅仅只是按照搜索条件过滤出需要的数据而已，不计算任何相关度分数，对相关度没有任何影响</p>
+
+<p>&lt;1&gt;使用filter在倒排索引中查找搜索串</p>
+
+<p>为每个在倒排索引中搜索到的结果，构建一个bitset，[0, 0, 0, 1, 0, 1]，就是一个二进制的数组，数组每个元素都是0或1，用来标识一个doc对一个filter条件是否匹配，如果匹配就是1，不匹配就是0（用简单的数据结构去实现复杂的功能，可以节省内存空间，提升性能）</p>
+
+<p>遍历每个过滤条件对应的bitset，优先从最稀疏的开始搜索，查找满足所有条件的document</p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[0, 0, 0, 1, 0, 0]：比较稀疏</p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[0, 1, 0, 1, 0, 1]</p>
+
+<p>先遍历比较稀疏的bitset，就可以先过滤掉尽可能多的数据,遍历所有的bitset，找到匹配所有filter条件的doc，就可以将document作为结果返回给client了</p>
+
+<p>caching bitset，跟踪query，在最近256个query中超过一定次数的过滤条件，缓存其bitset。对于小segment（&lt;1000，或&lt;3%），不缓存bitset。这样下次如果再有这个条件过来的时候，就不用重新扫描倒排索引，反复生成bitset，可以大幅度提升性能。segment数据量很小，此时哪怕是扫描也很快；segment会在后台自动合并，小segment很快就会跟其他小segment合并成大segment。</p>
+
+<p>filter大部分情况下来说，在query之前执行，先尽量过滤掉尽可能多的数据</p>
+
+<p>如果document有新增或修改，那么cached bitset会被自动更新</p>
+
+<p>以后只要是有相同的filter条件的，会直接来使用这个过滤条件对应的cached bitset</p>
+
+<p>&nbsp;</p>
+
+<p>query，会去计算每个document相对于搜索条件的相关度，并按照相关度进行排序</p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;如果你希望将最匹配搜索条件的数据先返回，那么用query；</p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;如果你不希望一些搜索条件来影响你的document排序，那么使用filter；</p>
+
+<p>filter与query性能</p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;filter，不需要计算相关度分数，不需要按照相关度分数进行排序，同时还有内置的自动cache最常使用filter的数据</p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;query，相反，要计算相关度分数，按照分数进行排序，而且无法cache结果</p>
+
+<p>&nbsp;</p>
+
+<p>&nbsp;</p>
+
+				    </section>
+					</article>
+				</main>
+            </div>
+        </div>
+    </section>
+    <a href="#top" id="goTop" ><i class="fa fa-angle-up fa-3x"></i></a>
+	<script src="../js/jquery.min.js"></script>
+    <script type="text/javascript" src="../js/datas/detailAngularJs.js"></script>
+    <script src="../plugins/scrolltopcontrol.js"></script>
+</body>
+</html>

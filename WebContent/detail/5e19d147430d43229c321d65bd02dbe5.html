@@ -1,0 +1,105 @@
+<html>
+<!DOCTYPE html>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <title>cmd命令执行java的main方法</title>
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link rel="stylesheet" href="../css/bootstrap.min.css">
+	<link rel="stylesheet" href="../css/font-awesome.min.css">
+    <link rel="stylesheet" href="../plugins/ckeditor/plugins/codesnippet/lib/highlight/styles/googlecode.css">
+    <link rel="stylesheet" type="text/css" href="../css/front/screen.css">
+    <script src="../plugins/ckeditor/plugins/codesnippet/lib/highlight/highlight.pack.js"></script>
+	<style type="text/css">
+		.list{
+			margin-top:5em;
+			position: fixed;
+		}
+		
+		.list h4{
+			padding-bottom:0.5em;
+			border-bottom:2px solid lightgray;
+		}
+		
+		.list .readTitle li{
+			margin-top:0.4em;
+			padding-left:1em;
+			border:2px solid white;
+		}
+		.list .readTitle li:hover{
+			border-left:2px solid black;
+			color:blue;
+		}
+		.liHover{
+			border-left:2px solid black !important;
+		}
+		.aHover{
+			color:blue;
+		}
+		.list .readTitle li a:hover{
+			color:blue;
+			text-decoration: none;
+		}
+	</style>
+</head>
+<body>
+    <section class="content-wrap container-fluid">
+        <div class="container">
+            <div class="row">
+				<div class="col-md-3 visible-lg-block visible-md-block">
+					<div class="list">
+						<h4>阅读目录</h4>
+						<div>
+							<ul class="readTitle list-unstyled"></ul>
+						</div>
+					</div>
+				</div>
+                 <main class="col-md-19 main-content">
+					<article class="post row">
+					<header class="post-head">
+				        <h1 class="post-title">cmd命令执行java的main方法</h1>
+				        <section class="post-meta">
+					        <span><span class="glyphicon glyphicon-user"></span>:<span>c</span></span>|
+				            <span><span class="glyphicon glyphicon-bookmark"></span>:<span>Other</span></span>|
+				            <span><span class="glyphicon glyphicon-time"></span>:<span>2017-07-25</span></span>
+				        </section>
+				    </header>
+				    <section class="post-content"><p><a id="cmd执行main方法" name="cmd执行main方法"></a>使用cmd命令执行Java中的main方法</p>
+
+<p>结构：java -cp jar路径 main方法路径</p>
+
+<p>注意：结构中的空格不要漏，main方法路径为class文件路径并非java文件路径</p>
+
+<p><a id="bat脚本" name="bat脚本"></a>1.bat脚本（非必需）</p>
+
+<pre>
+<code class="language-bash">cd C:\c\song\bin
+java -cp ..\resources\lib\*; com.cjp.threads.Test canshu1 canshu2
+pause</code></pre>
+
+<p><a id="main方法接传参" name="main方法接传参"></a>2.main方法传参，接受参数</p>
+
+<pre>
+<code class="language-java">	public static void main(String[] args)  {		
+		if(args!=null&amp;&amp;args.length&gt;0){
+			for (int i = 0; i &lt; args.length; i++) {
+				System.out.println(args[i]);
+			}
+		}
+	}</code></pre>
+
+<p>&nbsp;</p>
+
+				    </section>
+					</article>
+				</main>
+            </div>
+        </div>
+    </section>
+    <a href="#top" id="goTop" ><i class="fa fa-angle-up fa-3x"></i></a>
+	<script src="../js/jquery.min.js"></script>
+    <script type="text/javascript" src="../js/datas/detailAngularJs.js"></script>
+    <script src="../plugins/scrolltopcontrol.js"></script>
+</body>
+</html>

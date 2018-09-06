@@ -1,0 +1,163 @@
+<div class="widgets">
+	<div class="row" ng-show="flag&&!delFlag">
+		<div class="col-md-12">
+			<div ba-panel ba-panel-title="BlogManage"
+				ba-panel-class="with-scroll">
+				<div class="add-row-editable-table">
+					<button class="btn btn-primary" ng-click="add()">Add</button>
+				</div>
+				<table class="table">
+					<thead>
+						<tr>
+							<th class="table-id">#</th>
+							<th class="col-md-1">Recommend</th>
+							<th class="col-md-4">Title</th>
+							<th class="col-md-1">TypeValue</th>
+							<th class="col-md-1">Author</th>
+							<th class="col-md-1">CreateTime</th>
+							<th class="col-md-1">Click</th>
+							<th class="col-md-2">Action</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr ng-repeat="item in list" class="editable-row">
+							<td class="table-id" ng-bind="$index+1"></td>
+							<td><span
+								ng-class="{true:'ion-android-checkbox-outline', false:'ion-android-checkbox-outline-blank'}[item.recommend===1]"
+								style="font-size: 20px"></span></td>
+							<td ng-bind="item.title" style="max-width: 360px"></td>
+							<td ng-bind="item.typeval" style="max-width: 360px"></td>
+							<td ng-bind="item.username"></td>
+							<td ng-bind="item.createtime"></td>
+							<td ng-bind="item.click"></td>
+							<td>
+								<div class="buttons" ng-show="!rowform.$visible">
+									<button class="btn btn-info editable-table-button btn-xs"
+										ng-click="read($index)">Check</button>
+									<button class="btn btn-warning editable-table-button btn-xs"
+										ng-click="edit($index)">Edit</button>
+									<button class="btn btn-danger editable-table-button btn-xs"
+										ng-click="del($index)">Delete</button>
+								</div>
+							</td>
+						</tr>
+					</tbody>
+				</table>
+				<!-- 分页 -->
+				<nav style="text-align: center">
+					<ul class="pagination">
+						<li ng-class="{true:'disabled',false:''}[pagination.pageSize===1]">
+							<a href="" aria-label="Previous" ng-click="pre()"> <span
+								aria-hidden="true">&laquo;</span>
+						</a>
+						</li>
+						<li><span ng-bind="pagination.pageSize"></span></li>
+						<li
+							ng-class="{true:'disabled',false:''}[pagination.pageSize===pagination.total]">
+							<a href="" aria-label="Next" ng-click="nex()"> <span
+								aria-hidden="true">&raquo;</span>
+						</a>
+						</li>
+						<li><span ng-bind="'共'+pagination.total+'页'"></span></li>
+					</ul>
+				</nav>
+			</div>
+		</div>
+	</div>
+
+	<!-- 删除的模态框 -->
+	<div class="row" ng-show="delFlag">
+		<div class="col-md-12">
+			<div ba-panel ba-panel-title="删除确认" ba-panel-class="with-scroll">
+				<table class="table table-condensed">
+					<tr>
+						<th class="table-id">#</th>
+						<th>Recommend</th>
+						<th>Title</th>
+						<th>TypeVal</th>
+						<th>Author</th>
+						<th>CreateTime</th>
+						<th>Click</th>
+					</tr>
+					<tr class="editable-row">
+						<td class="table-id" ng-bind="$index+1"></td>
+						<td><span
+							ng-class="{true:'ion-android-checkbox-outline', false:'ion-android-checkbox-outline-blank'}[formData.recommend===1]"
+							style="font-size: 20px"></span></td>
+						<td ng-bind="formData.title" style="max-width: 360px"></td>
+						<td ng-bind="formData.typeval" style="max-width: 360px"></td>
+						<td ng-bind="formData.username"></td>
+						<td ng-bind="formData.createtime"></td>
+						<td ng-bind="formData.click"></td>
+					</tr>
+				</table>
+				<div class="modal-footer">
+					<button class="btn btn-danger" ng-click="delDatas()">Delete</button>
+					<button class="btn btn-default" ng-click="changeDelFlag()">Cancel</button>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- 增加修改的模态框 -->
+	<div class="row" ng-show="!flag">
+		<div class="col-md-12">
+			<div ba-panel ba-panel-title="编辑"
+				ba-panel-class="with-scroll">
+
+				<uib-tabset active="$tabSetStatus.activeTab"> 
+					<uib-tab heading="One Stage">
+						<div class="form-group">
+							<label>是否推荐:</label> 
+				            <select id="articleRecommend"
+								class="form-control" style="font-size: 14px; display: inline">
+								<option value="1"
+									ng-selected="formData.recommend==1">推荐</option>
+								<option value="-1"
+									ng-selected="formData.recommend==-1">不推荐</option>
+							</select>
+						</div>
+						<div class="form-group">
+							<label>标题:</label> 
+							<input type="text"
+								ng-model="formData.title" id="articleTitle"
+								style="display: inline; font-size: 14px;"
+								placeholder="请输入30字以内的标题" class="form-control " />
+						</div>
+						<div class="form-group">
+							<label>摘要:</label>
+							<textarea id="articleSummary" class="form-control" rows="3"
+								ng-model="formData.summary"
+								style="display: inline; font-size: 14px; padding: 10px; border-radius: 3px;"
+								placeholder="请输入摘要(90字以内)">
+							</textarea>
+						</div>
+						<div class="form-group">
+							<label>分类:</label> 
+							<select id="articleType"
+								class="form-control" style="font-size: 14px; display: inline">
+								<option ng-repeat="y in types" value="{{y.typeid}}"
+									ng-bind="y.typeval" ng-selected="y.typeid===formData.typeid"></option>
+							</select>
+						</div>
+					</uib-tab> 
+					<uib-tab heading="Two Stage">
+						<div class="form-group">
+							<label>标签:</label> 
+							<input type="text" id="mctag"
+								tag-input="danger" data-role="tagsinput" placeholder="Add Tag">
+						</div>
+						<div class="form-group">
+							<label>正文:</label>
+							<div name="ckeditor"></div>
+						</div>
+					</uib-tab> 
+				</uib-tabset>
+				<div class="modal-footer">
+					<button class="btn btn-success" ng-click="saveDatas()">Save</button>
+					<button class="btn btn-default" ng-click="changeFlag()">Cancel</button>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>

@@ -1,0 +1,161 @@
+<html>
+<!DOCTYPE html>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <title>简单线性回归笔记</title>
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link rel="stylesheet" href="../css/bootstrap.min.css">
+	<link rel="stylesheet" href="../css/font-awesome.min.css">
+    <link rel="stylesheet" href="../plugins/ckeditor/plugins/codesnippet/lib/highlight/styles/googlecode.css">
+    <link rel="stylesheet" type="text/css" href="../css/front/screen.css">
+    <script src="../plugins/ckeditor/plugins/codesnippet/lib/highlight/highlight.pack.js"></script>
+	<style type="text/css">
+		.list{
+			margin-top:5em;
+			position: fixed;
+		}
+		
+		.list h4{
+			padding-bottom:0.5em;
+			border-bottom:2px solid lightgray;
+		}
+		
+		.list .readTitle li{
+			margin-top:0.4em;
+			padding-left:1em;
+			border:2px solid white;
+		}
+		.list .readTitle li:hover{
+			border-left:2px solid black;
+			color:blue;
+		}
+		.liHover{
+			border-left:2px solid black !important;
+		}
+		.aHover{
+			color:blue;
+		}
+		.list .readTitle li a:hover{
+			color:blue;
+			text-decoration: none;
+		}
+	</style>
+</head>
+<body>
+    <section class="content-wrap container-fluid">
+        <div class="container">
+            <div class="row">
+				<div class="col-md-3 visible-lg-block visible-md-block">
+					<div class="list">
+						<h4>阅读目录</h4>
+						<div>
+							<ul class="readTitle list-unstyled"></ul>
+						</div>
+					</div>
+				</div>
+                 <main class="col-md-19 main-content">
+					<article class="post row">
+					<header class="post-head">
+				        <h1 class="post-title">简单线性回归笔记</h1>
+				        <section class="post-meta">
+					        <span><span class="glyphicon glyphicon-user"></span>:<span>c</span></span>|
+				            <span><span class="glyphicon glyphicon-bookmark"></span>:<span>MachineLearning</span></span>|
+				            <span><span class="glyphicon glyphicon-time"></span>:<span>2017-11-21</span></span>
+				        </section>
+				    </header>
+				    <section class="post-content"><p><strong><a id="前提介绍" name="前提介绍"></a>前提介绍：</strong></p>
+
+<p><strong><a id="统计量：描述数据特征" name="统计量：描述数据特征"></a>统计量：描述数据特征:</strong></p>
+
+<p>一、集中趋势衡量</p>
+
+<p>均值（平均数，平均值）：<br />
+<img src="http://localhost:8080/myLog/images/linear_regression/simple/1.png" style="height:60px; width:60px" /><br />
+{6, 2, 9, 1, 2}的均值为(6 + 2 + 9 + 1 + 2) / 5 = 20 / 5 = 4</p>
+
+<p>中位数 （median）: 将数据中的各个数值按照大小顺序排列，居于中间位置的变量，当n为奇数时：取位置中间的变量，当n为偶数时，取中间两个变量的平均值：<br />
+{1, 2, 2, 6, 9 }的中位数为2</p>
+
+<p>众数 （mode）：数据中出现次数最多的数：<br />
+{1, 2, 2, 6, 9 }的众数为2</p>
+
+<p>二、离散程度衡量</p>
+
+<p>方差（variance):<br />
+<img src="http://localhost:8080/myLog/images/linear_regression/simple/2.png" style="height:60px; width:104px" /><br />
+{6, 2, 9, 1, 2}的方差为((6 - 4)<span style="font-size:8px"><sup>2</sup></span> + (2 - 4)<span style="font-size:8px"><sup>2</sup></span> + (9 - 4)<span style="font-size:8px"><sup>2</sup></span> + (1 - 4)<span style="font-size:8px"><sup>2</sup></span> + (2 - 4)<span style="font-size:8px"><sup>2</sup></span>&nbsp;= 4 + 4 + 25 + 9 + 4)/(5 - 1) = 11.5</p>
+
+<p>标准差 (standard deviation):<br />
+<img src="http://localhost:8080/myLog/images/linear_regression/simple/3.png" style="height:30px; width:61px" /><br />
+{6, 2, 9, 1, 2}的标准差为sqrt(11.5) = 3.39</p>
+
+<p><strong>介绍：</strong></p>
+
+<p>回归(regression) Y变量为连续数值型(continuous numerical variable):如：房价，人数，降雨量<br />
+分类(Classification): Y变量为类别型(categorical variable):如：颜色类别，电脑品牌，有无信誉</p>
+
+<p><strong><a id="简单线性回归" name="简单线性回归"></a>简单线性回归(Simple Linear Regression):</strong></p>
+
+<p>很多做决定过程通常是根据两个或者多个变量之间的关系<br />
+回归分析(regression analysis)用来建立方程模拟两个或者多个变量之间如何关联<br />
+被预测的变量叫做：因变量(dependent variable), y, 输出(output)<br />
+被用来进行预测的变量叫做： 自变量(independent variable), x, 输入(input)</p>
+
+<p><strong><a id="简单线性回归介绍" name="简单线性回归介绍"></a>简单线性回归介绍:</strong></p>
+
+<p>简单线性回归包含一个自变量(x)和一个因变量(y)<br />
+以上两个变量的关系用一条直线来模拟<br />
+如果包含两个以上的自变量，则称作多元回归分析(multiple regression)</p>
+
+<p><strong><a id="简单线性回归模型" name="简单线性回归模型"></a>简单线性回归模型:</strong></p>
+
+<p>被用来描述因变量(y)和自变量(X)以及偏差(error)之间关系的方程叫做回归模型<br />
+简单线性回归的模型是:y = &beta;<span style="font-size:8px"><sub>0</sub></span> +&nbsp;&beta;<sub><span style="font-size:8px">1</span></sub>x +&nbsp;&epsilon;<br />
+其中&beta;<span style="font-size:8px"><sub>0</sub></span>&nbsp;、&beta;<sub><span style="font-size:8px">1</span></sub>是参数，&epsilon;是偏差</p>
+
+<p><strong><a id="简单线性回归方程" name="简单线性回归方程"></a>简单线性回归方程:</strong></p>
+
+<p>E(y) = &beta;<span style="font-size:8px"><sub>0</sub></span> +&nbsp;&beta;<sub><span style="font-size:8px">1</span></sub>x<br />
+这个方程对应的图像是一条直线，称作回归线，其中，&beta;0是回归线的截距，&beta;1是回归线的斜率，E(y)是在一个给定x值下y的期望值（均值）</p>
+
+<p>正向线性关系：<img src="http://localhost:8080/myLog/images/linear_regression/simple/5.jpg" style="height:100px; width:141px" />负向线性关系：<img src="http://localhost:8080/myLog/images/linear_regression/simple/6.jpg" style="height:100px; width:141px" />无关系：<img src="http://localhost:8080/myLog/images/linear_regression/simple/7.jpg" style="height:100px; width:141px" /></p>
+
+<p><strong><a id="估计的简单线性回归方程" name="估计的简单线性回归方程"></a>估计的简单线性回归方程:</strong></p>
+
+<p>ŷ=b<span style="font-size:8px"><sub>0</sub></span>+b<span style="font-size:8px"><sub>1</sub></span>x<br />
+这个方程叫做估计线性方程(estimated regression line)，其中，b0是估计线性方程的纵截距，b1是估计线性方程的斜率，ŷ是在自变量x等于一个给定值的时候，y的估计值</p>
+
+<p><strong><a id="关于偏差ε的假定" name="关于偏差ε的假定"></a>关于偏差&epsilon;的假定:</strong><br />
+是一个随机的变量，均值为0<br />
+&epsilon;的方差(variance)对于所有的自变量x是一样的<br />
+&epsilon;的值是独立的<br />
+&epsilon;满足正态分布</p>
+
+<p><strong><a id="简单线性回归模型举例" name="简单线性回归模型举例"></a>简单线性回归模型举例:</strong></p>
+
+<p>汽车卖家做电视广告数量与卖出的汽车数量：<br />
+<img src="http://localhost:8080/myLog/images/linear_regression/simple/8.png" style="height:200px; width:156px" /><br />
+简单线性回归模型的最佳回归线(使sum of squares最小)<br />
+<img src="http://localhost:8080/myLog/images/linear_regression/simple/9.png" style="height:150px; width:270px" /><br />
+即<sub><img src="http://localhost:8080/myLog/images/linear_regression/simple/10.png" style="height:30px; width:108px" /></sub>最小（ŷ表示x在线上的点）<br />
+<img src="http://localhost:8080/myLog/images/linear_regression/simple/11.png" style="height:55px; width:140px" /><br />
+分子 = (1-2)(14-20)+(3-2)(24-20)+(2-2)(18-20)+(1-2)(17-20)+(3-2)(27-20)&nbsp;= 6 + 4 + 0 + 3 + 7&nbsp;= 20<br />
+分母 = （1-2）<span style="font-size:8px"><sup>2</sup></span> + (3-2)<sup><span style="font-size:8px">2</span></sup> + (2-2)<sup><span style="font-size:8px">2</span></sup> + (1-2)<sup><span style="font-size:8px">2</span></sup> + (3-2)<sup><span style="font-size:8px">2</span></sup>&nbsp;= 1 + 1 + 0 + 1 + 1 =&nbsp;4<br />
+b<sub>1</sub> = 20/4 &nbsp;=5<br />
+<img src="http://localhost:8080/myLog/images/linear_regression/simple/12.png" style="height:25px; width:86px" /><br />
+b<sub>0</sub> = 20 - 5*2 = 20 - 10 = 10<br />
+得出ŷ = 5x<span style="font-size:8px"><sub>&nbsp;</sub></span>+ 10</p>
+				    </section>
+					</article>
+				</main>
+            </div>
+        </div>
+    </section>
+    <a href="#top" id="goTop" ><i class="fa fa-angle-up fa-3x"></i></a>
+	<script src="../js/jquery.min.js"></script>
+    <script type="text/javascript" src="../js/datas/detailAngularJs.js"></script>
+    <script src="../plugins/scrolltopcontrol.js"></script>
+</body>
+</html>

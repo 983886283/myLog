@@ -1,0 +1,1006 @@
+<html>
+<!DOCTYPE html>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <title>九、索引管理</title>
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link rel="stylesheet" href="../css/bootstrap.min.css">
+	<link rel="stylesheet" href="../css/font-awesome.min.css">
+    <link rel="stylesheet" href="../plugins/ckeditor/plugins/codesnippet/lib/highlight/styles/googlecode.css">
+    <link rel="stylesheet" type="text/css" href="../css/front/screen.css">
+    <script src="../plugins/ckeditor/plugins/codesnippet/lib/highlight/highlight.pack.js"></script>
+	<style type="text/css">
+		.list{
+			margin-top:5em;
+			position: fixed;
+		}
+		
+		.list h4{
+			padding-bottom:0.5em;
+			border-bottom:2px solid lightgray;
+		}
+		
+		.list .readTitle li{
+			margin-top:0.4em;
+			padding-left:1em;
+			border:2px solid white;
+		}
+		.list .readTitle li:hover{
+			border-left:2px solid black;
+			color:blue;
+		}
+		.liHover{
+			border-left:2px solid black !important;
+		}
+		.aHover{
+			color:blue;
+		}
+		.list .readTitle li a:hover{
+			color:blue;
+			text-decoration: none;
+		}
+	</style>
+</head>
+<body>
+    <section class="content-wrap container-fluid">
+        <div class="container">
+            <div class="row">
+				<div class="col-md-3 visible-lg-block visible-md-block">
+					<div class="list">
+						<h4>阅读目录</h4>
+						<div>
+							<ul class="readTitle list-unstyled"></ul>
+						</div>
+					</div>
+				</div>
+                 <main class="col-md-19 main-content">
+					<article class="post row">
+					<header class="post-head">
+				        <h1 class="post-title">九、索引管理</h1>
+				        <section class="post-meta">
+					        <span><span class="glyphicon glyphicon-user"></span>:<span>c</span></span>|
+				            <span><span class="glyphicon glyphicon-bookmark"></span>:<span>Elasticsearch</span></span>|
+				            <span><span class="glyphicon glyphicon-time"></span>:<span>2018-06-27</span></span>
+				        </section>
+				    </header>
+				    <section class="post-content"><h2>索引管理</h2>
+
+<p>我们已经看到 Elasticsearch 让开发一个新的应用变得简单，不需要任何预先计划或设置。 不过，要不了多久你就会开始想要优化索引和搜索过程，以便更好地适合您的特定用例。 这些定制几乎围绕着索引和类型的方方面面，在本章，我们将介绍管理索引和类型映射的 API 以及一些最重要的设置。</p>
+
+<h2>创建一个索引</h2>
+
+<p>到目前为止, 我们已经通过索引一篇文档创建了一个新的索引&nbsp;。这个索引采用的是默认的配置，新的字段通过动态映射的方式被添加到类型映射。现在我们需要对这个建立索引的过程做更多的控制：我们想要确保这个索引有数量适中的主分片，并且在我们索引任何数据&nbsp;<em>之前</em>&nbsp;，分析器和映射已经被建立好。</p>
+
+<p>为了达到这个目的，我们需要手动创建索引，在请求体里面传入设置或类型映射，如下所示：</p>
+
+<pre>
+PUT /my_index
+{
+    &quot;settings&quot;: { ... any settings ... },
+    &quot;mappings&quot;: {
+        &quot;type_one&quot;: { ... any mappings ... },
+        &quot;type_two&quot;: { ... any mappings ... },
+        ...
+    }
+}</pre>
+
+<p>如果你想禁止自动创建索引，你&nbsp;可以通过在&nbsp;<code>config/elasticsearch.yml</code>&nbsp;的每个节点下添加下面的配置：</p>
+
+<pre>
+action.auto_create_index: false</pre>
+
+<p><img alt="注意" src="https://www.elastic.co/guide/cn/elasticsearch/guide/current/images/icons/note.png" /></p>
+
+<p>我们会在之后讨论你怎么用&nbsp;<a href="https://www.elastic.co/guide/cn/elasticsearch/guide/current/index-templates.html" title="索引模板">索引模板</a>&nbsp;来预配置开启自动创建索引。这在索引日志数据的时候尤其有用：你将日志数据索引在一个以日期结尾命名的索引上，子夜时分，一个预配置的新索引将会自动进行创建。</p>
+
+<h2>删除一个索引</h2>
+
+<p>用以下的请求来&nbsp;删除索引:</p>
+
+<pre>
+DELETE /my_index</pre>
+
+<p>你也可以这样删除多个索引：</p>
+
+<pre>
+DELETE /index_one,index_two
+DELETE /index_*</pre>
+
+<p>你甚至可以这样删除&nbsp;<em>全部</em>&nbsp;索引：</p>
+
+<pre>
+DELETE /_all
+DELETE /*</pre>
+
+<p><img alt="注意" src="https://www.elastic.co/guide/cn/elasticsearch/guide/current/images/icons/note.png" /></p>
+
+<p>对一些人来说，能够用单个命令来删除所有数据可能会导致可怕的后果。如果你想要避免意外的大量删除, 你可以在你的&nbsp;<code>elasticsearch.yml</code>&nbsp;做如下配置：</p>
+
+<p><code>action.destructive_requires_name: true</code></p>
+
+<p>这个设置使删除只限于特定名称指向的数据, 而不允许通过指定&nbsp;<code>_all</code>&nbsp;或通配符来删除指定索引库。你同样可以通过&nbsp;<a href="https://www.elastic.co/guide/cn/elasticsearch/guide/current/_changing_settings_dynamically.html" title="动态变更设置">Cluster State API</a>&nbsp;动态的更新这个设置。</p>
+
+<h2>索引设置</h2>
+
+<p>你可以通过修改配置来自定义索引行为，详细配置参照&nbsp;<a href="https://www.elastic.co/guide/en/elasticsearch/reference/5.6/index-modules.html" target="_top">索引模块</a></p>
+
+<p><img alt="提示" src="https://www.elastic.co/guide/cn/elasticsearch/guide/current/images/icons/tip.png" /></p>
+
+<p>Elasticsearch 提供了优化好的默认配置。 除非你理解这些配置的作用并且知道为什么要去修改，否则不要随意修改。</p>
+
+<p>下面是两个&nbsp;最重要的设置：</p>
+
+<p><code>number_of_shards</code></p>
+
+<p>每个索引的主分片数，默认值是&nbsp;<code>5</code>&nbsp;。这个配置在索引创建后不能修改。</p>
+
+<p><code>number_of_replicas</code></p>
+
+<p>每个主分片的副本数，默认值是&nbsp;<code>1</code>&nbsp;。对于活动的索引库，这个配置可以随时修改。</p>
+
+<p>例如，我们可以创建只有&nbsp;一个主分片，没有副本的小索引：</p>
+
+<pre>
+PUT /my_temp_index
+{
+    &quot;settings&quot;: {
+        &quot;number_of_shards&quot; :   1,
+        &quot;number_of_replicas&quot; : 0
+    }
+}
+</pre>
+
+<p>然后，我们可以用&nbsp;<code>update-index-settings</code>&nbsp;API&nbsp;动态修改副本数：</p>
+
+<pre>
+PUT /my_temp_index/_settings
+{
+    &quot;number_of_replicas&quot;: 1
+}</pre>
+
+<h2>配置分析器</h2>
+
+<p>第三个重要的索引设置是&nbsp;<code>analysis</code>&nbsp;部分，&nbsp;用来配置已存在的分析器或针对你的索引创建新的自定义分析器。</p>
+
+<p>在&nbsp;<a href="https://www.elastic.co/guide/cn/elasticsearch/guide/current/analysis-intro.html" title="分析与分析器">分析与分析器</a>&nbsp;，我们介绍了一些内置的&nbsp;分析器，用于将全文字符串转换为适合搜索的倒排索引。</p>
+
+<p><code>standard</code>&nbsp;分析器是用于全文字段的默认分析器，&nbsp;对于大部分西方语系来说是一个不错的选择。&nbsp;它包括了以下几点：</p>
+
+<ul style="list-style-type:disc">
+	<li><code>standard</code>&nbsp;分词器，通过单词边界分割输入的文本。</li>
+	<li><code>standard</code>&nbsp;语汇单元过滤器，目的是整理分词器触发的语汇单元（但是目前什么都没做）。</li>
+	<li><code>lowercase</code>&nbsp;语汇单元过滤器，转换所有的语汇单元为小写。</li>
+	<li><code>stop</code>&nbsp;语汇单元过滤器，删除停用词--对搜索相关性影响不大的常用词，如&nbsp;<code>a</code>&nbsp;，&nbsp;<code>the</code>&nbsp;，&nbsp;<code>and</code>&nbsp;，&nbsp;<code>is</code>。</li>
+</ul>
+
+<p>默认情况下，停用词过滤器是被禁用的。如需启用它，你可以通过创建一个基于&nbsp;<code>standard</code>&nbsp;分析器的自定义分析器并设置&nbsp;<code>stopwords</code>&nbsp;参数。&nbsp;可以给分析器提供一个停用词列表，或者告知使用一个基于特定语言的预定义停用词列表。</p>
+
+<p>在下面的例子中，我们创建了一个新的分析器，叫做&nbsp;<code>es_std</code>&nbsp;， 并使用预定义的&nbsp;西班牙语停用词列表：</p>
+
+<pre>
+PUT /spanish_docs
+{
+    &quot;settings&quot;: {
+        &quot;analysis&quot;: {
+            &quot;analyzer&quot;: {
+                &quot;es_std&quot;: {
+                    &quot;type&quot;:      &quot;standard&quot;,
+                    &quot;stopwords&quot;: &quot;_spanish_&quot;
+                }
+            }
+        }
+    }
+}
+</pre>
+
+<p><code>es_std</code>&nbsp;分析器不是全局的--它仅仅存在于我们定义的&nbsp;<code>spanish_docs</code>&nbsp;索引中。 为了使用&nbsp;<code>analyze</code>&nbsp;API来对它进行测试，我们必须使用特定的索引名：</p>
+
+<pre>
+GET /spanish_docs/_analyze?analyzer=es_std
+El veloz zorro marr&oacute;n
+</pre>
+
+<p>简化的结果显示西班牙语停用词&nbsp;<code>El</code>&nbsp;已被正确的移除：</p>
+
+<pre>
+{
+  &quot;tokens&quot; : [
+    { &quot;token&quot; :    &quot;veloz&quot;,   &quot;position&quot; : 2 },
+    { &quot;token&quot; :    &quot;zorro&quot;,   &quot;position&quot; : 3 },
+    { &quot;token&quot; :    &quot;marr&oacute;n&quot;,  &quot;position&quot; : 4 }
+  ]
+}</pre>
+
+<h2>自定义分析器</h2>
+
+<p>虽然Elasticsearch带有一些现成的分析器，然而在分析器上Elasticsearch真正的强大之处在于，你可以通过在一个适合你的特定数据的设置之中组合字符过滤器、分词器、词汇单元过滤器来创建自定义的分析器。</p>
+
+<p>在&nbsp;<a href="https://www.elastic.co/guide/cn/elasticsearch/guide/current/analysis-intro.html" title="分析与分析器">分析与分析器</a>&nbsp;我们说过，一个&nbsp;<em>分析器</em>&nbsp;就是在一个包里面组合了三种函数的一个包装器，&nbsp;三种函数按照顺序被执行:</p>
+
+<p>字符过滤器</p>
+
+<p>字符过滤器&nbsp;用来&nbsp;<code>整理</code>&nbsp;一个尚未被分词的字符串。例如，如果我们的文本是HTML格式的，它会包含像<code>&lt;p&gt;</code>&nbsp;或者&nbsp;<code>&lt;div&gt;</code>&nbsp;这样的HTML标签，这些标签是我们不想索引的。我们可以使用&nbsp;<a href="https://www.elastic.co/guide/en/elasticsearch/reference/5.6/analysis-htmlstrip-charfilter.html" target="_top"><code>html清除</code>&nbsp;字符过滤器</a>来移除掉所有的HTML标签，并且像把&nbsp;<code>&amp;Aacute;</code>&nbsp;转换为相对应的Unicode字符&nbsp;<code>&Aacute;</code>&nbsp;这样，转换HTML实体。</p>
+
+<p>一个分析器可能有0个或者多个字符过滤器。</p>
+
+<p>分词器</p>
+
+<p>一个分析器&nbsp;<em>必须</em>&nbsp;有一个唯一的分词器。&nbsp;分词器把字符串分解成单个词条或者词汇单元。&nbsp;<code>标准</code>&nbsp;分析器里使用的&nbsp;<a href="https://www.elastic.co/guide/en/elasticsearch/reference/5.6/analysis-standard-tokenizer.html" target="_top"><code>标准</code>&nbsp;分词器</a>&nbsp;把一个字符串根据单词边界分解成单个词条，并且移除掉大部分的标点符号，然而还有其他不同行为的分词器存在。</p>
+
+<p>例如，&nbsp;<a href="https://www.elastic.co/guide/en/elasticsearch/reference/5.6/analysis-keyword-tokenizer.html" target="_top"><code>关键词</code>&nbsp;分词器</a>&nbsp;完整地输出&nbsp;接收到的同样的字符串，并不做任何分词。&nbsp;<a href="https://www.elastic.co/guide/en/elasticsearch/reference/5.6/analysis-whitespace-tokenizer.html" target="_top"><code>空格</code>&nbsp;分词器</a>&nbsp;只根据空格分割文本&nbsp;。&nbsp;<a href="https://www.elastic.co/guide/en/elasticsearch/reference/5.6/analysis-pattern-tokenizer.html" target="_top"><code>正则</code>&nbsp;分词器</a>&nbsp;根据匹配正则表达式来分割文本&nbsp;。</p>
+
+<p>词单元过滤器</p>
+
+<p>经过分词，作为结果的&nbsp;<em>词单元流</em>&nbsp;会按照指定的顺序通过指定的词单元过滤器&nbsp;。</p>
+
+<p>词单元过滤器可以修改、添加或者移除词单元。我们已经提到过&nbsp;<a href="http://www.elastic.co/guide/en/elasticsearch/reference/current/analysis-lowercase-tokenizer.html" target="_top"><code>lowercase</code>&nbsp;</a>和&nbsp;<a href="https://www.elastic.co/guide/en/elasticsearch/reference/5.6/analysis-stop-tokenfilter.html" target="_top"><code>stop</code>&nbsp;词过滤器</a>&nbsp;，但是在 Elasticsearch 里面还有很多可供选择的词单元过滤器。&nbsp;<a href="https://www.elastic.co/guide/en/elasticsearch/reference/5.6/analysis-stemmer-tokenfilter.html" target="_top">词干过滤器</a>&nbsp;把单词&nbsp;<code>遏制</code>&nbsp;为&nbsp;词干。<a href="https://www.elastic.co/guide/en/elasticsearch/reference/5.6/analysis-asciifolding-tokenfilter.html" target="_top"><code>ascii_folding</code>&nbsp;过滤器</a>移除变音符，把一个像&nbsp;<code>&quot;tr&egrave;s&quot;</code>&nbsp;这样的词转换为&nbsp;<code>&quot;tres&quot;</code>&nbsp;。&nbsp;<a href="https://www.elastic.co/guide/en/elasticsearch/reference/5.6/analysis-ngram-tokenfilter.html" target="_top"><code>ngram</code></a>&nbsp;和<a href="https://www.elastic.co/guide/en/elasticsearch/reference/5.6/analysis-edgengram-tokenfilter.html" target="_top"><code>edge_ngram</code>&nbsp;词单元过滤器</a>&nbsp;可以产生&nbsp;适合用于部分匹配或者自动补全的词单元。</p>
+
+<p>在&nbsp;<a href="https://www.elastic.co/guide/cn/elasticsearch/guide/current/search-in-depth.html" title="深入搜索">深入搜索</a>，我们讨论了在哪里使用，以及怎样使用分词器和过滤器。但是首先，我们需要解释一下怎样创建自定义的分析器。</p>
+
+<h3>创建一个自定义分析器</h3>
+
+<p>和我们之前配置&nbsp;<code>es_std</code>&nbsp;分析器一样，我们可以在&nbsp;<code>analysis</code>&nbsp;下的相应位置设置字符过滤器、分词器和词单元过滤器:</p>
+
+<pre>
+PUT /my_index
+{
+    &quot;settings&quot;: {
+        &quot;analysis&quot;: {
+            &quot;char_filter&quot;: { ... custom character filters ... },
+            &quot;tokenizer&quot;:   { ...    custom tokenizers     ... },
+            &quot;filter&quot;:      { ...   custom token filters   ... },
+            &quot;analyzer&quot;:    { ...    custom analyzers      ... }
+        }
+    }
+}</pre>
+
+<p>作为示范，让我们一起来创建一个自定义分析器吧，这个分析器可以做到下面的这些事:</p>
+
+<ol style="list-style-type:decimal">
+	<li>使用&nbsp;<code>html清除</code>&nbsp;字符过滤器移除HTML部分。</li>
+	<li>
+	<p>使用一个自定义的&nbsp;<code>映射</code>&nbsp;字符过滤器把&nbsp;<code>&amp;</code>&nbsp;替换为&nbsp;<code>&quot; and &quot;</code>&nbsp;：</p>
+
+	<pre>
+&quot;char_filter&quot;: {
+    &quot;&amp;_to_and&quot;: {
+        &quot;type&quot;:       &quot;mapping&quot;,
+        &quot;mappings&quot;: [ &quot;&amp;=&gt; and &quot;]
+    }
+}</pre>
+	</li>
+	<li>使用&nbsp;<code>标准</code>&nbsp;分词器分词。</li>
+	<li>小写词条，使用&nbsp;<code>小写</code>&nbsp;词过滤器处理。</li>
+	<li>
+	<p>使用自定义&nbsp;<code>停止</code>&nbsp;词过滤器移除自定义的停止词列表中包含的词：</p>
+
+	<pre>
+&quot;filter&quot;: {
+    &quot;my_stopwords&quot;: {
+        &quot;type&quot;:        &quot;stop&quot;,
+        &quot;stopwords&quot;: [ &quot;the&quot;, &quot;a&quot; ]
+    }
+}</pre>
+	</li>
+</ol>
+
+<p>我们的分析器定义用我们之前已经设置好的自定义过滤器组合了已经定义好的分词器和过滤器：</p>
+
+<pre>
+&quot;analyzer&quot;: {
+    &quot;my_analyzer&quot;: {
+        &quot;type&quot;:           &quot;custom&quot;,
+        &quot;char_filter&quot;:  [ &quot;html_strip&quot;, &quot;&amp;_to_and&quot; ],
+        &quot;tokenizer&quot;:      &quot;standard&quot;,
+        &quot;filter&quot;:       [ &quot;lowercase&quot;, &quot;my_stopwords&quot; ]
+    }
+}</pre>
+
+<p>汇总起来，完整的&nbsp;<code>创建索引</code>&nbsp;请求&nbsp;看起来应该像这样：</p>
+
+<pre>
+PUT /my_index
+{
+    &quot;settings&quot;: {
+        &quot;analysis&quot;: {
+            &quot;char_filter&quot;: {
+                &quot;&amp;_to_and&quot;: {
+                    &quot;type&quot;:       &quot;mapping&quot;,
+                    &quot;mappings&quot;: [ &quot;&amp;=&gt; and &quot;]
+            }},
+            &quot;filter&quot;: {
+                &quot;my_stopwords&quot;: {
+                    &quot;type&quot;:       &quot;stop&quot;,
+                    &quot;stopwords&quot;: [ &quot;the&quot;, &quot;a&quot; ]
+            }},
+            &quot;analyzer&quot;: {
+                &quot;my_analyzer&quot;: {
+                    &quot;type&quot;:         &quot;custom&quot;,
+                    &quot;char_filter&quot;:  [ &quot;html_strip&quot;, &quot;&amp;_to_and&quot; ],
+                    &quot;tokenizer&quot;:    &quot;standard&quot;,
+                    &quot;filter&quot;:       [ &quot;lowercase&quot;, &quot;my_stopwords&quot; ]
+            }}
+}}}
+</pre>
+
+<p>索引被创建以后，使用&nbsp;<code>analyze</code>&nbsp;API 来&nbsp;测试这个新的分析器：</p>
+
+<pre>
+GET /my_index/_analyze?analyzer=my_analyzer
+The quick &amp; brown fox
+</pre>
+
+<p>下面的缩略结果展示出我们的分析器正在正确地运行：</p>
+
+<pre>
+{
+  &quot;tokens&quot; : [
+      { &quot;token&quot; :   &quot;quick&quot;,    &quot;position&quot; : 2 },
+      { &quot;token&quot; :   &quot;and&quot;,      &quot;position&quot; : 3 },
+      { &quot;token&quot; :   &quot;brown&quot;,    &quot;position&quot; : 4 },
+      { &quot;token&quot; :   &quot;fox&quot;,      &quot;position&quot; : 5 }
+    ]
+}</pre>
+
+<p>这个分析器现在是没有多大用处的，除非我们告诉&nbsp;Elasticsearch在哪里用上它。我们可以像下面这样把这个分析器应用在一个&nbsp;<code>string</code>&nbsp;字段上：</p>
+
+<pre>
+PUT /my_index/_mapping/my_type
+{
+    &quot;properties&quot;: {
+        &quot;title&quot;: {
+            &quot;type&quot;:      &quot;string&quot;,
+            &quot;analyzer&quot;:  &quot;my_analyzer&quot;
+        }
+    }
+}</pre>
+
+<h2>类型和映射</h2>
+
+<p><em>类型</em>&nbsp;在 Elasticsearch 中表示一类相似的文档。&nbsp;类型由&nbsp;<em>名称</em>&nbsp;&mdash;比如&nbsp;<code>user</code>&nbsp;或&nbsp;<code>blogpost</code>&nbsp;&mdash;和&nbsp;<em>映射</em>&nbsp;组成。</p>
+
+<p><em>映射</em>,&nbsp;就像数据库中的 schema ，描述了文档可能具有的字段或&nbsp;<em>属性</em>&nbsp;、&nbsp;每个字段的数据类型&mdash;比如<code>string</code>,&nbsp;<code>integer</code>&nbsp;或&nbsp;<code>date</code>&nbsp;&mdash;以及Lucene是如何索引和存储这些字段的。</p>
+
+<p>类型可以很好的抽象划分相似但不相同的数据。但由于 Lucene 的处理方式，类型的使用有些限制。</p>
+
+<h3>Lucene 如何处理文档</h3>
+
+<p>在 Lucene 中，一个文档由一组简单的键值对组成。&nbsp;每个字段都可以有多个值，但至少要有一个值。 类似的，一个字符串可以通过分析过程转化为多个值。Lucene 不关心这些值是字符串、数字或日期--所有的值都被当做&nbsp;<em>不透明字节</em>&nbsp;。</p>
+
+<p>当我们在 Lucene 中索引一个文档时，每个字段的值都被添加到相关字段的倒排索引中。你也可以将未处理的原始数据&nbsp;<em>存储</em>&nbsp;起来，以便这些原始数据在之后也可以被检索到。</p>
+
+<h3>类型是如何实现的</h3>
+
+<p>Elasticsearch 类型是&nbsp;以 Lucene 处理文档的这个方式为基础来实现的。一个索引可以有多个类型，这些类型的文档可以存储在相同的索引中。</p>
+
+<p>Lucene 没有文档类型的概念，每个文档的类型名被存储在一个叫&nbsp;<code>_type</code>&nbsp;的元数据字段上。&nbsp;当我们要检索某个类型的文档时, Elasticsearch 通过在&nbsp;<code>_type</code>&nbsp;字段上使用过滤器限制只返回这个类型的文档。</p>
+
+<p>Lucene 也没有映射的概念。&nbsp;映射是 Elasticsearch 将复杂 JSON 文档&nbsp;<em>映射</em>&nbsp;成 Lucene 需要的扁平化数据的方式。</p>
+
+<p>例如，在&nbsp;<code>user</code>&nbsp;类型中，&nbsp;<code>name</code>&nbsp;字段的映射可以声明这个字段是&nbsp;<code>string</code>&nbsp;类型，并且它的值被索引到名叫<code>name</code>&nbsp;的倒排索引之前，需要通过&nbsp;<code>whitespace</code>&nbsp;分词器分析：</p>
+
+<pre>
+&quot;name&quot;: {
+    &quot;type&quot;:     &quot;string&quot;,
+    &quot;analyzer&quot;: &quot;whitespace&quot;
+}</pre>
+
+<h3>避免类型陷阱</h3>
+
+<p>这导致了一个有趣的思想实验： 如果有两个不同的类型，每个类型都有同名的字段，但映射不同（例如：一个是字符串一个是数字），将会出现什么情况？</p>
+
+<p>简单回答是，Elasticsearch 不会允许你定义这个映射。当你配置这个映射时，将会出现异常。</p>
+
+<p>详细回答是，每个 Lucene 索引中的所有字段都包含一个单一的、扁平的模式。一个特定字段可以映射成 string 类型也可以是 number 类型，但是不能两者兼具。因为类型是 Elasticsearch 添加的&nbsp;<em>优于</em>&nbsp;Lucene 的额外机制（以元数据&nbsp;<code>_type</code>&nbsp;字段的形式），在 Elasticsearch 中的所有类型最终都共享相同的映射。</p>
+
+<p>以&nbsp;<code>data</code>&nbsp;索引中两种类型的映射为例：</p>
+
+<pre>
+{
+   &quot;data&quot;: {
+      &quot;mappings&quot;: {
+         &quot;people&quot;: {
+            &quot;properties&quot;: {
+               &quot;name&quot;: {
+                  &quot;type&quot;: &quot;string&quot;,
+               },
+               &quot;address&quot;: {
+                  &quot;type&quot;: &quot;string&quot;
+               }
+            }
+         },
+         &quot;transactions&quot;: {
+            &quot;properties&quot;: {
+               &quot;timestamp&quot;: {
+                  &quot;type&quot;: &quot;date&quot;,
+                  &quot;format&quot;: &quot;strict_date_optional_time&quot;
+               },
+               &quot;message&quot;: {
+                  &quot;type&quot;: &quot;string&quot;
+               }
+            }
+         }
+      }
+   }
+}</pre>
+
+<p>每个类型定义两个字段 (分别是&nbsp;<code>&quot;name&quot;</code>/<code>&quot;address&quot;</code>&nbsp;和&nbsp;<code>&quot;timestamp&quot;</code>/<code>&quot;message&quot;</code>&nbsp;)。它们看起来是相互独立的，但在后台 Lucene 将创建一个映射，如:</p>
+
+<pre>
+{
+   &quot;data&quot;: {
+      &quot;mappings&quot;: {
+        &quot;_type&quot;: {
+          &quot;type&quot;: &quot;string&quot;,
+          &quot;index&quot;: &quot;not_analyzed&quot;
+        },
+        &quot;name&quot;: {
+          &quot;type&quot;: &quot;string&quot;
+        }
+        &quot;address&quot;: {
+          &quot;type&quot;: &quot;string&quot;
+        }
+        &quot;timestamp&quot;: {
+          &quot;type&quot;: &quot;long&quot;
+        }
+        &quot;message&quot;: {
+          &quot;type&quot;: &quot;string&quot;
+        }
+      }
+   }
+}</pre>
+
+<p><em>注: 这不是真实有效的映射语法，只是用于演示</em></p>
+
+<p>对于整个索引，映射在本质上被&nbsp;<em>扁平化</em>&nbsp;成一个单一的、全局的模式。这就是为什么两个类型不能定义冲突的字段：当映射被扁平化时，Lucene 不知道如何去处理。</p>
+
+<h3>类型结论</h3>
+
+<p>那么，这个讨论的结论是什么？技术上讲，多个类型可以在相同的索引中存在，只要它们的字段不冲突（要么因为字段是互为独占模式，要么因为它们共享相同的字段）。</p>
+
+<p>重要的一点是: 类型可以很好的区分同一个集合中的不同细分。在不同的细分中数据的整体模式是相同的（或相似的）。</p>
+
+<p>类型不适合&nbsp;<em>完全不同类型的数据</em>&nbsp;。如果两个类型的字段集是互不相同的，这就意味着索引中将有一半的数据是空的（字段将是&nbsp;<em>稀疏的</em>&nbsp;），最终将导致性能问题。在这种情况下，最好是使用两个单独的索引。</p>
+
+<p>总结：</p>
+
+<ul style="list-style-type:disc">
+	<li><strong>正确:</strong>&nbsp;将&nbsp;<code>kitchen</code>&nbsp;和&nbsp;<code>lawn-care</code>&nbsp;类型放在&nbsp;<code>products</code>&nbsp;索引中, 因为这两种类型基本上是相同的模式</li>
+	<li><strong>错误:</strong>&nbsp;将&nbsp;<code>products</code>&nbsp;和&nbsp;<code>logs</code>&nbsp;类型放在&nbsp;<code>data</code>&nbsp;索引中, 因为这两种类型互不相同。应该将它们放在不同的索引中。</li>
+</ul>
+
+<h2>根对象</h2>
+
+<p>映射的最高一层被称为&nbsp;<em>根对象</em>&nbsp;，它可能包含下面几项：</p>
+
+<ul style="list-style-type:disc">
+	<li>一个&nbsp;<em>properties</em>&nbsp;节点，列出了文档中可能包含的每个字段的映射</li>
+	<li>各种元数据字段，它们都以一个下划线开头，例如&nbsp;<code>_type</code>&nbsp;、&nbsp;<code>_id</code>&nbsp;和&nbsp;<code>_source</code></li>
+	<li>设置项，控制如何动态处理新的字段，例如&nbsp;<code>analyzer</code>&nbsp;、&nbsp;<code>dynamic_date_formats</code>&nbsp;和<code>dynamic_templates</code></li>
+	<li>其他设置，可以同时应用在根对象和其他&nbsp;<code>object</code>&nbsp;类型的字段上，例如&nbsp;<code>enabled</code>&nbsp;、&nbsp;<code>dynamic</code>&nbsp;和<code>include_in_all</code></li>
+</ul>
+
+<h3>属性</h3>
+
+<p>我们已经介绍过文档字段和属性的三个&nbsp;最重要的设置：</p>
+
+<p><code>type</code></p>
+
+<p>字段的数据类型，例如&nbsp;<code>string</code>&nbsp;或&nbsp;<code>date</code></p>
+
+<p><code>index</code></p>
+
+<p>字段是否应当被当成全文来搜索（&nbsp;<code>analyzed</code>&nbsp;），或被当成一个准确的值（&nbsp;<code>not_analyzed</code>&nbsp;），还是完全不可被搜索（&nbsp;<code>no</code>&nbsp;）</p>
+
+<p><code>analyzer</code></p>
+
+<p>确定在索引和搜索时全文字段使用的&nbsp;<code>analyzer</code></p>
+
+<p>我们将在本书的后续部分讨论其他字段类型，例如&nbsp;<code>ip</code>&nbsp;、&nbsp;<code>geo_point</code>&nbsp;和&nbsp;<code>geo_shape</code>&nbsp;。</p>
+
+<h3>元数据: _source 字段</h3>
+
+<p>默认地，Elasticsearch&nbsp;在&nbsp;<code>_source</code>&nbsp;字段存储代表文档体的JSON字符串。和所有被存储的字段一样，<code>_source</code>&nbsp;字段在被写入磁盘之前先会被压缩。</p>
+
+<p>这个字段的存储几乎总是我们想要的，因为它意味着下面的这些：</p>
+
+<ul style="list-style-type:disc">
+	<li>搜索结果包括了整个可用的文档&mdash;&mdash;不需要额外的从另一个的数据仓库来取文档。</li>
+	<li>如果没有&nbsp;<code>_source</code>&nbsp;字段，部分&nbsp;<code>update</code>&nbsp;请求不会生效。</li>
+	<li>当你的映射改变时，你需要重新索引你的数据，有了_source字段你可以直接从Elasticsearch这样做，而不必从另一个（通常是速度更慢的）数据仓库取回你的所有文档。</li>
+	<li>当你不需要看到整个文档时，单个字段可以从&nbsp;<code>_source</code>&nbsp;字段提取和通过&nbsp;<code>get</code>&nbsp;或者&nbsp;<code>search</code>&nbsp;请求返回。</li>
+	<li>调试查询语句更加简单，因为你可以直接看到每个文档包括什么，而不是从一列id猜测它们的内容。</li>
+</ul>
+
+<p>然而，存储&nbsp;<code>_source</code>&nbsp;字段的确要使用磁盘空间。如果上面的原因对你来说没有一个是重要的，你可以用下面的映射禁用&nbsp;<code>_source</code>&nbsp;字段：</p>
+
+<pre>
+PUT /my_index
+{
+    &quot;mappings&quot;: {
+        &quot;my_type&quot;: {
+            &quot;_source&quot;: {
+                &quot;enabled&quot;:  false
+            }
+        }
+    }
+}</pre>
+
+<p>在一个搜索请求里，你可以通过在请求体中指定&nbsp;<code>_source</code>&nbsp;参数，来达到只获取特定的字段的效果：</p>
+
+<pre>
+GET /_search
+{
+    &quot;query&quot;:   { &quot;match_all&quot;: {}},
+    &quot;_source&quot;: [ &quot;title&quot;, &quot;created&quot; ]
+}
+</pre>
+
+<p>这些字段的值会从&nbsp;<code>_source</code>&nbsp;字段被提取和返回，而不是返回整个&nbsp;<code>_source</code>&nbsp;。</p>
+
+<p><strong>Stored Fields 被存储字段</strong></p>
+
+<p>为了之后的检索，除了索引一个字段的值，你&nbsp;还可以选择&nbsp;<code>存储</code>&nbsp;原始字段值。有 Lucene 使用背景的用户使用被存储字段来选择他们想要在搜索结果里面返回的字段。事实上，&nbsp;<code>_source</code>&nbsp;字段就是一个被存储的字段。</p>
+
+<p>在Elasticsearch中，对文档的个别字段设置存储的做法通常不是最优的。整个文档已经被存储为<code>_source</code>&nbsp;字段。使用&nbsp;<code>_source</code>&nbsp;参数提取你需要的字段总是更好的。</p>
+
+<h3>元数据: _all 字段</h3>
+
+<p>在&nbsp;<a href="https://www.elastic.co/guide/cn/elasticsearch/guide/current/search-lite.html" title="轻量 搜索"><em>轻量</em>&nbsp;搜索</a>&nbsp;中，我们介绍了&nbsp;<code>_all</code>&nbsp;字段：一个把其它字段值&nbsp;当作一个大字符串来索引的特殊字段。<code>query_string</code>&nbsp;查询子句(搜索&nbsp;<code>?q=john</code>&nbsp;)在没有指定字段时默认使用&nbsp;<code>_all</code>&nbsp;字段。</p>
+
+<p><code>_all</code>&nbsp;字段在新应用的探索阶段，当你还不清楚文档的最终结构时是比较有用的。你可以使用这个字段来做任何查询，并且有很大可能找到需要的文档：</p>
+
+<pre>
+GET /_search
+{
+    &quot;match&quot;: {
+        &quot;_all&quot;: &quot;john smith marketing&quot;
+    }
+}</pre>
+
+<p>随着应用的发展，搜索需求变得更加明确，你会发现自己越来越少使用&nbsp;<code>_all</code>&nbsp;字段。&nbsp;<code>_all</code>&nbsp;字段是搜索的应急之策。通过查询指定字段，你的查询更加灵活、强大，你也可以对相关性最高的搜索结果进行更细粒度的控制。</p>
+
+<p><img alt="注意" src="https://www.elastic.co/guide/cn/elasticsearch/guide/current/images/icons/note.png" /></p>
+
+<p><a href="https://www.elastic.co/guide/cn/elasticsearch/guide/current/relevance-intro.html" title="什么是相关性?">relevance algorithm</a>&nbsp;考虑的一个最重要的原则是字段的长度：字段越短越重要。 在较短的<code>title</code>&nbsp;字段中出现的短语可能比在较长的&nbsp;<code>content</code>&nbsp;字段中出现的短语更加重要。字段长度的区别在&nbsp;<code>_all</code>&nbsp;字段中不会出现。</p>
+
+<p>如果你不再需要&nbsp;<code>_all</code>&nbsp;字段，你可以通过下面的映射来禁用：</p>
+
+<pre>
+PUT /my_index/_mapping/my_type
+{
+    &quot;my_type&quot;: {
+        &quot;_all&quot;: { &quot;enabled&quot;: false }
+    }
+}</pre>
+
+<p>通过&nbsp;<code>include_in_all</code>&nbsp;设置来逐个控制字段是否要包含在&nbsp;<code>_all</code>&nbsp;字段中，默认值是&nbsp;<code>true`。在一个对象(或根对象)上设置 `include_in_all</code>&nbsp;可以修改这个对象中的所有字段的默认行为。</p>
+
+<p>你可能想要保留&nbsp;<code>_all</code>&nbsp;字段作为一个只包含某些特定字段的全文字段，例如只包含&nbsp;<code>title`，`overview`，`summary</code>&nbsp;和&nbsp;<code>tags`。 相对于完全禁用 `_all</code>&nbsp;字段，你可以为所有字段默认禁用&nbsp;<code>include_in_all</code>&nbsp;选项，仅在你选择的字段上启用：</p>
+
+<pre>
+PUT /my_index/my_type/_mapping
+{
+    &quot;my_type&quot;: {
+        &quot;include_in_all&quot;: false,
+        &quot;properties&quot;: {
+            &quot;title&quot;: {
+                &quot;type&quot;:           &quot;string&quot;,
+                &quot;include_in_all&quot;: true
+            },
+            ...
+        }
+    }
+}</pre>
+
+<p>记住，<code>_all</code>&nbsp;字段仅仅是一个&nbsp;经过分词的&nbsp;<code>string</code>&nbsp;字段。它使用默认分词器来分析它的值，不管这个值原本所在字段指定的分词器。就像所有&nbsp;<code>string</code>&nbsp;字段，你可以配置&nbsp;<code>_all</code>&nbsp;字段使用的分词器：</p>
+
+<pre>
+PUT /my_index/my_type/_mapping
+{
+    &quot;my_type&quot;: {
+        &quot;_all&quot;: { &quot;analyzer&quot;: &quot;whitespace&quot; }
+    }
+}</pre>
+
+<h3>元数据：文档标识</h3>
+
+<p>文档标识与四个元数据字段&nbsp;相关：</p>
+
+<p><code>_id</code></p>
+
+<p>文档的 ID 字符串</p>
+
+<p><code>_type</code></p>
+
+<p>文档的类型名</p>
+
+<p><code>_index</code></p>
+
+<p>文档所在的索引</p>
+
+<p><code>_uid</code></p>
+
+<p><code>_type</code>&nbsp;和&nbsp;<code>_id</code>&nbsp;连接在一起构造成&nbsp;<code>type#id</code></p>
+
+<p>默认情况下，&nbsp;<code>_uid</code>&nbsp;字段是被存储（可取回）和索引（可搜索）的。&nbsp;<code>_type</code>&nbsp;字段被索引但是没有存储，<code>_id</code>&nbsp;和&nbsp;<code>_index</code>&nbsp;字段则既没有被索引也没有被存储，这意味着它们并不是真实存在的。</p>
+
+<p>尽管如此，你仍然可以像真实字段一样查询&nbsp;<code>_id</code>&nbsp;字段。Elasticsearch 使用&nbsp;<code>_uid</code>&nbsp;字段来派生出&nbsp;<code>_id</code>&nbsp;。 虽然你可以修改这些字段的&nbsp;<code>index</code>&nbsp;和&nbsp;<code>store</code>&nbsp;设置，但是基本上不需要这么做。</p>
+
+<h2>动态映射</h2>
+
+<p>当 Elasticsearch 遇到文档中以前&nbsp;未遇到的字段，它用&nbsp;<a href="https://www.elastic.co/guide/cn/elasticsearch/guide/current/mapping-intro.html" title="映射"><em>dynamic mapping</em></a>&nbsp;来确定字段的数据类型并自动把新的字段添加到类型映射。</p>
+
+<p>有时这是想要的行为有时又不希望这样。通常没有人知道以后会有什么新字段加到文档，但是又希望这些字段被自动的索引。也许你只想忽略它们。如果Elasticsearch是作为重要的数据存储，可能就会期望遇到新字段就会抛出异常，这样能及时发现问题。</p>
+
+<p>幸运的是可以用&nbsp;<code>dynamic</code>&nbsp;配置来控制这种行为&nbsp;，可接受的选项如下：</p>
+
+<p><code>true</code></p>
+
+<p>动态添加新的字段--缺省</p>
+
+<p><code>false</code></p>
+
+<p>忽略新的字段</p>
+
+<p><code>strict</code></p>
+
+<p>如果遇到新字段抛出异常</p>
+
+<p>配置参数&nbsp;<code>dynamic</code>&nbsp;可以用在根&nbsp;<code>object</code>&nbsp;或任何&nbsp;<code>object</code>&nbsp;类型的字段上。你可以将&nbsp;<code>dynamic</code>&nbsp;的默认值设置为<code>strict</code>&nbsp;, 而只在指定的内部对象中开启它, 例如：</p>
+
+<pre>
+PUT /my_index
+{
+    &quot;mappings&quot;: {
+        &quot;my_type&quot;: {
+            &quot;dynamic&quot;:      &quot;strict&quot;, <img alt="" src="https://www.elastic.co/guide/cn/elasticsearch/guide/current/images/icons/callouts/1.png" />
+            &quot;properties&quot;: {
+                &quot;title&quot;:  { &quot;type&quot;: &quot;string&quot;},
+                &quot;stash&quot;:  {
+                    &quot;type&quot;:     &quot;object&quot;,
+                    &quot;dynamic&quot;:  true <img alt="" src="https://www.elastic.co/guide/cn/elasticsearch/guide/current/images/icons/callouts/2.png" />
+                }
+            }
+        }
+    }
+}
+</pre>
+
+<table border="0" summary="Callout list">
+	<tbody>
+		<tr>
+			<td style="vertical-align:top">
+			<p><a href="https://www.elastic.co/guide/cn/elasticsearch/guide/current/dynamic-mapping.html#CO34-1"><img alt="" src="https://www.elastic.co/guide/cn/elasticsearch/guide/current/images/icons/callouts/1.png" /></a></p>
+			</td>
+			<td style="vertical-align:top">
+			<p>如果遇到新字段，对象&nbsp;<code>my_type</code>&nbsp;就会抛出异常。</p>
+			</td>
+		</tr>
+		<tr>
+			<td style="vertical-align:top">
+			<p><a href="https://www.elastic.co/guide/cn/elasticsearch/guide/current/dynamic-mapping.html#CO34-2"><img alt="" src="https://www.elastic.co/guide/cn/elasticsearch/guide/current/images/icons/callouts/2.png" /></a></p>
+			</td>
+			<td style="vertical-align:top">
+			<p>而内部对象&nbsp;<code>stash</code>&nbsp;遇到新字段就会动态创建新字段。</p>
+			</td>
+		</tr>
+	</tbody>
+</table>
+
+<p>使用上述动态映射， 你可以给&nbsp;<code>stash</code>&nbsp;对象添加新的可检索的字段：</p>
+
+<pre>
+PUT /my_index/my_type/1
+{
+    &quot;title&quot;:   &quot;This doc adds a new field&quot;,
+    &quot;stash&quot;: { &quot;new_field&quot;: &quot;Success!&quot; }
+}
+</pre>
+
+<p>但是对根节点对象&nbsp;<code>my_type</code>&nbsp;进行同样的操作会失败：</p>
+
+<pre>
+PUT /my_index/my_type/1
+{
+    &quot;title&quot;:     &quot;This throws a StrictDynamicMappingException&quot;,
+    &quot;new_field&quot;: &quot;Fail!&quot;
+}
+</pre>
+
+<p><img alt="注意" src="https://www.elastic.co/guide/cn/elasticsearch/guide/current/images/icons/note.png" /></p>
+
+<p>把&nbsp;<code>dynamic</code>&nbsp;设置为&nbsp;<code>false</code>&nbsp;一点儿也不会改变&nbsp;<code>_source</code>&nbsp;的字段内容。&nbsp;<code>_source</code>&nbsp;仍然包含被索引的整个JSON文档。只是新的字段不会被加到映射中也不可搜索。</p>
+
+<h2>自定义动态映射</h2>
+
+<p>如果你想在运行时增加新的字段，你可能会启用动态映射。&nbsp;然而，有时候，动态映射&nbsp;<code>规则</code>&nbsp;可能不太智能。幸运的是，我们可以通过设置去自定义这些规则，以便更好的适用于你的数据。</p>
+
+<h3>日期检测</h3>
+
+<p>当 Elasticsearch 遇到一个新的字符串字段时，它会检测这个字段是否包含一个可识别的日期，比如&nbsp;<code>2014-01-01</code>&nbsp;。&nbsp;如果它像日期，这个字段就会被作为&nbsp;<code>date</code>&nbsp;类型添加。否则，它会被作为&nbsp;<code>string</code>&nbsp;类型添加。</p>
+
+<p>有些时候这个行为可能导致一些问题。想象下，你有如下这样的一个文档：</p>
+
+<pre>
+{ &quot;note&quot;: &quot;2014-01-01&quot; }</pre>
+
+<p>假设这是第一次识别&nbsp;<code>note</code>&nbsp;字段，它会被添加为&nbsp;<code>date</code>&nbsp;字段。但是如果下一个文档像这样：</p>
+
+<pre>
+{ &quot;note&quot;: &quot;Logged out&quot; }</pre>
+
+<p>这显然不是一个日期，但为时已晚。这个字段已经是一个日期类型，这个&nbsp;<code>不合法的日期</code>&nbsp;将会造成一个异常。</p>
+
+<p>日期检测可以通过在根对象上设置&nbsp;<code>date_detection</code>&nbsp;为&nbsp;<code>false</code>&nbsp;来关闭：</p>
+
+<pre>
+PUT /my_index
+{
+    &quot;mappings&quot;: {
+        &quot;my_type&quot;: {
+            &quot;date_detection&quot;: false
+        }
+    }
+}</pre>
+
+<p>使用这个映射，字符串将始终作为&nbsp;<code>string</code>&nbsp;类型。如果你需要一个&nbsp;<code>date</code>&nbsp;字段，你必须手动添加。</p>
+
+<p><img alt="注意" src="https://www.elastic.co/guide/cn/elasticsearch/guide/current/images/icons/note.png" /></p>
+
+<p>Elasticsearch 判断字符串为日期的规则可以通过&nbsp;<a href="https://www.elastic.co/guide/en/elasticsearch/reference/5.6/dynamic-field-mapping.html#date-detection" target="_top"><code>dynamic_date_formats</code>&nbsp;setting</a>&nbsp;来设置。</p>
+
+<h3>动态模板</h3>
+
+<p>使用&nbsp;<code>dynamic_templates</code>&nbsp;，你可以完全控制&nbsp;新检测生成字段的映射。你甚至可以通过字段名称或数据类型来应用不同的映射。</p>
+
+<p>每个模板都有一个名称，&nbsp;你可以用来描述这个模板的用途， 一个&nbsp;<code>mapping</code>&nbsp;来指定映射应该怎样使用，以及至少一个参数 (如&nbsp;<code>match</code>) 来定义这个模板适用于哪个字段。</p>
+
+<p>模板按照顺序来检测；第一个匹配的模板会被启用。例如，我们给&nbsp;<code>string</code>&nbsp;类型字段定义两个模板：</p>
+
+<ul style="list-style-type:disc">
+	<li><code>es</code>&nbsp;：以&nbsp;<code>_es</code>&nbsp;结尾的字段名需要使用&nbsp;<code>spanish</code>&nbsp;分词器。</li>
+	<li><code>en</code>&nbsp;：所有其他字段使用&nbsp;<code>english</code>&nbsp;分词器。</li>
+</ul>
+
+<p>我们将&nbsp;<code>es</code>&nbsp;模板放在第一位，因为它比匹配所有字符串字段的&nbsp;<code>en</code>&nbsp;模板更特殊：</p>
+
+<pre>
+PUT /my_index
+{
+    &quot;mappings&quot;: {
+        &quot;my_type&quot;: {
+            &quot;dynamic_templates&quot;: [
+                { &quot;es&quot;: {
+                      &quot;match&quot;:              &quot;*_es&quot;, <img alt="" src="https://www.elastic.co/guide/cn/elasticsearch/guide/current/images/icons/callouts/1.png" />
+                      &quot;match_mapping_type&quot;: &quot;string&quot;,
+                      &quot;mapping&quot;: {
+                          &quot;type&quot;:           &quot;string&quot;,
+                          &quot;analyzer&quot;:       &quot;spanish&quot;
+                      }
+                }},
+                { &quot;en&quot;: {
+                      &quot;match&quot;:              &quot;*&quot;, <img alt="" src="https://www.elastic.co/guide/cn/elasticsearch/guide/current/images/icons/callouts/2.png" />
+                      &quot;match_mapping_type&quot;: &quot;string&quot;,
+                      &quot;mapping&quot;: {
+                          &quot;type&quot;:           &quot;string&quot;,
+                          &quot;analyzer&quot;:       &quot;english&quot;
+                      }
+                }}
+            ]
+}}}&nbsp;</pre>
+
+<table border="0" summary="Callout list">
+	<tbody>
+		<tr>
+			<td style="vertical-align:top">
+			<p><a href="https://www.elastic.co/guide/cn/elasticsearch/guide/current/custom-dynamic-mapping.html#CO35-1"><img alt="" src="https://www.elastic.co/guide/cn/elasticsearch/guide/current/images/icons/callouts/1.png" /></a></p>
+			</td>
+			<td style="vertical-align:top">
+			<p>匹配字段名以&nbsp;<code>_es</code>&nbsp;结尾的字段。</p>
+			</td>
+		</tr>
+		<tr>
+			<td style="vertical-align:top">
+			<p><a href="https://www.elastic.co/guide/cn/elasticsearch/guide/current/custom-dynamic-mapping.html#CO35-2"><img alt="" src="https://www.elastic.co/guide/cn/elasticsearch/guide/current/images/icons/callouts/2.png" /></a></p>
+			</td>
+			<td style="vertical-align:top">
+			<p>匹配其他所有字符串类型字段。</p>
+			</td>
+		</tr>
+	</tbody>
+</table>
+
+<p><code>match_mapping_type</code>&nbsp;允许你应用模板到特定类型的字段上，就像有标准动态映射规则检测的一样， (例如<code>string</code>&nbsp;或&nbsp;<code>long</code>)。</p>
+
+<p><code>match</code>&nbsp;参数只匹配字段名称，&nbsp;<code>path_match</code>&nbsp;参数匹配字段在对象上的完整路径，所以&nbsp;<code>address.*.name</code>&nbsp;将匹配这样的字段：</p>
+
+<pre>
+{
+    &quot;address&quot;: {
+        &quot;city&quot;: {
+            &quot;name&quot;: &quot;New York&quot;
+        }
+    }
+}</pre>
+
+<p><code>unmatch</code>&nbsp;和&nbsp;<code>path_unmatch</code>将被用于未被匹配的字段。</p>
+
+<h2>缺省映射</h2>
+
+<p>通常，一个索引中的所有类型共享相同的字段和设置。&nbsp;<code>_default_</code>&nbsp;映射更加方便地指定通用设置，而不是每次创建新类型时都要重复设置。&nbsp;<code>_default_</code>&nbsp;映射是新类型的模板。在设置&nbsp;<code>_default_</code>&nbsp;映射之后创建的所有类型都将应用这些缺省的设置，除非类型在自己的映射中明确覆盖这些设置。</p>
+
+<p>例如，我们可以使用&nbsp;<code>_default_</code>&nbsp;映射为所有的类型禁用&nbsp;<code>_all</code>&nbsp;字段，&nbsp;而只在&nbsp;<code>blog</code>&nbsp;类型启用：</p>
+
+<pre>
+PUT /my_index
+{
+    &quot;mappings&quot;: {
+        &quot;_default_&quot;: {
+            &quot;_all&quot;: { &quot;enabled&quot;:  false }
+        },
+        &quot;blog&quot;: {
+            &quot;_all&quot;: { &quot;enabled&quot;:  true  }
+        }
+    }
+}
+</pre>
+
+<p><code>_default_</code>&nbsp;映射也是一个指定索引&nbsp;<a href="https://www.elastic.co/guide/cn/elasticsearch/guide/current/custom-dynamic-mapping.html#dynamic-templates" title="动态模板">dynamic templates</a>&nbsp;的好方法。</p>
+
+<h2>重新索引你的数据</h2>
+
+<p>尽管可以增加新的类型到索引中，或者增加新的字段到类型中，但是不能添加新的分析器或者对现有的字段做改动。&nbsp;如果你那么做的话，结果就是那些已经被索引的数据就不正确， 搜索也不能正常工作。</p>
+
+<p>对现有数据的这类改变最简单的办法就是重新索引：用新的设置创建新的索引并把文档从旧的索引复制到新的索引。</p>
+
+<p>字段&nbsp;<code>_source</code>&nbsp;的一个优点是在Elasticsearch中已经有整个文档。你不必从源数据中重建索引，而且那样通常比较慢。</p>
+
+<p>为了有效的重新索引所有在旧的索引中的文档，用&nbsp;<a href="https://www.elastic.co/guide/cn/elasticsearch/guide/current/scroll.html" title="游标查询 Scroll"><em>scroll</em></a>&nbsp;从旧的索引检索批量文档&nbsp;， 然后用&nbsp;<a href="https://www.elastic.co/guide/cn/elasticsearch/guide/current/bulk.html" title="代价较小的批量操作"><code>bulk</code>&nbsp;API</a>&nbsp;把文档推送到新的索引中。</p>
+
+<p>从Elasticsearch v2.3.0开始，&nbsp;<a href="https://www.elastic.co/guide/en/elasticsearch/reference/5.6/docs-reindex.html" target="_top">Reindex API</a>&nbsp;被引入。它能够对文档重建索引而不需要任何插件或外部工具。</p>
+
+<p><strong>批量重新索引</strong></p>
+
+<p>同时并行运行多个重建索引任务，但是你显然不希望结果有重叠。正确的做法是按日期或者时间 这样的字段作为过滤条件把大的重建索引分成小的任务：</p>
+
+<pre>
+GET /old_index/_search?scroll=1m
+{
+    &quot;query&quot;: {
+        &quot;range&quot;: {
+            &quot;date&quot;: {
+                &quot;gte&quot;:  &quot;2014-01-01&quot;,
+                &quot;lt&quot;:   &quot;2014-02-01&quot;
+            }
+        }
+    },
+    &quot;sort&quot;: [&quot;_doc&quot;],
+    &quot;size&quot;:  1000
+}</pre>
+
+<p>如果旧的索引持续会有变化，你希望新的索引中也包括那些新加的文档。那就可以对新加的文档做重新索引， 但还是要用日期类字段过滤来匹配那些新加的文档。</p>
+
+<h2>索引别名和零停机</h2>
+
+<p>在前面提到的，重建索引的问题是必须更新应用中的索引名称。&nbsp;索引别名就是用来解决这个问题的！</p>
+
+<p>索引&nbsp;<em>别名</em>&nbsp;就像一个快捷方式或软连接，可以指向一个或多个索引，也可以给任何一个需要索引名的API来使用。别名&nbsp;带给我们极大的灵活性，允许我们做下面这些：</p>
+
+<ul style="list-style-type:disc">
+	<li>在运行的集群中可以无缝的从一个索引切换到另一个索引</li>
+	<li>给多个索引分组 (例如，&nbsp;<code>last_three_months</code>)</li>
+	<li>给索引的一个子集创建&nbsp;<code>视图</code></li>
+</ul>
+
+<p>在后面我们会讨论更多关于别名的使用。现在，我们将解释怎样使用别名在零停机下从旧索引切换到新索引。</p>
+
+<p>有两种方式管理别名：&nbsp;<code>_alias</code>&nbsp;用于单个操作，&nbsp;<code>_aliases</code>&nbsp;用于执行多个原子级操作。</p>
+
+<p>在本章中，我们假设你的应用有一个叫&nbsp;<code>my_index</code>&nbsp;的索引。事实上，&nbsp;<code>my_index</code>&nbsp;是一个指向当前真实索引的别名。真实索引包含一个版本号：&nbsp;<code>my_index_v1</code>&nbsp;，&nbsp;<code>my_index_v2</code>&nbsp;等等。</p>
+
+<p>首先，创建索引&nbsp;<code>my_index_v1</code>&nbsp;，然后将别名&nbsp;<code>my_index</code>&nbsp;指向它：</p>
+
+<pre>
+PUT /my_index_v1 <img alt="" src="https://www.elastic.co/guide/cn/elasticsearch/guide/current/images/icons/callouts/1.png" />
+PUT /my_index_v1/_alias/my_index <img alt="" src="https://www.elastic.co/guide/cn/elasticsearch/guide/current/images/icons/callouts/2.png" />
+</pre>
+
+<table border="0" summary="Callout list">
+	<tbody>
+		<tr>
+			<td style="vertical-align:top">
+			<p><a href="https://www.elastic.co/guide/cn/elasticsearch/guide/current/index-aliases.html#CO36-1"><img alt="" src="https://www.elastic.co/guide/cn/elasticsearch/guide/current/images/icons/callouts/1.png" /></a></p>
+			</td>
+			<td style="vertical-align:top">
+			<p>创建索引&nbsp;<code>my_index_v1</code>&nbsp;。</p>
+			</td>
+		</tr>
+		<tr>
+			<td style="vertical-align:top">
+			<p><a href="https://www.elastic.co/guide/cn/elasticsearch/guide/current/index-aliases.html#CO36-2"><img alt="" src="https://www.elastic.co/guide/cn/elasticsearch/guide/current/images/icons/callouts/2.png" /></a></p>
+			</td>
+			<td style="vertical-align:top">
+			<p>设置别名&nbsp;<code>my_index</code>&nbsp;指向&nbsp;<code>my_index_v1</code>&nbsp;。</p>
+			</td>
+		</tr>
+	</tbody>
+</table>
+
+<p>你可以检测这个别名指向哪一个索引：</p>
+
+<pre>
+GET /*/_alias/my_index
+</pre>
+
+<p>或哪些别名指向这个索引：</p>
+
+<pre>
+GET /my_index_v1/_alias/*
+</pre>
+
+<p>两者都会返回下面的结果：</p>
+
+<pre>
+{
+    &quot;my_index_v1&quot; : {
+        &quot;aliases&quot; : {
+            &quot;my_index&quot; : { }
+        }
+    }
+}</pre>
+
+<p>然后，我们决定修改索引中一个字段的映射。当然，我们不能修改现存的映射，所以我们必须重新索引数据。&nbsp;首先, 我们用新映射创建索引&nbsp;<code>my_index_v2</code>&nbsp;：</p>
+
+<pre>
+PUT /my_index_v2
+{
+    &quot;mappings&quot;: {
+        &quot;my_type&quot;: {
+            &quot;properties&quot;: {
+                &quot;tags&quot;: {
+                    &quot;type&quot;:   &quot;string&quot;,
+                    &quot;index&quot;:  &quot;not_analyzed&quot;
+                }
+            }
+        }
+    }
+}
+</pre>
+
+<p>然后我们将数据从&nbsp;<code>my_index_v1</code>&nbsp;索引到&nbsp;<code>my_index_v2</code>&nbsp;，下面的过程在&nbsp;<a href="https://www.elastic.co/guide/cn/elasticsearch/guide/current/reindex.html" title="重新索引你的数据">重新索引你的数据</a>&nbsp;中已经描述过。一旦我们确定文档已经被正确地重索引了，我们就将别名指向新的索引。</p>
+
+<p>一个别名可以指向多个索引，所以我们在添加别名到新索引的同时必须从旧的索引中删除它。这个操作需要原子化，这意味着我们需要使用&nbsp;<code>_aliases</code>&nbsp;操作：</p>
+
+<pre>
+POST /_aliases
+{
+    &quot;actions&quot;: [
+        { &quot;remove&quot;: { &quot;index&quot;: &quot;my_index_v1&quot;, &quot;alias&quot;: &quot;my_index&quot; }},
+        { &quot;add&quot;:    { &quot;index&quot;: &quot;my_index_v2&quot;, &quot;alias&quot;: &quot;my_index&quot; }}
+    ]
+}
+</pre>
+
+<p>你的应用已经在零停机的情况下从旧索引迁移到新索引了。</p>
+
+<p><img alt="提示" src="https://www.elastic.co/guide/cn/elasticsearch/guide/current/images/icons/tip.png" /></p>
+
+<p>即使你认为现在的索引设计已经很完美了，在生产环境中，还是有可能需要做一些修改的。</p>
+
+<p>做好准备：在你的应用中使用别名而不是索引名。然后你就可以在任何时候重建索引。别名的开销很小，应该广泛使用。</p>
+
+				    </section>
+					</article>
+				</main>
+            </div>
+        </div>
+    </section>
+    <a href="#top" id="goTop" ><i class="fa fa-angle-up fa-3x"></i></a>
+	<script src="../js/jquery.min.js"></script>
+    <script type="text/javascript" src="../js/datas/detailAngularJs.js"></script>
+    <script src="../plugins/scrolltopcontrol.js"></script>
+</body>
+</html>

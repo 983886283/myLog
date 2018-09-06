@@ -1,0 +1,182 @@
+<html>
+<!DOCTYPE html>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <title>JMeter函数助手添加自定义扩展函数</title>
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link rel="stylesheet" href="../css/bootstrap.min.css">
+	<link rel="stylesheet" href="../css/font-awesome.min.css">
+    <link rel="stylesheet" href="../plugins/ckeditor/plugins/codesnippet/lib/highlight/styles/googlecode.css">
+    <link rel="stylesheet" type="text/css" href="../css/front/screen.css">
+    <script src="../plugins/ckeditor/plugins/codesnippet/lib/highlight/highlight.pack.js"></script>
+	<style type="text/css">
+		.list{
+			margin-top:5em;
+			position: fixed;
+		}
+		
+		.list h4{
+			padding-bottom:0.5em;
+			border-bottom:2px solid lightgray;
+		}
+		
+		.list .readTitle li{
+			margin-top:0.4em;
+			padding-left:1em;
+			border:2px solid white;
+		}
+		.list .readTitle li:hover{
+			border-left:2px solid black;
+			color:blue;
+		}
+		.liHover{
+			border-left:2px solid black !important;
+		}
+		.aHover{
+			color:blue;
+		}
+		.list .readTitle li a:hover{
+			color:blue;
+			text-decoration: none;
+		}
+	</style>
+</head>
+<body>
+    <section class="content-wrap container-fluid">
+        <div class="container">
+            <div class="row">
+				<div class="col-md-3 visible-lg-block visible-md-block">
+					<div class="list">
+						<h4>阅读目录</h4>
+						<div>
+							<ul class="readTitle list-unstyled"></ul>
+						</div>
+					</div>
+				</div>
+                 <main class="col-md-19 main-content">
+					<article class="post row">
+					<header class="post-head">
+				        <h1 class="post-title">JMeter函数助手添加自定义扩展函数</h1>
+				        <section class="post-meta">
+					        <span><span class="glyphicon glyphicon-user"></span>:<span>c</span></span>|
+				            <span><span class="glyphicon glyphicon-bookmark"></span>:<span>Other</span></span>|
+				            <span><span class="glyphicon glyphicon-time"></span>:<span>2018-06-06</span></span>
+				        </section>
+				    </header>
+				    <section class="post-content"><p><a id="环境" name="环境"></a>环境</p>
+
+<pre>
+<code>JMeter Version:apache-jmeter-3.2
+JDK/JRE Version:java version "1.8.0_131"
+Eclipse Version：Oxygen.3 Release (4.7.3)</code></pre>
+
+<p><a id="安装apache-jmeter-3.2" name="安装apache-jmeter-3.2"></a>安装apache-jmeter-3.2</p>
+
+<pre>
+<code>下载地址：http://archive.apache.org/dist/jmeter/binaries/apache-jmeter-3.2.zip
+解压即可使用
+假设安装目录为G:\apache-jmeter-3.2</code></pre>
+
+<p><a id="自定义扩展函数" name="自定义扩展函数"></a>自定义扩展函数</p>
+
+<pre>
+<code>下载JMeter3.2源码
+下载地址：http://archive.apache.org/dist/jmeter/source/apache-jmeter-3.2_src.zip 
+
+将源码导入Eclipse（需要特殊方式导入）
+1、新建Java项目，项目名随意（暂定项目名JMeter）（右键-New-Java Project）
+2、删除JMeter目录下bin和src两个文件夹
+3、修改.classpath文件
+使用apache-jmeter-3.2_src.zip解压文件夹中的eclipse.classpath中内容复盖.classpath中的内容
+4、导入源码（import-General-File System-Browse选择apache-jmeter-3.2_src.zip解压包，选中后确定）
+5、修改依赖jar
+JMeter项目上（右键-Properties-Java Build Path-Libraries）
+选中错误的jar并点击remove进行移除
+点击add External JARs选择G:\apache-jmeter-3.2\lib目录下的所有jar
+6、编辑自定义Java文件
+在src/functions/org/apache/jmeter/functions/路径下新建Java文件（类名随意）
+例子参考下文
+将Java文件对应的class文件复制到G:\apache-jmeter-3.2\lib\ext目录下的ApacheJMeter_functions.jar对应目录中即可
+将Java文件所需的第三方jar复制到G:\apache-jmeter-3.2\lib\目录下</code></pre>
+
+<p><a id="模板小例子" name="模板小例子"></a>模板栗子</p>
+
+<pre>
+<code>参考：https://www.cnblogs.com/qiaoyeye/p/7218770.html
+
+package org.apache.jmeter.functions;
+
+import java.io.FileInputStream;
+import java.io.InputStream;
+import java.util.Collection;
+import java.util.LinkedList;
+import java.util.List;
+import org.apache.jmeter.engine.util.CompoundVariable;
+import org.apache.jmeter.samplers.SampleResult;
+import org.apache.jmeter.samplers.Sampler;
+import org.apache.jmeter.threads.JMeterVariables;
+import sun.misc.BASE64Encoder;
+
+public class MyBase64 extends AbstractFunction {
+	private static final List&lt;String&gt; desc = new LinkedList&lt;&gt;();
+	private static final String KEY = "__MyBase64";
+	private Object[] values;
+	static {
+		desc.add("图片路径");
+
+		desc.add("图片base64后存放变量");
+	}
+	public List&lt;String&gt; getArgumentDesc() {
+		return desc;
+	}
+	public synchronized String execute(SampleResult arg0, Sampler arg1) throws InvalidVariableException {
+		JMeterVariables localJMeterVariables = getVariables();
+		String str1 = ((CompoundVariable) this.values[0]).execute();
+		String str2 = getImgBase64(str1);
+		if ((localJMeterVariables != null) &amp;&amp; (this.values.length &gt; 1)) {
+			String str3 = ((CompoundVariable) this.values[1]).execute().trim();
+			localJMeterVariables.put(str3, str2);
+		}
+		return str2;
+	}
+	public String getReferenceKey() {
+		return "__MyBase64";
+	}
+	public synchronized void setParameters(Collection&lt;CompoundVariable&gt; arg0) throws InvalidVariableException {
+		checkParameterCount(arg0, 1, 2);
+		this.values = arg0.toArray();
+	}
+	public String getImgBase64(String filePath) {
+		InputStream in = null;
+		byte[] data = null;
+		String result = null;
+		try {
+			in = new FileInputStream(filePath);
+			data = new byte[in.available()];
+			in.read(data);
+			in.close();
+			BASE64Encoder encoder = new BASE64Encoder();
+			result = encoder.encode(data);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return result;
+	}
+}</code></pre>
+
+<p>&nbsp;</p>
+
+				    </section>
+					</article>
+				</main>
+            </div>
+        </div>
+    </section>
+    <a href="#top" id="goTop" ><i class="fa fa-angle-up fa-3x"></i></a>
+	<script src="../js/jquery.min.js"></script>
+    <script type="text/javascript" src="../js/datas/detailAngularJs.js"></script>
+    <script src="../plugins/scrolltopcontrol.js"></script>
+</body>
+</html>

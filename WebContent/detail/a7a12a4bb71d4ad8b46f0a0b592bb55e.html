@@ -1,0 +1,197 @@
+<html>
+<!DOCTYPE html>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <title>ES基础理论（七）</title>
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link rel="stylesheet" href="../css/bootstrap.min.css">
+	<link rel="stylesheet" href="../css/font-awesome.min.css">
+    <link rel="stylesheet" href="../plugins/ckeditor/plugins/codesnippet/lib/highlight/styles/googlecode.css">
+    <link rel="stylesheet" type="text/css" href="../css/front/screen.css">
+    <script src="../plugins/ckeditor/plugins/codesnippet/lib/highlight/highlight.pack.js"></script>
+	<style type="text/css">
+		.list{
+			margin-top:5em;
+			position: fixed;
+		}
+		
+		.list h4{
+			padding-bottom:0.5em;
+			border-bottom:2px solid lightgray;
+		}
+		
+		.list .readTitle li{
+			margin-top:0.4em;
+			padding-left:1em;
+			border:2px solid white;
+		}
+		.list .readTitle li:hover{
+			border-left:2px solid black;
+			color:blue;
+		}
+		.liHover{
+			border-left:2px solid black !important;
+		}
+		.aHover{
+			color:blue;
+		}
+		.list .readTitle li a:hover{
+			color:blue;
+			text-decoration: none;
+		}
+	</style>
+</head>
+<body>
+    <section class="content-wrap container-fluid">
+        <div class="container">
+            <div class="row">
+				<div class="col-md-3 visible-lg-block visible-md-block">
+					<div class="list">
+						<h4>阅读目录</h4>
+						<div>
+							<ul class="readTitle list-unstyled"></ul>
+						</div>
+					</div>
+				</div>
+                 <main class="col-md-19 main-content">
+					<article class="post row">
+					<header class="post-head">
+				        <h1 class="post-title">ES基础理论（七）</h1>
+				        <section class="post-meta">
+					        <span><span class="glyphicon glyphicon-user"></span>:<span>c</span></span>|
+				            <span><span class="glyphicon glyphicon-bookmark"></span>:<span>Elasticsearch</span></span>|
+				            <span><span class="glyphicon glyphicon-time"></span>:<span>2017-07-12</span></span>
+				        </section>
+				    </header>
+				    <section class="post-content"><pre>
+<code class="language-json">{
+    "_index":"招聘",
+    "_type":"58同城",
+    "_id":"1",
+    "_version":1,
+    "found":true,
+    "_source":{
+        "test_content":"Java开发",
+        "test_content2":"Java开发2"
+    }
+}</code></pre>
+
+<p><a name="_index元数据"></a>1、_index元数据</p>
+
+<p>（1）代表此document存放在哪个索引（index）</p>
+
+<p>（2）类似的数据放在一个索引，非类似的数据放不同索引。</p>
+
+<p>（3）index中包含了很多类似的document：类似指的是document的fields很大一部分是相同的，每个document的fields都完全不一样，就不太适合放到一个index里面去了。</p>
+
+<p>（4）索引名称必须是小写的，不能用下划线开头，不能包含逗号</p>
+
+<p>&nbsp;</p>
+
+<p><a name="_type元数据"></a>2、_type元数据</p>
+
+<p>（1）代表此document属于index中的哪个类别（type）</p>
+
+<p>（2）一个索引通常会划分为多个type，逻辑上对index中有些许不同的几类数据进行分类</p>
+
+<p>（3）type名称可以是大写或者小写，但是同时不能用下划线开头，不能包含逗号</p>
+
+<p>（4）底层的存储</p>
+
+<pre>
+<code class="language-json">{
+  "name": "geli kongtiao",
+  "price": 1999.0,
+  "service_period": "one year"
+}
+
+{
+  "name": "aozhou dalongxia",
+  "price": 199.0,
+  "eat_period": "one week"
+}
+这两条数据在底层会被存储为
+{
+  "_type": "elactronic_goods",
+  "name": "geli kongtiao",
+  "price": 1999.0,
+  "service_period": "one year",
+  "eat_period": ""
+}
+
+{
+  "_type": "fresh_goods",
+  "name": "aozhou dalongxia",
+  "price": 199.0,
+  "service_period": "",
+  "eat_period": "one week"
+}
+没有的字段会进行空值补足
+所以如果将两个field完全不同的type，放在一个index下，那么就每条数据都至少有一半的field在底层的lucene中是空值，
+会有严重的性能问题</code></pre>
+
+<p><a name="_id元数据"></a>3、_id元数据</p>
+
+<p>（1）代表document的唯一标识，与index和type一起，可以唯一标识和定位一个document</p>
+
+<p>（2）我们可以手动指定document的id（put /index/type/id），也可以不指定，由es自动为我们创建一个id</p>
+
+<pre>
+<code class="language-json">手动指定document id
+post /index/type/id
+POST /test_index/test_type/1
+{
+    "test_content":"my test"
+}</code></pre>
+
+<p>某些情况下，从某些其他的系统中导入一些数据到es时，会采取这种方式，例如数据库中数据到es，数据库中唯一的primary key可以做为es的document id。</p>
+
+<pre>
+<code class="language-json">自动生成document id
+post /index/type
+POST /test_index/test_type
+{
+    "test_content":"my test"
+}</code></pre>
+
+<p>自动生成的id，长度为20个字符，URL安全，base64编码，GUID，分布式系统并行生成时不可能会发生冲突</p>
+
+<p><a name="_source元数据"></a>4、_source元数据</p>
+
+<p>_source元数据：我们在创建一个document的时候，使用的那个放在request body中的json串，默认情况下，在get的时候，会原封不动的返回。</p>
+
+<p>定制返回结果</p>
+
+<p>定制返回的结果，指定_source中，返回哪些field</p>
+
+<pre>
+<code class="language-json">GET /test_index/test_type/1?_source=test_content,test_content2
+{
+  "_index": "招聘",
+  "_type": "58同城",
+  "_id": "1",
+  "_version": 1,
+  "found": true,
+  "_source": {
+    "test_content": "Java开发",
+    "test_content2": "Java开发2"
+  }
+}
+</code></pre>
+
+<p>&nbsp;</p>
+
+				    </section>
+					</article>
+				</main>
+            </div>
+        </div>
+    </section>
+    <a href="#top" id="goTop" ><i class="fa fa-angle-up fa-3x"></i></a>
+	<script src="../js/jquery.min.js"></script>
+    <script type="text/javascript" src="../js/datas/detailAngularJs.js"></script>
+    <script src="../plugins/scrolltopcontrol.js"></script>
+</body>
+</html>

@@ -1,0 +1,166 @@
+<html>
+<!DOCTYPE html>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <title>Mysql语句笔记</title>
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link rel="stylesheet" href="../css/bootstrap.min.css">
+	<link rel="stylesheet" href="../css/font-awesome.min.css">
+    <link rel="stylesheet" href="../plugins/ckeditor/plugins/codesnippet/lib/highlight/styles/googlecode.css">
+    <link rel="stylesheet" type="text/css" href="../css/front/screen.css">
+    <script src="../plugins/ckeditor/plugins/codesnippet/lib/highlight/highlight.pack.js"></script>
+	<style type="text/css">
+		.list{
+			margin-top:5em;
+			position: fixed;
+		}
+		
+		.list h4{
+			padding-bottom:0.5em;
+			border-bottom:2px solid lightgray;
+		}
+		
+		.list .readTitle li{
+			margin-top:0.4em;
+			padding-left:1em;
+			border:2px solid white;
+		}
+		.list .readTitle li:hover{
+			border-left:2px solid black;
+			color:blue;
+		}
+		.liHover{
+			border-left:2px solid black !important;
+		}
+		.aHover{
+			color:blue;
+		}
+		.list .readTitle li a:hover{
+			color:blue;
+			text-decoration: none;
+		}
+	</style>
+</head>
+<body>
+    <section class="content-wrap container-fluid">
+        <div class="container">
+            <div class="row">
+				<div class="col-md-3 visible-lg-block visible-md-block">
+					<div class="list">
+						<h4>阅读目录</h4>
+						<div>
+							<ul class="readTitle list-unstyled"></ul>
+						</div>
+					</div>
+				</div>
+                 <main class="col-md-19 main-content">
+					<article class="post row">
+					<header class="post-head">
+				        <h1 class="post-title">Mysql语句笔记</h1>
+				        <section class="post-meta">
+					        <span><span class="glyphicon glyphicon-user"></span>:<span>c</span></span>|
+				            <span><span class="glyphicon glyphicon-bookmark"></span>:<span>Database</span></span>|
+				            <span><span class="glyphicon glyphicon-time"></span>:<span>2018-01-26</span></span>
+				        </section>
+				    </header>
+				    <section class="post-content"><p><a name="Mysql"></a><a id="Mysql基本语句" name="Mysql基本语句"></a>Mysql基本语句：</p>
+
+<pre>
+<code class="language-sql">连接：mysql -h主机地址 -u用户名 －p用户密码 （注:u与root可以不用加空格，其它也一样） 
+断开：exit （回车） 
+
+创建授权：grant select on 数据库.* to 用户名@登录主机 identified by \"密码\" 
+修改密码：mysqladmin -u用户名 -p旧密码 password 新密码 
+删除授权: revoke select,insert,update,delete om *.* from test2@localhost; 
+
+显示数据库：show databases; 
+显示数据表：show tables; 
+显示表结构：describe 表名; 
+
+创建库：create database 库名; 
+删除库：drop database 库名; 
+使用库(选中库)：use 库名; 
+
+创建表：create table 表名 (字段设定列表); 
+删除表：drop table 表名; 
+修改表：alter table t1 rename t2 
+查询表：select * from 表名; 
+清空表：delete from 表名; 
+
+拷贝表结构,不拷贝表数据：CREATE TABLE newadmin LIKE admin
+拷贝数据：INSERT INTO newadmin SELECT * FROM admin;
+拷贝表结构和数据，不会有主键，索引（不推荐）：CREATE TABLE newadmin AS (SELECT * FROM admin)
+拷贝表和表数据推荐CREATE TABLE newadmin LIKE admin; INSERT INTO newadmin SELECT * FROM admin;
+
+备份表: mysqlbinmysqldump -h(ip) -uroot -p(password) databasename tablename &gt; tablename.sql 
+恢复表: mysqlbinmysql -h(ip) -uroot -p(password) databasename tablename &lt; tablename.sql（操作前先把原来表删除） 
+
+增加列：ALTER TABLE t2 ADD c INT UNSIGNED NOT NULL AUTO_INCREMENT,ADD INDEX (c); 
+修改列：ALTER TABLE t2 MODIFY a TINYINT NOT NULL, CHANGE b c CHAR(20); 
+删除列：ALTER TABLE t2 DROP COLUMN c; 
+
+备份数据库：mysql\bin\mysqldump -h(ip) -uroot -p(password) databasename &gt; database.sql 
+恢复数据库：mysql\bin\mysql -h(ip) -uroot -p(password) databasename &lt; database.sql 
+复制数据库：mysql\bin\mysqldump --all-databases &gt; all-databases.sql 
+修复数据库：mysqlcheck -A -o -uroot -p54safer 
+
+文本数据导入： load data local infile \"文件名\" into table 表名; 
+数据导入导出：mysql\bin\mysqlimport database tables.txt</code></pre>
+
+<p><a id="Mysql自定义函数用法" name="Mysql自定义函数用法"></a><strong>Mysql自定义函数用法</strong></p>
+
+<p>自定义函数 (user-defined function UDF)：对MySQL功能的一个扩展</p>
+
+<p>创建UDF:</p>
+
+<pre>
+<code class="language-sql">CREATE FUNCTION 函数名称(参数列表)
+　　RETURNS 返回值类型
+　　函数体
+
+注：函数体由合法的SQL语句构成；
+函数体可以是简单的select或insert语句；
+函数体如果为符合结构则使用begin…end；
+复合结构可以包括声明、循环、控制结构；</code></pre>
+
+<p>删除UDF:</p>
+
+<pre>
+<code class="language-sql">DROP FUNCTION 函数名称</code></pre>
+
+<p>调用自定义函数语法:</p>
+
+<pre>
+<code class="language-sql">SELECT function_name(parameter_value,...)</code></pre>
+
+<hr />
+<p>eg:创建简单的无参UDF</p>
+
+<pre>
+<code>CREATE FUNCTION simpleFun()RETURNS VARCHAR(20) RETURN "Hello World!";</code></pre>
+
+<p>调用该无参UDF</p>
+
+<pre>
+<code class="language-sql">SELECT simpleFun()</code></pre>
+
+<p>删除该无参UDF</p>
+
+<pre>
+<code class="language-sql">DROP FUNCTION simpleFun</code></pre>
+
+<p>&nbsp;</p>
+				    </section>
+					</article>
+				</main>
+            </div>
+        </div>
+    </section>
+    <a href="#top" id="goTop" ><i class="fa fa-angle-up fa-3x"></i></a>
+	<script src="../js/jquery.min.js"></script>
+    <script type="text/javascript" src="../js/datas/detailAngularJs.js"></script>
+    <script src="../plugins/scrolltopcontrol.js"></script>
+</body>
+</html>

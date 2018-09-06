@@ -1,0 +1,201 @@
+
+<!DOCTYPE html>
+<html lang="en" ng-app="BlurAdmin">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>崔小贱的笔记</title>
+
+  <!--分页插件-->
+  <link rel="stylesheet" href="src/app/css/pagination.css" />
+  <link rel="stylesheet" href="src/app/css/style.css" />
+  <link rel="stylesheet" href="src/app/css/bootstrap-datetimepicker.min.css">
+
+  <link rel="stylesheet" href="css/ionicons.min.css">
+  <link rel="stylesheet" href="css/angular-toastr.min.css">
+  <link rel="stylesheet" href="css/animate.min.css">
+  <link rel="stylesheet" href="css/bootstrap.min.css">
+  <link rel="stylesheet" href="css/bootstrap-select.min.css">
+  <link rel="stylesheet" href="css/bootstrap-switch.min.css">
+  <link rel="stylesheet" href="css/bootstrap-tagsinput.css">
+
+  <link rel="stylesheet" href="css/font-awesome.min.css">
+  <link rel="stylesheet" href="css/fullcalendar.min.css">
+  <link rel="stylesheet" href="css/leaflet.css">
+  <link rel="stylesheet" href="css/angular-progress-button-styles.min.css">
+  <link rel="stylesheet" href="css/ion.rangeSlider.css">
+  <link rel="stylesheet" href="css/ion.rangeSlider.skinFlat.css">
+  <link rel="stylesheet" href="css/textAngular.css">
+  <link rel="stylesheet" href="css/xeditable.min.css">
+  <link rel="stylesheet" href="css/style.min.css">
+  <link rel="stylesheet" href="css/select.min.css">
+  <link rel="stylesheet" href="src/app/main.css">
+</head>
+<body>
+
+<div class="body-bg"></div>
+<main ng-if="$pageFinishedLoading" ng-class="{ 'menu-collapsed': $baSidebarService.isMenuCollapsed() }">
+
+  <ba-sidebar></ba-sidebar>
+  <page-top></page-top>
+
+  <div class="al-main">
+    <div class="al-content">
+      <content-top></content-top>
+      <div ui-view autoscroll="true" autoscroll-body-top></div>
+    </div>
+  </div>
+
+  <footer class="al-footer clearfix">
+    <div style="text-align: center">jianpeng.me</div>
+  </footer>
+
+  <back-top></back-top>
+</main>
+
+<div id="preloader" ng-show="!$pageFinishedLoading">
+  <div></div>
+</div>
+
+<script src="js/jquery.min.js"></script>
+<!-- jqueryui 用户界面交互、特效、小部件及主题-->
+<script src="js/jquery-ui.min.js"></script>
+
+<!-- jQuery Easing 动画效果扩展 -->
+<script src="js/jquery.easing.min.js"></script>
+
+<!-- easypiechart
+<script src="js/jquery.easypiechart.min.js"></script> 
+-->
+
+<!-- <script src="js/Chart.min.js"></script> -->
+
+<!-- <script src="js/amcharts.js"></script>
+<script src="js/responsive.min.js"></script>
+<script src="js/serial.js"></script>
+<script src="js/funnel.js"></script>
+<script src="js/pie.js"></script>
+<script src="js/gantt.js"></script>  -->
+
+
+<!--
+ammap
+<script src="js/amstock.js"></script> 
+<script src="js/ammap.js"></script>
+<script src="js/worldLow.js"></script> 
+-->
+
+
+<script src="js/angular.min.js"></script>
+<script src="js/angular-route.min.js"></script>
+<script src="js/jquery.slimscroll.min.js"></script>
+<script src="js/angular-slimscroll.js"></script>
+<script src="js/smart-table.min.js"></script>
+<script src="js/angular-toastr.tpls.min.js"></script>
+<script src="js/angular-touch.min.js"></script>
+<script src="js/sortable.min.js"></script>
+<script src="js/dropdown.js"></script>
+<script src="js/bootstrap-select.min.js"></script>
+<script src="js/bootstrap-switch.min.js"></script>
+<script src="js/bootstrap-tagsinput.min.js"></script>
+<script src="js/moment.js"></script>
+<script src="js/fullcalendar.min.js"></script>
+<script src="js/leaflet-src.js"></script>
+<script src="js/angular-progress-button-styles.min.js"></script>
+<script src="js/angular-ui-router.min.js"></script>
+<script src="js/echarts.min.js"></script>
+<!-- <script src="js/angular-chart.min.js"></script> -->
+<!-- <script src="js/chartist.min.js"></script> -->
+<!-- <script src="js/angular-chartist.min.js"></script> -->
+
+<!-- <script src="js/eve.js"></script> -->
+
+<!-- 跨浏览器的矢量图形库 -->
+<script src="js/raphael.min.js"></script>
+
+<!-- 测试框架 
+<script src="js/mocha.js"></script>-->
+
+<!-- <script src="js/morris.min.js"></script> -->
+<!-- <script src="js/angular-morris-chart.min.js"></script> -->
+<script src="js/ion.rangeSlider.min.js"></script>
+<script src="js/ui-bootstrap-tpls.min.js"></script>
+<script src="js/angular-animate.min.js"></script>
+<script src="js/rangy-core.min.js"></script>
+<script src="js/rangy-classapplier.min.js"></script>
+<script src="js/rangy-highlighter.min.js"></script>
+<script src="js/rangy-selectionsaverestore.min.js"></script>
+<script src="js/rangy-serializer.min.js"></script>
+<script src="js/rangy-textrange.min.js"></script>
+<script src="js/textAngular.min.js"></script>
+<script src="js/textAngular-sanitize.min.js"></script>
+<script src="js/textAngularSetup.js"></script>
+<script src="js/xeditable.min.js"></script>
+<script src="js/jstree.min.js"></script>
+<script src="js/ngJsTree.min.js"></script>
+<script src="js/select.min.js"></script>
+
+<script src="src/app/pages/pages.module.js"></script>
+<script src="src/app/theme/theme.module.js"></script>
+<script src="src/app/pages/dashboard/dashboard.module.js"></script>
+<script src="src/app/pages/dashboard/DashboardPieChartCtrl.js"></script>
+<script src="src/app/pages/blog/blog.module.js"></script>
+<script src="src/app/pages/set/set.module.js"></script>
+<script src="src/app/theme/components/components.module.js"></script>
+<script src="src/app/theme/inputs/inputs.module.js"></script>
+<script src="src/app/app.js"></script>
+<script src="src/app/js/app-common.js"></script>
+<script src="src/app/js/jquery.datetimepicker.js"></script>
+<script src="src/app/theme/theme.config.js"></script>
+<script src="src/app/theme/theme.configProvider.js"></script>
+<script src="src/app/theme/theme.constants.js"></script>
+<script src="src/app/theme/theme.run.js"></script>
+<script src="src/app/theme/theme.service.js"></script>
+<script src="src/app/js/bootstrap-datetimepicker/bootstrap-datetimepicker.min.js"></script>
+<script src="src/app/theme/components/toastrLibConfig.js"></script>
+<script src="src/app/theme/directives/animatedChange.js"></script>
+<script src="src/app/theme/directives/autoExpand.js"></script>
+<script src="src/app/theme/directives/autoFocus.js"></script>
+<script src="src/app/theme/directives/includeWithScope.js"></script>
+<script src="src/app/theme/directives/ionSlider.js"></script>
+<script src="src/app/theme/directives/ngFileSelect.js"></script>
+<script src="src/app/theme/directives/scrollPosition.js"></script>
+<script src="src/app/theme/directives/trackWidth.js"></script>
+<script src="src/app/theme/directives/zoomIn.js"></script>
+<script src="src/app/theme/services/baProgressModal.js"></script>
+<script src="src/app/theme/services/baUtil.js"></script>
+<script src="src/app/theme/services/fileReader.js"></script>
+<script src="src/app/theme/services/preloader.js"></script>
+<script src="src/app/theme/services/stopableInterval.js"></script>
+<script src="src/app/js/bootstrap-datetimepicker/locales/bootstrap-datetimepicker.zh-CN.js"></script>
+
+<script src="src/app/pages/blog/blogManage.js"></script>
+<script src="src/app/pages/blog/blogType.js"></script>
+<script src="src/app/pages/set/setUser.js"></script>
+<script src="src/app/theme/components/backTop/backTop.directive.js"></script>
+<script src="src/app/theme/components/baPanel/baPanel.directive.js"></script>
+<script src="src/app/theme/components/baPanel/baPanel.service.js"></script>
+<script src="src/app/theme/components/baPanel/baPanelBlur.directive.js"></script>
+<script src="src/app/theme/components/baPanel/baPanelBlurHelper.service.js"></script>
+<script src="src/app/theme/components/baPanel/baPanelSelf.directive.js"></script>
+<script src="src/app/theme/components/baWizard/baWizard.directive.js"></script>
+<script src="src/app/theme/components/baWizard/baWizardCtrl.js"></script>
+<script src="src/app/theme/components/baWizard/baWizardStep.directive.js"></script>
+<script src="src/app/theme/components/baSidebar/baSidebar.directive.js"></script>
+<script src="src/app/theme/components/baSidebar/baSidebar.service.js"></script>
+<script src="src/app/theme/components/baSidebar/BaSidebarCtrl.js"></script>
+<script src="src/app/theme/components/baSidebar/baSidebarHelpers.directive.js"></script>
+<script src="src/app/theme/components/contentTop/contentTop.directive.js"></script>
+<script src="src/app/theme/components/progressBarRound/progressBarRound.directive.js"></script>
+<script src="src/app/theme/components/pageTop/pageTop.directive.js"></script>
+<script src="src/app/theme/components/widgets/widgets.directive.js"></script>
+<script src="src/app/theme/inputs/baSwitcher/baSwitcher.js"></script>
+<script src="src/app/theme/filters/image/appImage.js"></script>
+<script src="src/app/theme/filters/image/kameleonImg.js"></script>
+<script src="src/app/theme/filters/image/profilePicture.js"></script>
+<script src="src/app/theme/filters/text/removeHtml.js"></script>
+<script src="src/app/theme/components/backTop/lib/jquery.backTop.min.js"></script>
+<script src="plugins/ckeditor/ckeditor.js"> </script>
+</body>
+</html>

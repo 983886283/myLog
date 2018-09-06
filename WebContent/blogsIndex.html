@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="UTF-8">
+	<title>小崔Log</title>
+	<link rel="stylesheet" href="css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/font-awesome.min.css">
+    <link rel="stylesheet" type="text/css" href="css/front/screen.css">
+    <link rel="stylesheet" type="text/css" href="css/girls.css">
+</head>
+<body ng-app="blogsIndex" ng-controller="blogsIndexCtrl">
+	<aside class="Hui-aside">
+		<div class="sidebar">
+            <ul class="nav">
+                <li class="has-sub">
+                    <a href="javascript:void(0);"><span>&nbsp;&nbsp;&nbsp;&nbsp;Log sorted</span><i class="glyphicon glyphicon-menu-down pull-right"></i></a>
+                    <ul class="sub-menu">
+                        <li ng-click="changeOrder('createtime')"><a><i ng-class="{true:'glyphicon glyphicon-check', false:'glyphicon glyphicon-unchecked'}[orderType==='createtime']"></i>&nbsp;默认（时间）</a></li>
+                        <li ng-click="changeOrder('click')"><a><i ng-class="{true:'glyphicon glyphicon-check', false:'glyphicon glyphicon-unchecked'}[orderType==='click']"></i>&nbsp;点击量</a></li>
+                        <li ng-click="changeOrder('typeval')"><a><i ng-class="{true:'glyphicon glyphicon-check', false:'glyphicon glyphicon-unchecked'}[orderType==='typeval']"></i>&nbsp;类型</a></li>
+                    </ul>
+                </li>
+                 <li class="has-sub">
+                    <a href="javascript:void(0);"><span>&nbsp;&nbsp;&nbsp;&nbsp;Log type</span><i class="glyphicon glyphicon-menu-down pull-right"></i></a>
+                	<ul class="sub-menu">
+                		<li ng-repeat="ite in tpList"><a ng-click="changeTp(ite)"><i ng-class="{true:'glyphicon glyphicon-check', false:'glyphicon glyphicon-unchecked'}[tp===ite]">&nbsp;<span ng-bind="ite"></span></i>&nbsp;</a></li>
+                	</ul>
+                </li>
+                 <li class="has-sub">
+                    <a href="javascript:void(0);"><span>&nbsp;&nbsp;&nbsp;&nbsp;Log search</span><i class="glyphicon glyphicon-menu-down pull-right"></i></a>
+                	<ul class="sub-menu">
+                		<li><input type="text" class="form-control" ng-model="search" placeholder="Search Words"></li>
+                	</ul>
+                </li>
+                <li><a target="_blank" href="login.html">&nbsp;&nbsp;&nbsp;&nbsp;Log manage</a></li>
+            </ul>
+        </div>
+	</aside>
+    <section class="Hui-article-box">
+        <div class="container">
+            <div class="row">
+                <main class="col-md-12 main-content hide article">
+					<div style="min-height:45em">
+						<article class="post row" ng-repeat="item in list | orderBy:order + orderType" ng-if="$index>=(pagination.pageSize-1)*5&&$index<pagination.pageSize*5" ng-show="list!=''||list!=undefined">
+							<div class="col-md-3">
+						        <div class="h5 text-left">
+						            <p><span class="glyphicon glyphicon-user"></span>&nbsp;:&nbsp;<span ng-bind="item.username"></span></p>
+						            <p><span class="glyphicon glyphicon-time"></span>&nbsp;:&nbsp;<span ng-bind="item.createtime"></span></p>
+						            <p><span class="glyphicon glyphicon-bookmark"></span>&nbsp;:&nbsp;<span ng-bind="item.typeval"></span></p>
+						            <p><span class="glyphicon glyphicon-eye-open"></span>&nbsp;:&nbsp;<span ng-bind="item.click"></span></p>
+						        </div>
+							</div>
+							<div class="col-md-9">
+								<div class="featured" ng-class="{true:'visible-md-block visible-lg-block',false:'hide'}[item.recommend===1]">
+							        <i class="fa fa-star" style="line-height: 54px"></i>
+							    </div>
+							    <div class="post-head">
+							        <h4 class="post-title text-left"><a href="detail/{{item.contentid}}.html" target="_blank" ng-bind="'0'+($index+1)+'. '+(item.title | lengthEighteen)+'  »'" title="{{item.title}}"></a></h3>
+							    </div>
+							    <div class="h5" style="line-height: 1.3em;" ng-bind="item.summary"></div>
+						    </div>
+						</article>
+						<article class="post row" ng-show="(list | filter:search)==''">
+						    <div class="post-head">
+						        <h3 class="post-title" ng-bind="'暂时没有内容，请谅解'"></h3>
+						    </div>
+						</article>
+					</div>
+ 					<nav class="pagination" role="navigation" ng-show="list!=''">
+				        <a class="older-posts" ng-click="pre()"><i class="fa fa-angle-left"></i></a>
+					    <span class="page-number" ng-bind="'第'+pagination.pageSize+'页/共'+pagination.total+'页'"></span>
+				        <a class="older-posts" ng-click="nex()"><i class="fa fa-angle-right"></i></a>
+					</nav>
+				</main>
+            </div>
+        </div>
+    </section>
+    <div class="dislpayArrow"><a href="javascript:void(0);" onClick="displaynavbar(this)"></a></div>
+	<div id="spig" class="spig" style="top: 100px; left: 1703px;">
+	    <div id="message" style="display: none; opacity: 1;"></div>
+	    <div id="mumu" class="mumu"></div>
+	</div>
+	<a href="#top" id="goTop" ><i class="fa fa-angle-up fa-3x"></i></a>
+    <script src="js/jquery.min.js"></script>
+	<script src="js/angular.min.js"></script>
+    <script src="js/datas/blogsIndexAngularJs.js" type="text/javascript"></script>
+    <script src="js/ui-bootstrap-tpls.min.js"></script>
+    <script src="plugins/scrolltopcontrol.js"></script>
+    <script type="text/javascript">
+		var isindex=true;var title="的笔记; O(∩_∩)O";var visitor="亲爱的访客 ，";
+	</script>
+	<script type="text/javascript" src="js/girls.js"></script>
+</body>
+</html>

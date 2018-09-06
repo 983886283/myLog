@@ -1,0 +1,134 @@
+<div class="widgets">
+  <div class="row" ng-show="flag&&!delFlag">
+  <div class="col-md-12">
+  <div ba-panel ba-panel-title="setUser" ba-panel-class="with-scroll">
+  	<div class="add-row-editable-table">
+		<button class="btn btn-primary" ng-click="add()">Add</button>
+	</div>
+	<table class="table">
+		<thead>
+		<tr>
+			<th class="table-id">#</th>
+			<th class="col-md-3">UserName</th>
+			<th class="col-md-2">UserLv</th>
+			<th class="col-md-2">State</th>
+			<th class="col-md-4">Action</th>
+		</tr>
+		</thead>
+		<tbody>
+		<tr ng-repeat="item in list" class="editable-row">
+		    <td class="table-id" ng-bind="$index+1"></td>
+		    <td ng-bind="item.username"></td>
+	        <td ng-if="item.userlv==0">超级管理员</td>
+		    <td ng-if="item.userlv==1">管理员</td>
+		    <td ng-if="item.userlv==2">普通用户</td>
+		    <td ng-if="item.userlv!=2&&item.userlv!=1&&item.userlv!=0"><font color="red">异常</font></td>
+		    <td ng-if="item.state==0">显示</td>
+		    <td ng-if="item.state==1">隐藏</td>
+		    <td ng-if="item.state!=1&&item.state!=0"><font color="red">异常</font></td>
+			<td>
+		    	<div class="buttons" ng-show="!rowform.$visible">
+			        <button class="btn btn-warning editable-table-button btn-xs" ng-click="edit($index)">Edit</button>
+			        <button class="btn btn-danger editable-table-button btn-xs" ng-click="del($index)">Delete</button>
+		        </div>
+		    </td>
+		</tr>
+		</tbody>
+	</table>
+	<!-- 分页 -->
+	<nav style="text-align: center">
+	<ul class="pagination">
+	   <li ng-class="{true:'disabled',false:''}[pagination.pageSize===1]">
+	     <a href="" aria-label="Previous" ng-click="pre()">
+	       <span aria-hidden="true">&laquo;</span>
+	     </a>
+	   </li>
+	   <li><a href="" ng-bind="pagination.pageSize"></a></li>
+	   <li ng-class="{true:'disabled',false:''}[pagination.pageSize===pagination.total]">
+	     <a href="" aria-label="Next" ng-click="nex()">
+	       <span aria-hidden="true">&raquo;</span>
+	     </a>
+	   </li>
+	   <li>
+	   	<span ng-bind="'共'+pagination.total+'页'"><span>
+	   </li>
+	 </ul>
+	</nav> 
+    </div>
+</div>
+</div> 
+
+<!-- 删除的模态框 -->
+<div class="row" ng-show="delFlag">
+<div class="col-md-12">
+<div ba-panel ba-panel-title="删除确认" ba-panel-class="with-scroll">
+<table class="table table-condensed">
+  <tr>
+	<th class="table-id">#</th>
+	<th>UserName</th>
+	<th>UserLv</th>
+	<th>State</th>
+  </tr>
+  <tr class="editable-row">
+    <td class="table-id" ng-bind="$index+1"></td>
+    <td ng-bind="formData.username"></td>
+    <td ng-if="formData.userlv==0">超级管理员</td>
+    <td ng-if="formData.userlv==1">管理员</td>
+    <td ng-if="formData.userlv==2">普通用户</td>
+    <td ng-if="formData.userlv!=2&&formData.userlv!=1&&formData.userlv!=0"><font color="red">异常</font></td>
+    <td ng-if="formData.state==0">显示</td>
+    <td ng-if="formData.state==1">隐藏</td>
+    <td ng-if="formData.state!=1&&formData.state!=0"><font color="red">异常</font></td>
+  </tr>
+</table>
+<div class="modal-footer">
+    <button class="btn btn-danger" ng-click="delDatas()">Delete</button>
+    <button class="btn btn-default" ng-click="changeDelFlag()">Cancel</button>
+</div>
+</div>
+</div>
+</div>
+
+<!-- 增加修改的模态框 -->
+<div class="row" ng-show="!flag">
+<div class="col-md-12">
+<div ba-panel ba-panel-title="编辑" ba-panel-class="with-scroll">
+  <div class="form-group">
+    <label for="input01">姓名</label>
+    <input type="text" 
+			ng-model="formData.username" 
+			style="display: inline;font-size:14px;" 
+			placeholder="请输入10字以内"
+			class="form-control "/>
+  </div>
+  <div class="form-group">
+    <label for="input02">密码(修改时若不需修改密码，请将密码框清空):</label>
+    <input type="text" 
+			ng-model="formData.userpassword" 
+			style="display: inline;font-size:14px;" 
+			placeholder="请输入20字以内密码"
+			class="form-control "/>
+  </div>
+  <div class="form-group">
+  <label for="input03">等级 :</label>
+	<select id="userlv" class="form-control" style="font-size:14px;display: inline">
+		<option value="1" ng-selected="'1'===formData.userlv||formData.userlv===''">管理员</option>
+		<option value="0" ng-selected="'0'===formData.userlv">超级管理员</option>
+		<option value="2" ng-selected="'2'===formData.userlv">普通用户</option>
+	</select>
+  </div>
+  <div class="form-group">
+  <label for="input04">状态 :</label>
+	<select id="state" class="form-control" style="font-size:14px;display: inline">
+		<option value="0" ng-selected="'0'===formData.state||formData.state===''">显示</option>
+		<option value="1" ng-selected="'1'===formData.state">隐藏</option>
+	</select>
+	</div>
+<div class="modal-footer">
+    <button class="btn btn-success" ng-click="saveDatas()">Save</button>
+    <button class="btn btn-default" ng-click="changeFlag()">Cancel</button>
+</div>
+</div>
+</div>
+</div>
+</div>

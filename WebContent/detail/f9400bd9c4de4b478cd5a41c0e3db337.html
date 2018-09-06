@@ -1,0 +1,194 @@
+<html>
+<!DOCTYPE html>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <title>K-means算法</title>
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link rel="stylesheet" href="../css/bootstrap.min.css">
+	<link rel="stylesheet" href="../css/font-awesome.min.css">
+    <link rel="stylesheet" href="../plugins/ckeditor/plugins/codesnippet/lib/highlight/styles/googlecode.css">
+    <link rel="stylesheet" type="text/css" href="../css/front/screen.css">
+    <script src="../plugins/ckeditor/plugins/codesnippet/lib/highlight/highlight.pack.js"></script>
+	<style type="text/css">
+		.list{
+			margin-top:5em;
+			position: fixed;
+		}
+		
+		.list h4{
+			padding-bottom:0.5em;
+			border-bottom:2px solid lightgray;
+		}
+		
+		.list .readTitle li{
+			margin-top:0.4em;
+			padding-left:1em;
+			border:2px solid white;
+		}
+		.list .readTitle li:hover{
+			border-left:2px solid black;
+			color:blue;
+		}
+		.liHover{
+			border-left:2px solid black !important;
+		}
+		.aHover{
+			color:blue;
+		}
+		.list .readTitle li a:hover{
+			color:blue;
+			text-decoration: none;
+		}
+	</style>
+</head>
+<body>
+    <section class="content-wrap container-fluid">
+        <div class="container">
+            <div class="row">
+				<div class="col-md-3 visible-lg-block visible-md-block">
+					<div class="list">
+						<h4>阅读目录</h4>
+						<div>
+							<ul class="readTitle list-unstyled"></ul>
+						</div>
+					</div>
+				</div>
+                 <main class="col-md-19 main-content">
+					<article class="post row">
+					<header class="post-head">
+				        <h1 class="post-title">K-means算法</h1>
+				        <section class="post-meta">
+					        <span><span class="glyphicon glyphicon-user"></span>:<span>c</span></span>|
+				            <span><span class="glyphicon glyphicon-bookmark"></span>:<span>MachineLearning</span></span>|
+				            <span><span class="glyphicon glyphicon-time"></span>:<span>2017-11-27</span></span>
+				        </section>
+				    </header>
+				    <section class="post-content"><p><strong><a id="K-means 算法简介" name="K-means 算法简介"></a>K-means 算法：</strong></p>
+
+<p>Clustering 中的经典算法，数据挖掘十大经典算法之一<br />
+算法接受参数 k ；然后将事先输入的n个数据对象划分为 k个聚类以便使得所获得的聚类满足：同一聚类中的对象相似度较高；而不同聚类中的对象相似度较小。<br />
+算法思想：以空间中k个点为中心进行聚类，对最靠近他们的对象归类。通过迭代的方法，逐次更新各聚类中心的值，直至得到最好的聚类结果<br />
+算法描述：</p>
+
+<ul>
+	<li>适当选择c个类的初始中心；</li>
+	<li>在第k次迭代中，对任意一个样本，求其到c各中心的距离，将该样本归到距离最短的中心所在的类；</li>
+	<li>利用均值等方法更新该类的中心值；</li>
+	<li>对于所有的c个聚类中心，如果利用（2）（3）的迭代法更新后，值保持不变，则迭代结束，否则继续迭代。</li>
+</ul>
+
+<p><strong><a id="K-means 算法举例" name="K-means 算法举例"></a>K-means 算法举例：</strong></p>
+
+<table border="1" cellspacing="0" style="border-collapse:collapse; border:0.5pt solid #000000; height:70px; width:211.5pt">
+	<tbody>
+		<tr>
+			<td style="background-color:#d0cece; height:14.25pt; text-align:center; vertical-align:middle; width:79.50pt">&nbsp;</td>
+			<td style="background-color:#d0cece; height:14.25pt; text-align:center; vertical-align:middle; width:66.00pt"><span style="font-size:12.0pt"><span style="color:#000000"><span style="font-family:宋体">weight</span></span></span></td>
+			<td style="background-color:#d0cece; height:14.25pt; text-align:center; vertical-align:middle; width:66.00pt"><span style="font-size:12.0pt"><span style="color:#000000"><span style="font-family:宋体">pH</span></span></span></td>
+		</tr>
+		<tr>
+			<td style="height:14.25pt; text-align:center; vertical-align:middle; width:79.50pt"><span style="font-size:12.0pt"><span style="color:#000000"><span style="font-family:宋体">MedicineA</span></span></span></td>
+			<td style="height:14.25pt; text-align:center; vertical-align:middle; width:66.00pt"><span style="font-size:12.0pt"><span style="color:#000000"><span style="font-family:宋体">1</span></span></span></td>
+			<td style="height:14.25pt; text-align:center; vertical-align:middle; width:66.00pt"><span style="font-size:12.0pt"><span style="color:#000000"><span style="font-family:宋体">1</span></span></span></td>
+		</tr>
+		<tr>
+			<td style="height:14.25pt; text-align:center; vertical-align:middle; width:79.50pt"><span style="font-size:12.0pt"><span style="color:#000000"><span style="font-family:宋体">MedicineB</span></span></span></td>
+			<td style="height:14.25pt; text-align:center; vertical-align:middle; width:66.00pt"><span style="font-size:12.0pt"><span style="color:#000000"><span style="font-family:宋体">2</span></span></span></td>
+			<td style="height:14.25pt; text-align:center; vertical-align:middle; width:66.00pt"><span style="font-size:12.0pt"><span style="color:#000000"><span style="font-family:宋体">1</span></span></span></td>
+		</tr>
+		<tr>
+			<td style="height:14.25pt; text-align:center; vertical-align:middle; width:79.50pt"><span style="font-size:12.0pt"><span style="color:#000000"><span style="font-family:宋体">MedicineC</span></span></span></td>
+			<td style="height:14.25pt; text-align:center; vertical-align:middle; width:66.00pt"><span style="font-size:12.0pt"><span style="color:#000000"><span style="font-family:宋体">4</span></span></span></td>
+			<td style="height:14.25pt; text-align:center; vertical-align:middle; width:66.00pt"><span style="font-size:12.0pt"><span style="color:#000000"><span style="font-family:宋体">3</span></span></span></td>
+		</tr>
+		<tr>
+			<td style="height:14.25pt; text-align:center; vertical-align:middle; width:79.50pt"><span style="font-size:12.0pt"><span style="color:#000000"><span style="font-family:宋体">MedicineD</span></span></span></td>
+			<td style="height:14.25pt; text-align:center; vertical-align:middle; width:66.00pt"><span style="font-size:12.0pt"><span style="color:#000000"><span style="font-family:宋体">5</span></span></span></td>
+			<td style="height:14.25pt; text-align:center; vertical-align:middle; width:66.00pt"><span style="font-size:12.0pt"><span style="color:#000000"><span style="font-family:宋体">4</span></span></span></td>
+		</tr>
+	</tbody>
+</table>
+
+<p><img src="http://localhost:8080/myLog/images/k_means/1.png" style="height:245px; width:261px" /><br />
+前提：左数依次为A/B/C/D点<br />
+首先假定A、B即(1,1)、(2,1)为初始中心，分为两组group-1/group-2<br />
+A到A点的距离为0,B到A点的距离为1,C到A点的距离为3.61,D到A点的距离为5<br />
+A到B点的距离为1,B到B点的距离为0,C到B点的距离为2.83,D到B点的距离为4.24<br />
+<img src="http://localhost:8080/myLog/images/k_means/2.png" style="height:50px; width:302px" /><br />
+AA&lt;AB,BA&gt;BB,CA&gt;CB,DA&gt;DB<br />
+<img src="http://localhost:8080/myLog/images/k_means/3.png" style="height:50px; width:212px" /><br />
+group-1（A）<br />
+<img src="http://localhost:8080/myLog/images/k_means/4.png" style="height:50px; width:145px" /><br />
+group-2（B、C、D）<br />
+<img src="http://localhost:8080/myLog/images/k_means/5.png" style="height:50px; width:277px" /><br />
+更新中心值为(1,1)、(11/3,8/3)<br />
+<img src="http://localhost:8080/myLog/images/k_means/6.png" style="height:243px; width:260px" /><br />
+重复计算<br />
+<img src="http://localhost:8080/myLog/images/k_means/7.png" style="height:50px; width:289px" /><br />
+<img src="http://localhost:8080/myLog/images/k_means/8.png" style="height:50px; width:196px" /><br />
+group-1（A、B）<br />
+<img src="http://localhost:8080/myLog/images/k_means/9.png" style="height:50px; width:207px" /><br />
+group-2（C、D）<br />
+<img src="http://localhost:8080/myLog/images/k_means/10.png" style="height:50px; width:220px" /><br />
+更新中心值为(3/2,1)、(9/2,7/2)<br />
+<img src="http://localhost:8080/myLog/images/k_means/11.png" style="height:243px; width:260px" /><br />
+<img src="http://localhost:8080/myLog/images/k_means/12.png" style="height:60px; width:273px" /><br />
+<img src="http://localhost:8080/myLog/images/k_means/8.png" style="height:50px; width:196px" /><br />
+分组无变化，停止</p>
+
+<table border="1" cellspacing="0" style="border-collapse:collapse; border:.5pt solid #000000; height:95px; width:277.50pt">
+	<tbody>
+		<tr>
+			<td style="background-color:#d0cece; height:14.25pt; text-align:center; vertical-align:middle; width:79.50pt">&nbsp;</td>
+			<td style="background-color:#d0cece; height:14.25pt; text-align:center; vertical-align:middle; width:66.00pt"><span style="font-size:12.0pt"><span style="color:#000000"><span style="font-family:宋体">weight</span></span></span></td>
+			<td style="background-color:#d0cece; height:14.25pt; text-align:center; vertical-align:middle; width:66.00pt"><span style="font-size:12.0pt"><span style="color:#000000"><span style="font-family:宋体">ph</span></span></span></td>
+			<td style="background-color:#d0cece; height:14.25pt; text-align:center; vertical-align:middle; width:66.00pt"><span style="font-size:12.0pt"><span style="color:#000000"><span style="font-family:宋体">Group</span></span></span></td>
+		</tr>
+		<tr>
+			<td style="height:14.25pt; text-align:center; vertical-align:middle; width:79.50pt"><span style="font-size:12.0pt"><span style="color:#000000"><span style="font-family:宋体">MedicineA</span></span></span></td>
+			<td style="height:14.25pt; text-align:center; vertical-align:middle; width:66.00pt"><span style="font-size:12.0pt"><span style="color:#000000"><span style="font-family:宋体">1</span></span></span></td>
+			<td style="height:14.25pt; text-align:center; vertical-align:middle; width:66.00pt"><span style="font-size:12.0pt"><span style="color:#000000"><span style="font-family:宋体">1</span></span></span></td>
+			<td style="height:14.25pt; text-align:center; vertical-align:middle; width:66.00pt"><span style="font-size:12.0pt"><span style="color:#000000"><span style="font-family:宋体">1</span></span></span></td>
+		</tr>
+		<tr>
+			<td style="height:14.25pt; text-align:center; vertical-align:middle; width:79.50pt"><span style="font-size:12.0pt"><span style="color:#000000"><span style="font-family:宋体">MedicineB</span></span></span></td>
+			<td style="height:14.25pt; text-align:center; vertical-align:middle; width:66.00pt"><span style="font-size:12.0pt"><span style="color:#000000"><span style="font-family:宋体">2</span></span></span></td>
+			<td style="height:14.25pt; text-align:center; vertical-align:middle; width:66.00pt"><span style="font-size:12.0pt"><span style="color:#000000"><span style="font-family:宋体">1</span></span></span></td>
+			<td style="height:14.25pt; text-align:center; vertical-align:middle; width:66.00pt"><span style="font-size:12.0pt"><span style="color:#000000"><span style="font-family:宋体">1</span></span></span></td>
+		</tr>
+		<tr>
+			<td style="height:14.25pt; text-align:center; vertical-align:middle; width:79.50pt"><span style="font-size:12.0pt"><span style="color:#000000"><span style="font-family:宋体">MedicineC</span></span></span></td>
+			<td style="height:14.25pt; text-align:center; vertical-align:middle; width:66.00pt"><span style="font-size:12.0pt"><span style="color:#000000"><span style="font-family:宋体">4</span></span></span></td>
+			<td style="height:14.25pt; text-align:center; vertical-align:middle; width:66.00pt"><span style="font-size:12.0pt"><span style="color:#000000"><span style="font-family:宋体">3</span></span></span></td>
+			<td style="height:14.25pt; text-align:center; vertical-align:middle; width:66.00pt"><span style="font-size:12.0pt"><span style="color:#000000"><span style="font-family:宋体">2</span></span></span></td>
+		</tr>
+		<tr>
+			<td style="height:14.25pt; text-align:center; vertical-align:middle; width:79.50pt"><span style="font-size:12.0pt"><span style="color:#000000"><span style="font-family:宋体">MedicineD</span></span></span></td>
+			<td style="height:14.25pt; text-align:center; vertical-align:middle; width:66.00pt"><span style="font-size:12.0pt"><span style="color:#000000"><span style="font-family:宋体">5</span></span></span></td>
+			<td style="height:14.25pt; text-align:center; vertical-align:middle; width:66.00pt"><span style="font-size:12.0pt"><span style="color:#000000"><span style="font-family:宋体">4</span></span></span></td>
+			<td style="height:14.25pt; text-align:center; vertical-align:middle; width:66.00pt"><span style="font-size:12.0pt"><span style="color:#000000"><span style="font-family:宋体">2</span></span></span></td>
+		</tr>
+	</tbody>
+</table>
+
+<p><strong><a id="算法优缺点" name="算法优缺点"></a>算法优缺点：</strong></p>
+
+<p>优点：速度快，简单<br />
+缺点：最终结果跟初始点选择相关，容易陷入局部最优，需直到k值</p>
+
+<p>&nbsp;</p>
+
+				    </section>
+					</article>
+				</main>
+            </div>
+        </div>
+    </section>
+    <a href="#top" id="goTop" ><i class="fa fa-angle-up fa-3x"></i></a>
+	<script src="../js/jquery.min.js"></script>
+    <script type="text/javascript" src="../js/datas/detailAngularJs.js"></script>
+    <script src="../plugins/scrolltopcontrol.js"></script>
+</body>
+</html>

@@ -1,0 +1,547 @@
+<html>
+<!DOCTYPE html>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <title>Base64</title>
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link rel="stylesheet" href="../css/bootstrap.min.css">
+	<link rel="stylesheet" href="../css/font-awesome.min.css">
+    <link rel="stylesheet" href="../plugins/ckeditor/plugins/codesnippet/lib/highlight/styles/googlecode.css">
+    <link rel="stylesheet" type="text/css" href="../css/front/screen.css">
+    <script src="../plugins/ckeditor/plugins/codesnippet/lib/highlight/highlight.pack.js"></script>
+	<style type="text/css">
+		.list{
+			margin-top:5em;
+			position: fixed;
+		}
+		
+		.list h4{
+			padding-bottom:0.5em;
+			border-bottom:2px solid lightgray;
+		}
+		
+		.list .readTitle li{
+			margin-top:0.4em;
+			padding-left:1em;
+			border:2px solid white;
+		}
+		.list .readTitle li:hover{
+			border-left:2px solid black;
+			color:blue;
+		}
+		.liHover{
+			border-left:2px solid black !important;
+		}
+		.aHover{
+			color:blue;
+		}
+		.list .readTitle li a:hover{
+			color:blue;
+			text-decoration: none;
+		}
+	</style>
+</head>
+<body>
+    <section class="content-wrap container-fluid">
+        <div class="container">
+            <div class="row">
+				<div class="col-md-3 visible-lg-block visible-md-block">
+					<div class="list">
+						<h4>阅读目录</h4>
+						<div>
+							<ul class="readTitle list-unstyled"></ul>
+						</div>
+					</div>
+				</div>
+                 <main class="col-md-19 main-content">
+					<article class="post row">
+					<header class="post-head">
+				        <h1 class="post-title">Base64</h1>
+				        <section class="post-meta">
+					        <span><span class="glyphicon glyphicon-user"></span>:<span>c</span></span>|
+				            <span><span class="glyphicon glyphicon-bookmark"></span>:<span>Other</span></span>|
+				            <span><span class="glyphicon glyphicon-time"></span>:<span>2018-02-11</span></span>
+				        </section>
+				    </header>
+				    <section class="post-content"><p><strong><a id="简介" name="简介"></a>Base64编码简介</strong></p>
+
+<p>编码方法，不能用于加密，将二进制转换为可显示的字符。</p>
+
+<p><strong><a id="编码转换表" name="编码转换表"></a>Base64编码转换表</strong></p>
+
+<table border="1" cellspacing="0" style="border-collapse:collapse; border:none; width:432pt">
+	<caption>base64转换表</caption>
+	<thead>
+		<tr>
+			<th scope="col" style="height:14.25pt; vertical-align:middle; white-space:normal; width:54pt"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">索引</span></span></span></th>
+			<th scope="col" style="height:14.25pt; vertical-align:middle; white-space:normal; width:54pt"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">对应字符</span></span></span></th>
+			<th scope="col" style="height:14.25pt; vertical-align:middle; white-space:normal; width:54pt"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">索引</span></span></span></th>
+			<th scope="col" style="height:14.25pt; vertical-align:middle; white-space:normal; width:54pt"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">对应字符</span></span></span></th>
+			<th scope="col" style="height:14.25pt; vertical-align:middle; white-space:normal; width:54pt"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">索引</span></span></span></th>
+			<th scope="col" style="height:14.25pt; vertical-align:middle; white-space:normal; width:54pt"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">对应字符</span></span></span></th>
+			<th scope="col" style="height:14.25pt; vertical-align:middle; white-space:normal; width:54pt"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">索引</span></span></span></th>
+			<th scope="col" style="height:14.25pt; vertical-align:middle; white-space:normal; width:54pt"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">对应字符</span></span></span></th>
+		</tr>
+	</thead>
+	<tbody>
+		<tr>
+			<td style="height:14.25pt; vertical-align:middle; white-space:normal; width:54pt"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">0</span></span></span></td>
+			<td style="height:14.25pt; vertical-align:middle; white-space:normal; width:54pt"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">A</span></span></span></td>
+			<td style="height:14.25pt; vertical-align:middle; white-space:normal; width:54pt"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">16</span></span></span></td>
+			<td style="height:14.25pt; vertical-align:middle; white-space:normal; width:54pt"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">Q</span></span></span></td>
+			<td style="height:14.25pt; vertical-align:middle; white-space:normal; width:54pt"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">32</span></span></span></td>
+			<td style="height:14.25pt; vertical-align:middle; white-space:normal; width:54pt"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">g</span></span></span></td>
+			<td style="height:14.25pt; vertical-align:middle; white-space:normal; width:54pt"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">48</span></span></span></td>
+			<td style="height:14.25pt; vertical-align:middle; white-space:normal; width:54pt"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">w</span></span></span></td>
+		</tr>
+		<tr>
+			<td style="height:14.25pt; vertical-align:middle; white-space:normal; width:54pt"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">1</span></span></span></td>
+			<td style="height:14.25pt; vertical-align:middle; white-space:normal; width:54pt"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">B</span></span></span></td>
+			<td style="height:14.25pt; vertical-align:middle; white-space:normal; width:54pt"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">17</span></span></span></td>
+			<td style="height:14.25pt; vertical-align:middle; white-space:normal; width:54pt"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">R</span></span></span></td>
+			<td style="height:14.25pt; vertical-align:middle; white-space:normal; width:54pt"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">33</span></span></span></td>
+			<td style="height:14.25pt; vertical-align:middle; white-space:normal; width:54pt"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">h</span></span></span></td>
+			<td style="height:14.25pt; vertical-align:middle; white-space:normal; width:54pt"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">49</span></span></span></td>
+			<td style="height:14.25pt; vertical-align:middle; white-space:normal; width:54pt"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">x</span></span></span></td>
+		</tr>
+		<tr>
+			<td style="height:14.25pt; vertical-align:middle; white-space:normal; width:54pt"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">2</span></span></span></td>
+			<td style="height:14.25pt; vertical-align:middle; white-space:normal; width:54pt"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">C</span></span></span></td>
+			<td style="height:14.25pt; vertical-align:middle; white-space:normal; width:54pt"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">18</span></span></span></td>
+			<td style="height:14.25pt; vertical-align:middle; white-space:normal; width:54pt"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">S</span></span></span></td>
+			<td style="height:14.25pt; vertical-align:middle; white-space:normal; width:54pt"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">34</span></span></span></td>
+			<td style="height:14.25pt; vertical-align:middle; white-space:normal; width:54pt"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">i</span></span></span></td>
+			<td style="height:14.25pt; vertical-align:middle; white-space:normal; width:54pt"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">50</span></span></span></td>
+			<td style="height:14.25pt; vertical-align:middle; white-space:normal; width:54pt"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">y</span></span></span></td>
+		</tr>
+		<tr>
+			<td style="height:14.25pt; vertical-align:middle; white-space:normal; width:54pt"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">3</span></span></span></td>
+			<td style="height:14.25pt; vertical-align:middle; white-space:normal; width:54pt"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">D</span></span></span></td>
+			<td style="height:14.25pt; vertical-align:middle; white-space:normal; width:54pt"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">19</span></span></span></td>
+			<td style="height:14.25pt; vertical-align:middle; white-space:normal; width:54pt"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">T</span></span></span></td>
+			<td style="height:14.25pt; vertical-align:middle; white-space:normal; width:54pt"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">35</span></span></span></td>
+			<td style="height:14.25pt; vertical-align:middle; white-space:normal; width:54pt"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">j</span></span></span></td>
+			<td style="height:14.25pt; vertical-align:middle; white-space:normal; width:54pt"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">51</span></span></span></td>
+			<td style="height:14.25pt; vertical-align:middle; white-space:normal; width:54pt"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">z</span></span></span></td>
+		</tr>
+		<tr>
+			<td style="height:14.25pt; vertical-align:middle; white-space:normal; width:54pt"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">4</span></span></span></td>
+			<td style="height:14.25pt; vertical-align:middle; white-space:normal; width:54pt"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">E</span></span></span></td>
+			<td style="height:14.25pt; vertical-align:middle; white-space:normal; width:54pt"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">20</span></span></span></td>
+			<td style="height:14.25pt; vertical-align:middle; white-space:normal; width:54pt"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">U</span></span></span></td>
+			<td style="height:14.25pt; vertical-align:middle; white-space:normal; width:54pt"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">36</span></span></span></td>
+			<td style="height:14.25pt; vertical-align:middle; white-space:normal; width:54pt"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">k</span></span></span></td>
+			<td style="height:14.25pt; vertical-align:middle; white-space:normal; width:54pt"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">52</span></span></span></td>
+			<td style="height:14.25pt; vertical-align:middle; white-space:normal; width:54pt"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">0</span></span></span></td>
+		</tr>
+		<tr>
+			<td style="height:14.25pt; vertical-align:middle; white-space:normal; width:54pt"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">5</span></span></span></td>
+			<td style="height:14.25pt; vertical-align:middle; white-space:normal; width:54pt"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">F</span></span></span></td>
+			<td style="height:14.25pt; vertical-align:middle; white-space:normal; width:54pt"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">21</span></span></span></td>
+			<td style="height:14.25pt; vertical-align:middle; white-space:normal; width:54pt"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">V</span></span></span></td>
+			<td style="height:14.25pt; vertical-align:middle; white-space:normal; width:54pt"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">37</span></span></span></td>
+			<td style="height:14.25pt; vertical-align:middle; white-space:normal; width:54pt"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">l</span></span></span></td>
+			<td style="height:14.25pt; vertical-align:middle; white-space:normal; width:54pt"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">53</span></span></span></td>
+			<td style="height:14.25pt; vertical-align:middle; white-space:normal; width:54pt"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">1</span></span></span></td>
+		</tr>
+		<tr>
+			<td style="height:14.25pt; vertical-align:middle; white-space:normal; width:54pt"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">6</span></span></span></td>
+			<td style="height:14.25pt; vertical-align:middle; white-space:normal; width:54pt"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">G</span></span></span></td>
+			<td style="height:14.25pt; vertical-align:middle; white-space:normal; width:54pt"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">22</span></span></span></td>
+			<td style="height:14.25pt; vertical-align:middle; white-space:normal; width:54pt"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">W</span></span></span></td>
+			<td style="height:14.25pt; vertical-align:middle; white-space:normal; width:54pt"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">38</span></span></span></td>
+			<td style="height:14.25pt; vertical-align:middle; white-space:normal; width:54pt"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">m</span></span></span></td>
+			<td style="height:14.25pt; vertical-align:middle; white-space:normal; width:54pt"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">54</span></span></span></td>
+			<td style="height:14.25pt; vertical-align:middle; white-space:normal; width:54pt"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">2</span></span></span></td>
+		</tr>
+		<tr>
+			<td style="height:14.25pt; vertical-align:middle; white-space:normal; width:54pt"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">7</span></span></span></td>
+			<td style="height:14.25pt; vertical-align:middle; white-space:normal; width:54pt"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">H</span></span></span></td>
+			<td style="height:14.25pt; vertical-align:middle; white-space:normal; width:54pt"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">23</span></span></span></td>
+			<td style="height:14.25pt; vertical-align:middle; white-space:normal; width:54pt"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">X</span></span></span></td>
+			<td style="height:14.25pt; vertical-align:middle; white-space:normal; width:54pt"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">39</span></span></span></td>
+			<td style="height:14.25pt; vertical-align:middle; white-space:normal; width:54pt"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">n</span></span></span></td>
+			<td style="height:14.25pt; vertical-align:middle; white-space:normal; width:54pt"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">55</span></span></span></td>
+			<td style="height:14.25pt; vertical-align:middle; white-space:normal; width:54pt"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">3</span></span></span></td>
+		</tr>
+		<tr>
+			<td style="height:14.25pt; vertical-align:middle; white-space:normal; width:54pt"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">8</span></span></span></td>
+			<td style="height:14.25pt; vertical-align:middle; white-space:normal; width:54pt"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">I</span></span></span></td>
+			<td style="height:14.25pt; vertical-align:middle; white-space:normal; width:54pt"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">24</span></span></span></td>
+			<td style="height:14.25pt; vertical-align:middle; white-space:normal; width:54pt"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">Y</span></span></span></td>
+			<td style="height:14.25pt; vertical-align:middle; white-space:normal; width:54pt"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">40</span></span></span></td>
+			<td style="height:14.25pt; vertical-align:middle; white-space:normal; width:54pt"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">o</span></span></span></td>
+			<td style="height:14.25pt; vertical-align:middle; white-space:normal; width:54pt"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">56</span></span></span></td>
+			<td style="height:14.25pt; vertical-align:middle; white-space:normal; width:54pt"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">4</span></span></span></td>
+		</tr>
+		<tr>
+			<td style="height:14.25pt; vertical-align:middle; white-space:normal; width:54pt"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">9</span></span></span></td>
+			<td style="height:14.25pt; vertical-align:middle; white-space:normal; width:54pt"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">J</span></span></span></td>
+			<td style="height:14.25pt; vertical-align:middle; white-space:normal; width:54pt"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">25</span></span></span></td>
+			<td style="height:14.25pt; vertical-align:middle; white-space:normal; width:54pt"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">Z</span></span></span></td>
+			<td style="height:14.25pt; vertical-align:middle; white-space:normal; width:54pt"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">41</span></span></span></td>
+			<td style="height:14.25pt; vertical-align:middle; white-space:normal; width:54pt"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">p</span></span></span></td>
+			<td style="height:14.25pt; vertical-align:middle; white-space:normal; width:54pt"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">57</span></span></span></td>
+			<td style="height:14.25pt; vertical-align:middle; white-space:normal; width:54pt"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">5</span></span></span></td>
+		</tr>
+		<tr>
+			<td style="height:14.25pt; vertical-align:middle; white-space:normal; width:54pt"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">10</span></span></span></td>
+			<td style="height:14.25pt; vertical-align:middle; white-space:normal; width:54pt"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">K</span></span></span></td>
+			<td style="height:14.25pt; vertical-align:middle; white-space:normal; width:54pt"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">26</span></span></span></td>
+			<td style="height:14.25pt; vertical-align:middle; white-space:normal; width:54pt"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">a</span></span></span></td>
+			<td style="height:14.25pt; vertical-align:middle; white-space:normal; width:54pt"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">42</span></span></span></td>
+			<td style="height:14.25pt; vertical-align:middle; white-space:normal; width:54pt"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">q</span></span></span></td>
+			<td style="height:14.25pt; vertical-align:middle; white-space:normal; width:54pt"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">58</span></span></span></td>
+			<td style="height:14.25pt; vertical-align:middle; white-space:normal; width:54pt"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">6</span></span></span></td>
+		</tr>
+		<tr>
+			<td style="height:14.25pt; vertical-align:middle; white-space:normal; width:54pt"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">11</span></span></span></td>
+			<td style="height:14.25pt; vertical-align:middle; white-space:normal; width:54pt"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">L</span></span></span></td>
+			<td style="height:14.25pt; vertical-align:middle; white-space:normal; width:54pt"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">27</span></span></span></td>
+			<td style="height:14.25pt; vertical-align:middle; white-space:normal; width:54pt"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">b</span></span></span></td>
+			<td style="height:14.25pt; vertical-align:middle; white-space:normal; width:54pt"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">43</span></span></span></td>
+			<td style="height:14.25pt; vertical-align:middle; white-space:normal; width:54pt"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">r</span></span></span></td>
+			<td style="height:14.25pt; vertical-align:middle; white-space:normal; width:54pt"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">59</span></span></span></td>
+			<td style="height:14.25pt; vertical-align:middle; white-space:normal; width:54pt"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">7</span></span></span></td>
+		</tr>
+		<tr>
+			<td style="height:14.25pt; vertical-align:middle; white-space:normal; width:54pt"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">12</span></span></span></td>
+			<td style="height:14.25pt; vertical-align:middle; white-space:normal; width:54pt"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">M</span></span></span></td>
+			<td style="height:14.25pt; vertical-align:middle; white-space:normal; width:54pt"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">28</span></span></span></td>
+			<td style="height:14.25pt; vertical-align:middle; white-space:normal; width:54pt"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">c</span></span></span></td>
+			<td style="height:14.25pt; vertical-align:middle; white-space:normal; width:54pt"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">44</span></span></span></td>
+			<td style="height:14.25pt; vertical-align:middle; white-space:normal; width:54pt"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">s</span></span></span></td>
+			<td style="height:14.25pt; vertical-align:middle; white-space:normal; width:54pt"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">60</span></span></span></td>
+			<td style="height:14.25pt; vertical-align:middle; white-space:normal; width:54pt"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">8</span></span></span></td>
+		</tr>
+		<tr>
+			<td style="height:14.25pt; vertical-align:middle; white-space:normal; width:54pt"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">13</span></span></span></td>
+			<td style="height:14.25pt; vertical-align:middle; white-space:normal; width:54pt"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">N</span></span></span></td>
+			<td style="height:14.25pt; vertical-align:middle; white-space:normal; width:54pt"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">29</span></span></span></td>
+			<td style="height:14.25pt; vertical-align:middle; white-space:normal; width:54pt"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">d</span></span></span></td>
+			<td style="height:14.25pt; vertical-align:middle; white-space:normal; width:54pt"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">45</span></span></span></td>
+			<td style="height:14.25pt; vertical-align:middle; white-space:normal; width:54pt"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">t</span></span></span></td>
+			<td style="height:14.25pt; vertical-align:middle; white-space:normal; width:54pt"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">61</span></span></span></td>
+			<td style="height:14.25pt; vertical-align:middle; white-space:normal; width:54pt"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">9</span></span></span></td>
+		</tr>
+		<tr>
+			<td style="height:14.25pt; vertical-align:middle; white-space:normal; width:54pt"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">14</span></span></span></td>
+			<td style="height:14.25pt; vertical-align:middle; white-space:normal; width:54pt"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">O</span></span></span></td>
+			<td style="height:14.25pt; vertical-align:middle; white-space:normal; width:54pt"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">30</span></span></span></td>
+			<td style="height:14.25pt; vertical-align:middle; white-space:normal; width:54pt"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">e</span></span></span></td>
+			<td style="height:14.25pt; vertical-align:middle; white-space:normal; width:54pt"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">46</span></span></span></td>
+			<td style="height:14.25pt; vertical-align:middle; white-space:normal; width:54pt"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">u</span></span></span></td>
+			<td style="height:14.25pt; vertical-align:middle; white-space:normal; width:54pt"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">62</span></span></span></td>
+			<td style="height:14.25pt; vertical-align:middle; white-space:normal; width:54pt"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">+</span></span></span></td>
+		</tr>
+		<tr>
+			<td style="height:14.25pt; vertical-align:middle; white-space:normal; width:54pt"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">15</span></span></span></td>
+			<td style="height:14.25pt; vertical-align:middle; white-space:normal; width:54pt"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">P</span></span></span></td>
+			<td style="height:14.25pt; vertical-align:middle; white-space:normal; width:54pt"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">31</span></span></span></td>
+			<td style="height:14.25pt; vertical-align:middle; white-space:normal; width:54pt"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">f</span></span></span></td>
+			<td style="height:14.25pt; vertical-align:middle; white-space:normal; width:54pt"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">47</span></span></span></td>
+			<td style="height:14.25pt; vertical-align:middle; white-space:normal; width:54pt"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">v</span></span></span></td>
+			<td style="height:14.25pt; vertical-align:middle; white-space:normal; width:54pt"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">63</span></span></span></td>
+			<td style="height:14.25pt; vertical-align:middle; white-space:normal; width:54pt"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">/</span></span></span></td>
+		</tr>
+	</tbody>
+</table>
+
+<p><strong><a id="编码过程" name="编码过程"></a>Base64编码</strong></p>
+
+<pre>
+<code>base64一共64个索引（0-63），而63转换为二进制为111111，64个字符最多使用6个bit即可表示，而一个字节8个bit。
+那么如何使用6个bit表示8个bit?
+base64将3个传统字节转化为4个base64字符表示。</code></pre>
+
+<table cellspacing="0" style="border-collapse:collapse; border:none; width:633pt">
+	<tbody>
+		<tr>
+			<td style="background-color:#acb9ca; height:14.25pt; vertical-align:bottom; white-space:nowrap; width:105pt"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">文本</span></span></span></td>
+			<td colspan="8" style="background-color:#ddebf7; height:14.25pt; text-align:center; vertical-align:bottom; white-space:nowrap; width:176pt"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">Y</span></span></span></td>
+			<td colspan="8" style="background-color:#9bc2e6; height:14.25pt; text-align:center; vertical-align:bottom; white-space:nowrap; width:176pt"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">e</span></span></span></td>
+			<td colspan="8" style="background-color:#ddebf7; height:14.25pt; text-align:center; vertical-align:bottom; white-space:nowrap; width:176pt"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">s</span></span></span></td>
+		</tr>
+		<tr>
+			<td style="background-color:#acb9ca; height:14.25pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">ASCII编码</span></span></span></td>
+			<td colspan="8" style="background-color:#ddebf7; height:14.25pt; text-align:center; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">89</span></span></span></td>
+			<td colspan="8" style="background-color:#9bc2e6; height:14.25pt; text-align:center; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">101</span></span></span></td>
+			<td colspan="8" style="background-color:#ddebf7; height:14.25pt; text-align:center; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">115</span></span></span></td>
+		</tr>
+		<tr>
+			<td style="background-color:#acb9ca; height:14.25pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">二进制</span></span></span></td>
+			<td style="background-color:#ddebf7; height:14.25pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">0</span></span></span></td>
+			<td style="background-color:#ddebf7; height:14.25pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">1</span></span></span></td>
+			<td style="background-color:#ddebf7; height:14.25pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">0</span></span></span></td>
+			<td style="background-color:#ddebf7; height:14.25pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">1</span></span></span></td>
+			<td style="background-color:#ddebf7; height:14.25pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">1</span></span></span></td>
+			<td style="background-color:#ddebf7; height:14.25pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">0</span></span></span></td>
+			<td style="background-color:#ddebf7; height:14.25pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">0</span></span></span></td>
+			<td style="background-color:#ddebf7; height:14.25pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">1</span></span></span></td>
+			<td style="background-color:#9bc2e6; height:14.25pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">0</span></span></span></td>
+			<td style="background-color:#9bc2e6; height:14.25pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">1</span></span></span></td>
+			<td style="background-color:#9bc2e6; height:14.25pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">1</span></span></span></td>
+			<td style="background-color:#9bc2e6; height:14.25pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">0</span></span></span></td>
+			<td style="background-color:#9bc2e6; height:14.25pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">0</span></span></span></td>
+			<td style="background-color:#9bc2e6; height:14.25pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">1</span></span></span></td>
+			<td style="background-color:#9bc2e6; height:14.25pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">0</span></span></span></td>
+			<td style="background-color:#9bc2e6; height:14.25pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">1</span></span></span></td>
+			<td style="background-color:#ddebf7; height:14.25pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">0</span></span></span></td>
+			<td style="background-color:#ddebf7; height:14.25pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">1</span></span></span></td>
+			<td style="background-color:#ddebf7; height:14.25pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">1</span></span></span></td>
+			<td style="background-color:#ddebf7; height:14.25pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">1</span></span></span></td>
+			<td style="background-color:#ddebf7; height:14.25pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">0</span></span></span></td>
+			<td style="background-color:#ddebf7; height:14.25pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">0</span></span></span></td>
+			<td style="background-color:#ddebf7; height:14.25pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">1</span></span></span></td>
+			<td style="background-color:#ddebf7; height:14.25pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">1</span></span></span></td>
+		</tr>
+		<tr>
+			<td style="background-color:#acb9ca; height:14.25pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">二进制</span></span></span></td>
+			<td style="background-color:#fce4d6; height:14.25pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">0</span></span></span></td>
+			<td style="background-color:#fce4d6; height:14.25pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">1</span></span></span></td>
+			<td style="background-color:#fce4d6; height:14.25pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">0</span></span></span></td>
+			<td style="background-color:#fce4d6; height:14.25pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">1</span></span></span></td>
+			<td style="background-color:#fce4d6; height:14.25pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">1</span></span></span></td>
+			<td style="background-color:#fce4d6; height:14.25pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">0</span></span></span></td>
+			<td style="background-color:#ffc000; height:14.25pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">0</span></span></span></td>
+			<td style="background-color:#ffc000; height:14.25pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">1</span></span></span></td>
+			<td style="background-color:#ffc000; height:14.25pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">0</span></span></span></td>
+			<td style="background-color:#ffc000; height:14.25pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">1</span></span></span></td>
+			<td style="background-color:#ffc000; height:14.25pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">1</span></span></span></td>
+			<td style="background-color:#ffc000; height:14.25pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">0</span></span></span></td>
+			<td style="background-color:#fce4d6; height:14.25pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">0</span></span></span></td>
+			<td style="background-color:#fce4d6; height:14.25pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">1</span></span></span></td>
+			<td style="background-color:#fce4d6; height:14.25pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">0</span></span></span></td>
+			<td style="background-color:#fce4d6; height:14.25pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">1</span></span></span></td>
+			<td style="background-color:#fce4d6; height:14.25pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">0</span></span></span></td>
+			<td style="background-color:#fce4d6; height:14.25pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">1</span></span></span></td>
+			<td style="background-color:#ffc000; height:14.25pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">1</span></span></span></td>
+			<td style="background-color:#ffc000; height:14.25pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">1</span></span></span></td>
+			<td style="background-color:#ffc000; height:14.25pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">0</span></span></span></td>
+			<td style="background-color:#ffc000; height:14.25pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">0</span></span></span></td>
+			<td style="background-color:#ffc000; height:14.25pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">1</span></span></span></td>
+			<td style="background-color:#ffc000; height:14.25pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">1</span></span></span></td>
+		</tr>
+		<tr>
+			<td style="background-color:#acb9ca; height:14.25pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">base<span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">64十进制索引</span></span></span></span></span></span></td>
+			<td colspan="6" style="background-color:#fce4d6; height:14.25pt; text-align:center; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">22</span></span></span></td>
+			<td colspan="6" style="background-color:#ffc000; height:14.25pt; text-align:center; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">22</span></span></span></td>
+			<td colspan="6" style="background-color:#fce4d6; height:14.25pt; text-align:center; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">21</span></span></span></td>
+			<td colspan="6" style="background-color:#ffc000; height:14.25pt; text-align:center; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">51</span></span></span></td>
+		</tr>
+		<tr>
+			<td style="background-color:#acb9ca; height:14.25pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">对应字符</span></span></span></td>
+			<td colspan="6" style="background-color:#fce4d6; height:14.25pt; text-align:center; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">W</span></span></span></td>
+			<td colspan="6" style="background-color:#ffc000; height:14.25pt; text-align:center; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">W</span></span></span></td>
+			<td colspan="6" style="background-color:#fce4d6; height:14.25pt; text-align:center; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">V</span></span></span></td>
+			<td colspan="6" style="background-color:#ffc000; height:14.25pt; text-align:center; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">z</span></span></span></td>
+		</tr>
+	</tbody>
+</table>
+
+<pre>
+<code>三个字符3*8/6=4，那如果字符数并非3的整数倍怎么办？</code></pre>
+
+<table cellspacing="0" style="border-collapse:collapse; border:none; width:633pt">
+	<tbody>
+		<tr>
+			<td style="background-color:#acb9ca; height:14.25pt; vertical-align:bottom; white-space:nowrap; width:105pt"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">文本</span></span></span></td>
+			<td colspan="8" style="background-color:#ddebf7; height:14.25pt; text-align:center; vertical-align:bottom; white-space:nowrap; width:176pt"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">A</span></span></span></td>
+			<td colspan="8" style="background-color:#9bc2e6; height:14.25pt; text-align:center; vertical-align:bottom; white-space:nowrap; width:176pt"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">　</span></span></span></td>
+			<td colspan="8" style="background-color:#ddebf7; height:14.25pt; text-align:center; vertical-align:bottom; white-space:nowrap; width:176pt"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">　</span></span></span></td>
+		</tr>
+		<tr>
+			<td style="background-color:#acb9ca; height:14.25pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">ASCII编码</span></span></span></td>
+			<td colspan="8" style="background-color:#ddebf7; height:14.25pt; text-align:center; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">65</span></span></span></td>
+			<td colspan="8" style="background-color:#9bc2e6; height:14.25pt; text-align:center; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">　</span></span></span></td>
+			<td colspan="8" style="background-color:#ddebf7; height:14.25pt; text-align:center; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">　</span></span></span></td>
+		</tr>
+		<tr>
+			<td style="background-color:#acb9ca; height:14.25pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">二进制</span></span></span></td>
+			<td style="height:14.25pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">0</span></span></span></td>
+			<td style="background-color:#ddebf7; height:14.25pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">1</span></span></span></td>
+			<td style="background-color:#ddebf7; height:14.25pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">0</span></span></span></td>
+			<td style="background-color:#ddebf7; height:14.25pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">0</span></span></span></td>
+			<td style="background-color:#ddebf7; height:14.25pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">0</span></span></span></td>
+			<td style="background-color:#ddebf7; height:14.25pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">0</span></span></span></td>
+			<td style="background-color:#ddebf7; height:14.25pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">0</span></span></span></td>
+			<td style="background-color:#ddebf7; height:14.25pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">1</span></span></span></td>
+			<td style="background-color:#9bc2e6; height:14.25pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:red"><strong><span style="font-family:等线">0</span></strong></span></span></td>
+			<td style="background-color:#9bc2e6; height:14.25pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:red"><strong><span style="font-family:等线">0</span></strong></span></span></td>
+			<td style="background-color:#9bc2e6; height:14.25pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:red"><strong><span style="font-family:等线">0</span></strong></span></span></td>
+			<td style="background-color:#9bc2e6; height:14.25pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:red"><strong><span style="font-family:等线">0</span></strong></span></span></td>
+			<td style="background-color:#9bc2e6; height:14.25pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">　</span></span></span></td>
+			<td style="background-color:#9bc2e6; height:14.25pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">　</span></span></span></td>
+			<td style="background-color:#9bc2e6; height:14.25pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">　</span></span></span></td>
+			<td style="background-color:#9bc2e6; height:14.25pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">　</span></span></span></td>
+			<td style="background-color:#ddebf7; height:14.25pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">　</span></span></span></td>
+			<td style="background-color:#ddebf7; height:14.25pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">　</span></span></span></td>
+			<td style="background-color:#ddebf7; height:14.25pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">　</span></span></span></td>
+			<td style="background-color:#ddebf7; height:14.25pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">　</span></span></span></td>
+			<td style="background-color:#ddebf7; height:14.25pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">　</span></span></span></td>
+			<td style="background-color:#ddebf7; height:14.25pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">　</span></span></span></td>
+			<td style="background-color:#ddebf7; height:14.25pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">　</span></span></span></td>
+			<td style="background-color:#ddebf7; height:14.25pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">　</span></span></span></td>
+		</tr>
+		<tr>
+			<td style="background-color:#acb9ca; height:14.25pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">二进制</span></span></span></td>
+			<td style="background-color:#fce4d6; height:14.25pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">0</span></span></span></td>
+			<td style="background-color:#fce4d6; height:14.25pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">1</span></span></span></td>
+			<td style="background-color:#fce4d6; height:14.25pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">0</span></span></span></td>
+			<td style="background-color:#fce4d6; height:14.25pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">0</span></span></span></td>
+			<td style="background-color:#fce4d6; height:14.25pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">0</span></span></span></td>
+			<td style="background-color:#fce4d6; height:14.25pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">0</span></span></span></td>
+			<td style="background-color:#ffc000; height:14.25pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">0</span></span></span></td>
+			<td style="background-color:#ffc000; height:14.25pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">1</span></span></span></td>
+			<td style="background-color:#ffc000; height:14.25pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:red"><strong><span style="font-family:等线">0</span></strong></span></span></td>
+			<td style="background-color:#ffc000; height:14.25pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:red"><strong><span style="font-family:等线">0</span></strong></span></span></td>
+			<td style="background-color:#ffc000; height:14.25pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:red"><strong><span style="font-family:等线">0</span></strong></span></span></td>
+			<td style="background-color:#ffc000; height:14.25pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:red"><strong><span style="font-family:等线">0</span></strong></span></span></td>
+			<td style="background-color:#fce4d6; height:14.25pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">　</span></span></span></td>
+			<td style="background-color:#fce4d6; height:14.25pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">　</span></span></span></td>
+			<td style="background-color:#fce4d6; height:14.25pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">　</span></span></span></td>
+			<td style="background-color:#fce4d6; height:14.25pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">　</span></span></span></td>
+			<td style="background-color:#fce4d6; height:14.25pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">　</span></span></span></td>
+			<td style="background-color:#fce4d6; height:14.25pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">　</span></span></span></td>
+			<td style="background-color:#ffc000; height:14.25pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">　</span></span></span></td>
+			<td style="background-color:#ffc000; height:14.25pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">　</span></span></span></td>
+			<td style="background-color:#ffc000; height:14.25pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">　</span></span></span></td>
+			<td style="background-color:#ffc000; height:14.25pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">　</span></span></span></td>
+			<td style="background-color:#ffc000; height:14.25pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">　</span></span></span></td>
+			<td style="background-color:#ffc000; height:14.25pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">　</span></span></span></td>
+		</tr>
+		<tr>
+			<td style="background-color:#acb9ca; height:14.25pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">base<span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">64十进制索引</span></span></span></span></span></span></td>
+			<td colspan="6" style="background-color:#fce4d6; height:14.25pt; text-align:center; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">16</span></span></span></td>
+			<td colspan="6" style="background-color:#ffc000; height:14.25pt; text-align:center; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">16</span></span></span></td>
+			<td colspan="6" style="background-color:#fce4d6; height:14.25pt; text-align:center; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">　</span></span></span></td>
+			<td colspan="6" style="background-color:#ffc000; height:14.25pt; text-align:center; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">　</span></span></span></td>
+		</tr>
+		<tr>
+			<td style="background-color:#acb9ca; height:14.25pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">对应字符</span></span></span></td>
+			<td colspan="6" style="background-color:#fce4d6; height:14.25pt; text-align:center; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">Q</span></span></span></td>
+			<td colspan="6" style="background-color:#ffc000; height:14.25pt; text-align:center; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">Q</span></span></span></td>
+			<td colspan="6" style="background-color:#fce4d6; height:14.25pt; text-align:center; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">=</span></span></span></td>
+			<td colspan="6" style="background-color:#ffc000; height:14.25pt; text-align:center; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">=</span></span></span></td>
+		</tr>
+	</tbody>
+</table>
+
+<table cellspacing="0" style="border-collapse:collapse; border:none; width:633pt">
+	<tbody>
+		<tr>
+			<td style="background-color:#acb9ca; height:14.25pt; vertical-align:bottom; white-space:nowrap; width:105pt"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">文本</span></span></span></td>
+			<td colspan="8" style="background-color:#ddebf7; height:14.25pt; text-align:center; vertical-align:bottom; white-space:nowrap; width:176pt"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">A</span></span></span></td>
+			<td colspan="8" style="background-color:#9bc2e6; height:14.25pt; text-align:center; vertical-align:bottom; white-space:nowrap; width:176pt"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">B</span></span></span></td>
+			<td colspan="8" style="background-color:#ddebf7; height:14.25pt; text-align:center; vertical-align:bottom; white-space:nowrap; width:176pt"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">　</span></span></span></td>
+		</tr>
+		<tr>
+			<td style="background-color:#acb9ca; height:14.25pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">ASCII编码</span></span></span></td>
+			<td colspan="8" style="background-color:#ddebf7; height:14.25pt; text-align:center; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">65</span></span></span></td>
+			<td colspan="8" style="background-color:#9bc2e6; height:14.25pt; text-align:center; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">66</span></span></span></td>
+			<td colspan="8" style="background-color:#ddebf7; height:14.25pt; text-align:center; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">　</span></span></span></td>
+		</tr>
+		<tr>
+			<td style="background-color:#acb9ca; height:14.25pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">二进制</span></span></span></td>
+			<td style="height:14.25pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">0</span></span></span></td>
+			<td style="background-color:#ddebf7; height:14.25pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">1</span></span></span></td>
+			<td style="background-color:#ddebf7; height:14.25pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">0</span></span></span></td>
+			<td style="background-color:#ddebf7; height:14.25pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">0</span></span></span></td>
+			<td style="background-color:#ddebf7; height:14.25pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">0</span></span></span></td>
+			<td style="background-color:#ddebf7; height:14.25pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">0</span></span></span></td>
+			<td style="background-color:#ddebf7; height:14.25pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">0</span></span></span></td>
+			<td style="background-color:#ddebf7; height:14.25pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">1</span></span></span></td>
+			<td style="background-color:#9bc2e6; height:14.25pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">0</span></span></span></td>
+			<td style="background-color:#9bc2e6; height:14.25pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">1</span></span></span></td>
+			<td style="background-color:#9bc2e6; height:14.25pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">0</span></span></span></td>
+			<td style="background-color:#9bc2e6; height:14.25pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">0</span></span></span></td>
+			<td style="background-color:#9bc2e6; height:14.25pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">0</span></span></span></td>
+			<td style="background-color:#9bc2e6; height:14.25pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">0</span></span></span></td>
+			<td style="background-color:#9bc2e6; height:14.25pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">1</span></span></span></td>
+			<td style="background-color:#9bc2e6; height:14.25pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">0</span></span></span></td>
+			<td style="background-color:#ddebf7; height:14.25pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:red"><strong><span style="font-family:等线">0</span></strong></span></span></td>
+			<td style="background-color:#ddebf7; height:14.25pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:red"><strong><span style="font-family:等线">0</span></strong></span></span></td>
+			<td style="background-color:#ddebf7; height:14.25pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">　</span></span></span></td>
+			<td style="background-color:#ddebf7; height:14.25pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">　</span></span></span></td>
+			<td style="background-color:#ddebf7; height:14.25pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">　</span></span></span></td>
+			<td style="background-color:#ddebf7; height:14.25pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">　</span></span></span></td>
+			<td style="background-color:#ddebf7; height:14.25pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">　</span></span></span></td>
+			<td style="background-color:#ddebf7; height:14.25pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">　</span></span></span></td>
+		</tr>
+		<tr>
+			<td style="background-color:#acb9ca; height:14.25pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">二进制</span></span></span></td>
+			<td style="background-color:#fce4d6; height:14.25pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">0</span></span></span></td>
+			<td style="background-color:#fce4d6; height:14.25pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">1</span></span></span></td>
+			<td style="background-color:#fce4d6; height:14.25pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">0</span></span></span></td>
+			<td style="background-color:#fce4d6; height:14.25pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">0</span></span></span></td>
+			<td style="background-color:#fce4d6; height:14.25pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">0</span></span></span></td>
+			<td style="background-color:#fce4d6; height:14.25pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">0</span></span></span></td>
+			<td style="background-color:#ffc000; height:14.25pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">0</span></span></span></td>
+			<td style="background-color:#ffc000; height:14.25pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">1</span></span></span></td>
+			<td style="background-color:#ffc000; height:14.25pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">0</span></span></span></td>
+			<td style="background-color:#ffc000; height:14.25pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">1</span></span></span></td>
+			<td style="background-color:#ffc000; height:14.25pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">0</span></span></span></td>
+			<td style="background-color:#ffc000; height:14.25pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">0</span></span></span></td>
+			<td style="background-color:#fce4d6; height:14.25pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">0</span></span></span></td>
+			<td style="background-color:#fce4d6; height:14.25pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">0</span></span></span></td>
+			<td style="background-color:#fce4d6; height:14.25pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">1</span></span></span></td>
+			<td style="background-color:#fce4d6; height:14.25pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">0</span></span></span></td>
+			<td style="background-color:#fce4d6; height:14.25pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:red"><strong><span style="font-family:等线">0</span></strong></span></span></td>
+			<td style="background-color:#fce4d6; height:14.25pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:red"><strong><span style="font-family:等线">0</span></strong></span></span></td>
+			<td style="background-color:#ffc000; height:14.25pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">　</span></span></span></td>
+			<td style="background-color:#ffc000; height:14.25pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">　</span></span></span></td>
+			<td style="background-color:#ffc000; height:14.25pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">　</span></span></span></td>
+			<td style="background-color:#ffc000; height:14.25pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">　</span></span></span></td>
+			<td style="background-color:#ffc000; height:14.25pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">　</span></span></span></td>
+			<td style="background-color:#ffc000; height:14.25pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">　</span></span></span></td>
+		</tr>
+		<tr>
+			<td style="background-color:#acb9ca; height:14.25pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">base<span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">64十进制索引</span></span></span></span></span></span></td>
+			<td colspan="6" style="background-color:#fce4d6; height:14.25pt; text-align:center; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">16</span></span></span></td>
+			<td colspan="6" style="background-color:#ffc000; height:14.25pt; text-align:center; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">20</span></span></span></td>
+			<td colspan="6" style="background-color:#fce4d6; height:14.25pt; text-align:center; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">8</span></span></span></td>
+			<td colspan="6" style="background-color:#ffc000; height:14.25pt; text-align:center; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">　</span></span></span></td>
+		</tr>
+		<tr>
+			<td style="background-color:#acb9ca; height:14.25pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">对应字符</span></span></span></td>
+			<td colspan="6" style="background-color:#fce4d6; height:14.25pt; text-align:center; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">Q</span></span></span></td>
+			<td colspan="6" style="background-color:#ffc000; height:14.25pt; text-align:center; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">U</span></span></span></td>
+			<td colspan="6" style="background-color:#fce4d6; height:14.25pt; text-align:center; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">I</span></span></span></td>
+			<td colspan="6" style="background-color:#ffc000; height:14.25pt; text-align:center; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:等线">=</span></span></span></td>
+		</tr>
+	</tbody>
+</table>
+
+<p><a id="Java示例" name="Java示例"></a>Java示例</p>
+
+<p>jar：commons-codec-1.9.jar</p>
+
+<p>import org.apache.commons.codec.binary.Base64;</p>
+
+<pre>
+<code class="language-java">public String encode(String str) {
+	byte[] encodeBytes = Base64.encodeBase64(str.getBytes());
+	return new String(encodeBytes);
+}
+
+public String decode(String str) {
+	byte[] decodeBytes = Base64.encodeBase64(str.getBytes());
+	return new String(decodeBytes);
+}</code></pre>
+
+<p>&nbsp;</p>
+
+				    </section>
+					</article>
+				</main>
+            </div>
+        </div>
+    </section>
+    <a href="#top" id="goTop" ><i class="fa fa-angle-up fa-3x"></i></a>
+	<script src="../js/jquery.min.js"></script>
+    <script type="text/javascript" src="../js/datas/detailAngularJs.js"></script>
+    <script src="../plugins/scrolltopcontrol.js"></script>
+</body>
+</html>

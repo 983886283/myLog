@@ -1,0 +1,184 @@
+<html>
+<!DOCTYPE html>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <title>Nginx安装</title>
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link rel="stylesheet" href="../css/bootstrap.min.css">
+	<link rel="stylesheet" href="../css/font-awesome.min.css">
+    <link rel="stylesheet" href="../plugins/ckeditor/plugins/codesnippet/lib/highlight/styles/googlecode.css">
+    <link rel="stylesheet" type="text/css" href="../css/front/screen.css">
+    <script src="../plugins/ckeditor/plugins/codesnippet/lib/highlight/highlight.pack.js"></script>
+	<style type="text/css">
+		.list{
+			margin-top:5em;
+			position: fixed;
+		}
+		
+		.list h4{
+			padding-bottom:0.5em;
+			border-bottom:2px solid lightgray;
+		}
+		
+		.list .readTitle li{
+			margin-top:0.4em;
+			padding-left:1em;
+			border:2px solid white;
+		}
+		.list .readTitle li:hover{
+			border-left:2px solid black;
+			color:blue;
+		}
+		.liHover{
+			border-left:2px solid black !important;
+		}
+		.aHover{
+			color:blue;
+		}
+		.list .readTitle li a:hover{
+			color:blue;
+			text-decoration: none;
+		}
+	</style>
+</head>
+<body>
+    <section class="content-wrap container-fluid">
+        <div class="container">
+            <div class="row">
+				<div class="col-md-3 visible-lg-block visible-md-block">
+					<div class="list">
+						<h4>阅读目录</h4>
+						<div>
+							<ul class="readTitle list-unstyled"></ul>
+						</div>
+					</div>
+				</div>
+                 <main class="col-md-19 main-content">
+					<article class="post row">
+					<header class="post-head">
+				        <h1 class="post-title">Nginx安装</h1>
+				        <section class="post-meta">
+					        <span><span class="glyphicon glyphicon-user"></span>:<span>c</span></span>|
+				            <span><span class="glyphicon glyphicon-bookmark"></span>:<span>Software</span></span>|
+				            <span><span class="glyphicon glyphicon-time"></span>:<span>2018-03-26</span></span>
+				        </section>
+				    </header>
+				    <section class="post-content"><p><a id="安装Nginx" name="安装Nginx"></a>一、安装Nginx</p>
+
+<pre>
+<code>Nginx依赖包
+yum install gcc
+yum install pcre*
+yum install zlib zlib-devel
+yum install openssl openssl-devel
+下载Nginx使用wget命令
+yum install wget
+下载Nginx安装包
+wget -c http://nginx.org/download/nginx-1.13.9.tar.gz
+解压
+tar zvxf nginx-1.13.9.tar.gz
+进入nginx-1.13.9进行配置
+cd nginx-1.13.9
+./configure --prefix=/usr/common/nginx/ --with-http_stub_status_module
+编译安装
+make
+make install
+</code></pre>
+
+<p><a id="Nginx安装配置选项" name="Nginx安装配置选项"></a>二、Nginx安装配置选项（编译参数可能会根据版本的不同进行变化）<br />
+./configure --help查看编译参数列表，常见的选项如下：</p>
+
+<pre>
+<code class="language-nginx">--prefix=&lt;path&gt; - 安装路径，如果没有指定，默认为/usr/local/nginx。
+--sbin-path=&lt;path&gt; - nginx可执行命令的文件，如果没有指定，默认为&lt;prefix&gt;/sbin/nginx。
+--conf-path=&lt;path&gt; - 在没有使用-c参数指定的情况下nginx.conf的默认位置，如果没有指定，默认为&lt;prefix&gt;/conf/nginx.conf。
+--pid-path=&lt;path&gt; - nginx.pid的路径，如果没有在nginx.conf中通过“pid”指令指定，默认为&lt;prefix&gt;/logs/nginx.pid。
+--lock-path=&lt;path&gt; - nginx.lock文件路径，如果没有指定，默认为&lt;prefix&gt;/logs/nginx.lock。
+--error-log-path=&lt;path&gt; - 当没有在nginx.conf中使用“error_log”指令指定时的错误日志位置，如果没有指定，默认为&lt;prefix&gt;/logs/error.log。
+--http-log-path=&lt;path&gt; - 当没有在nginx.conf中使用“access_log”指令指定时的访问日志位置，如果没有指定，默认为&lt;prefix&gt;/logs/access.log。
+--user=&lt;user&gt; - 当没有在nginx.conf中使用“user”指令指定时nginx运行的用户，如果没有指定，默认为“nobody”。
+--group=&lt;group&gt; - 当没有在nginx.conf中使用“user”指令指定时nginx运行的组，如果没有指定，默认为“nobody”。
+--builddir=DIR - 设置构建目录。
+--with-rtsig_module - 启用rtsig模块。
+--with-select_module –without-select_module - 如果在configure的时候没有发现kqueue, epoll,rtsig或/dev/poll其中之一，select模块始终为启用状态。
+--with-poll_module –without-poll_module - 如果在configure的时候没有发现kqueue, epoll,rtsig或/dev/poll其中之一，poll模块始终为启用状态。
+--with-http_ssl_module - 启用ngx_http_ssl_module，启用SSL支持并且能够处理HTTPS请求。需要OpenSSL，在Debian系统中，对应的包为libssl-dev。
+--with-http_realip_module - 启用ngx_http_realip_module
+--with-http_addition_module - 启用ngx_http_addition_module
+--with-http_sub_module - 启用ngx_http_sub_module
+--with-http_dav_module - 启用ngx_http_dav_module
+--with-http_flv_module - 启用ngx_http_flv_module
+--with-http_stub_status_module - 启用”server status”（服务状态）页
+--without-http_charset_module - 禁用ngx_http_charset_module
+--without-http_gzip_module - 禁用ngx_http_gzip_module，如果启用，需要zlib包。
+--without-http_ssi_module - 禁用ngx_http_ssi_module
+--without-http_userid_module - 禁用ngx_http_userid_module
+--without-http_access_module - 禁用ngx_http_access_module
+--without-http_auth_basic_module - 禁用ngx_http_auth_basic_module
+--without-http_autoindex_module - 禁用ngx_http_autoindex_module
+--without-http_geo_module - 禁用ngx_http_geo_module
+--without-http_map_module - 禁用ngx_http_map_module
+--without-http_referer_module - 禁用ngx_http_referer_module
+--without-http_rewrite_module - 禁用ngx_http_rewrite_module。如果启用，需要PCRE包。
+--without-http_proxy_module - 禁用ngx_http_proxy_module
+--without-http_fastcgi_module - 禁用ngx_http_fastcgi_module
+--without-http_memcached_module - 禁用ngx_http_memcached_module
+--without-http_limit_zone_module - 禁用ngx_http_limit_zone_module
+--without-http_empty_gif_module - 禁用ngx_http_empty_gif_module
+--without-http_browser_module - 禁用ngx_http_browser_module
+--without-http_upstream_ip_hash_module - 禁用ngx_http_upstream_ip_hash_module
+--with-http_perl_module - 启用ngx_http_perl_module
+--with-perl_modules_path=PATH - 为perl模块设置路径
+--with-perl=PATH - 为perl库设置路径
+--http-client-body-temp-path=PATH - 为http连接的请求实体临时文件设置路径，如果没有指定，默认为&lt;prefix&gt;/client_body_temp
+--http-proxy-temp-path=PATH - 为http代理临时文件设置路径，如果没有指定，默认为&lt;prefix&gt;/proxy_temp
+--http-fastcgi-temp-path=PATH - 为http fastcgi临时文件设置路径，如果没有指定，默认为&lt;prefix&gt;/fastcgi_temp
+--without-http - 禁用HTTP服务
+--with-mail - 启用IMAP4/POP3/SMTP代理模块
+--with-mail_ssl_module - 启用ngx_mail_ssl_module
+--with-cc=PATH - 设置C编译器路径
+--with-cpp=PATH - 设置C预处理器路径
+--with-cc-opt=OPTIONS - 变量CFLAGS中附加的参数，用于FreeBSD中的PCRE库，同样需要指定–withcc-opt=”-I /usr/local/include”，如果我们使用select()函数则需要同时增加文件描述符数量，可以通过–with-cc-opt=”-D FD_SETSIZE=2048”指定。
+--with-ld-opt=OPTIONS - 通过连接器的附加参数，用于FreeBSD中的PCRE库，同样需要指定–withld-opt=”-L /usr/local/lib”。
+--with-cpu-opt=CPU - 指定编译的CPU，可用的值为: pentium, pentiumpro, pentium3, pentium4,athlon, opteron, amd64, sparc32, sparc64, ppc64
+--without-pcre - 禁用PCRE库文件，同时将禁用HTTP rewrite 模块，如果要在”location”指令中使用正则表达式，同样需要PCRE库。
+--with-pcre=DIR - 设置PCRE库源文件路径。
+--with-pcre-opt=OPTIONS - 在编译时为PCRE设置附加参数。
+--with-md5=DIR - 设置md5库源文件路径。
+--with-md5-opt=OPTIONS - 在编译时为md5设置附加参数。
+--with-md5-asm - 使用md5汇编源。
+--with-sha1=DIR - 设置sha1库源文件路径。
+--with-sha1-opt=OPTIONS - 在编译时为sha1设置附加参数。
+--with-sha1-asm - 使用sha1汇编源。
+--with-zlib=DIR - 设置zlib库源文件路径。
+--with-zlib-opt=OPTIONS - 在编译时为zlib设置附加参数。
+--with-zlib-asm=CPU - 为指定的CPU使用zlib汇编源进行优化，可用值为: pentium, pentiumpro。
+--with-openssl=DIR - 设置openssl库源文件路径。
+--with-openssl-opt=OPTIONS - 在编译时为openssl设置附加参数。
+--with-debug - 启用debug记录。
+--add-module=PATH - 增加一个在PATH中的第三方模块。</code></pre>
+
+<p><a id="测试配置文件" name="测试配置文件"></a>三、测试配置文件：<br />
+安装路径下的/nginx/sbin/nginx -t<br />
+<a id="Nginx启动" name="Nginx启动"></a>Nginx启动：<br />
+安装路径下的/nginx/sbin/nginx<br />
+<a id="Nginx停止" name="Nginx停止"></a>Nginx停止：<br />
+安装路径下的/nginx/sbin/nginx -s stop<br />
+或者是：nginx -s quit<br />
+<a id="Nginx重启" name="Nginx重启"></a>Nginx重启：<br />
+安装路径下的/nginx/sbin/nginx -s reload</p>
+
+				    </section>
+					</article>
+				</main>
+            </div>
+        </div>
+    </section>
+    <a href="#top" id="goTop" ><i class="fa fa-angle-up fa-3x"></i></a>
+	<script src="../js/jquery.min.js"></script>
+    <script type="text/javascript" src="../js/datas/detailAngularJs.js"></script>
+    <script src="../plugins/scrolltopcontrol.js"></script>
+</body>
+</html>

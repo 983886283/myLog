@@ -1,0 +1,270 @@
+<html>
+<!DOCTYPE html>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <title>三、分布式文档存储</title>
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link rel="stylesheet" href="../css/bootstrap.min.css">
+	<link rel="stylesheet" href="../css/font-awesome.min.css">
+    <link rel="stylesheet" href="../plugins/ckeditor/plugins/codesnippet/lib/highlight/styles/googlecode.css">
+    <link rel="stylesheet" type="text/css" href="../css/front/screen.css">
+    <script src="../plugins/ckeditor/plugins/codesnippet/lib/highlight/highlight.pack.js"></script>
+	<style type="text/css">
+		.list{
+			margin-top:5em;
+			position: fixed;
+		}
+		
+		.list h4{
+			padding-bottom:0.5em;
+			border-bottom:2px solid lightgray;
+		}
+		
+		.list .readTitle li{
+			margin-top:0.4em;
+			padding-left:1em;
+			border:2px solid white;
+		}
+		.list .readTitle li:hover{
+			border-left:2px solid black;
+			color:blue;
+		}
+		.liHover{
+			border-left:2px solid black !important;
+		}
+		.aHover{
+			color:blue;
+		}
+		.list .readTitle li a:hover{
+			color:blue;
+			text-decoration: none;
+		}
+	</style>
+</head>
+<body>
+    <section class="content-wrap container-fluid">
+        <div class="container">
+            <div class="row">
+				<div class="col-md-3 visible-lg-block visible-md-block">
+					<div class="list">
+						<h4>阅读目录</h4>
+						<div>
+							<ul class="readTitle list-unstyled"></ul>
+						</div>
+					</div>
+				</div>
+                 <main class="col-md-19 main-content">
+					<article class="post row">
+					<header class="post-head">
+				        <h1 class="post-title">三、分布式文档存储</h1>
+				        <section class="post-meta">
+					        <span><span class="glyphicon glyphicon-user"></span>:<span>c</span></span>|
+				            <span><span class="glyphicon glyphicon-bookmark"></span>:<span>Elasticsearch</span></span>|
+				            <span><span class="glyphicon glyphicon-time"></span>:<span>2018-06-06</span></span>
+				        </section>
+				    </header>
+				    <section class="post-content"><h2>分布式文档存储</h2>
+
+<p>路由一个文档到一个分片中</p>
+
+<p>当索引一个文档的时候，文档会被存储到一个主分片中。&nbsp;Elasticsearch 如何知道一个文档应该存放到哪个分片中呢？当我们创建文档时，它如何决定这个文档应当被存储在分片&nbsp;<code>1</code>&nbsp;还是分片&nbsp;<code>2</code>&nbsp;中呢？</p>
+
+<p>首先这肯定不会是随机的，否则将来要获取文档的时候我们就不知道从何处寻找了。实际上，这个过程是根据下面这个公式决定的：</p>
+
+<pre>
+shard = hash(routing) % number_of_primary_shards</pre>
+
+<p><code>routing</code>&nbsp;是一个可变值，默认是文档的&nbsp;<code>_id</code>&nbsp;，也可以设置成一个自定义的值。&nbsp;<code>routing</code>&nbsp;通过 hash 函数生成一个数字，然后这个数字再除以&nbsp;<code>number_of_primary_shards</code>&nbsp;（主分片的数量）后得到&nbsp;<strong>余数</strong>&nbsp;。这个分布在&nbsp;<code>0</code>&nbsp;到&nbsp;<code>number_of_primary_shards-1</code>&nbsp;之间的余数，就是我们所寻求的文档所在分片的位置。</p>
+
+<p>这就解释了为什么我们要在创建索引的时候就确定好主分片的数量&nbsp;并且永远不会改变这个数量：因为如果数量变化了，那么所有之前路由的值都会无效，文档也再也找不到了。</p>
+
+<p><img alt="注意" src="https://www.elastic.co/guide/cn/elasticsearch/guide/current/images/icons/note.png" /></p>
+
+<p>所有的文档 API（&nbsp;<code>get</code>&nbsp;、&nbsp;<code>index</code>&nbsp;、&nbsp;<code>delete</code>&nbsp;、&nbsp;<code>bulk</code>&nbsp;、&nbsp;<code>update</code>&nbsp;以及&nbsp;<code>mget</code>&nbsp;）都接受一个叫做&nbsp;<code>routing</code>&nbsp;的路由参数&nbsp;，通过这个参数我们可以自定义文档到分片的映射。一个自定义的路由参数可以用来确保所有相关的文档&mdash;&mdash;例如所有属于同一个用户的文档&mdash;&mdash;都被存储到同一个分片中。</p>
+
+<p>主分片和副本分片如何交互</p>
+
+<p>为了说明目的, 我们&nbsp;假设有一个集群由三个节点组成。 它包含一个叫&nbsp;<code>blogs</code>&nbsp;的索引，有两个主分片，每个主分片有两个副本分片。相同分片的副本不会放在同一节点，所以我们的集群看起来像&nbsp;图&nbsp;8 &ldquo;有三个节点和一个索引的集群&rdquo;。</p>
+
+<p>&nbsp;</p>
+
+<p><strong>图&nbsp;8.&nbsp;有三个节点和一个索引的集群</strong></p>
+
+<p><img alt="有三个节点和一个索引的集群" src="https://www.elastic.co/guide/cn/elasticsearch/guide/current/images/elas_0401.png" /></p>
+
+<p>&nbsp;</p>
+
+<p>我们可以发送请求到集群中的任一节点。&nbsp;每个节点都有能力处理任意请求。 每个节点都知道集群中任一文档位置，所以可以直接将请求转发到需要的节点上。 在下面的例子中，将所有的请求发送到&nbsp;<code>Node 1</code>&nbsp;，我们将其称为&nbsp;<em>协调节点(coordinating node)</em>&nbsp;。</p>
+
+<p><img alt="提示" src="https://www.elastic.co/guide/cn/elasticsearch/guide/current/images/icons/tip.png" /></p>
+
+<p>当发送请求的时候， 为了扩展负载，更好的做法是轮询集群中所有的节点。</p>
+
+<h2>新建、索引和删除文档</h2>
+
+<p>新建、索引和删除&nbsp;请求都是&nbsp;<em>写</em>&nbsp;操作，&nbsp;必须在主分片上面完成之后才能被复制到相关的副本分片，如下图所示&nbsp;<a href="https://www.elastic.co/guide/cn/elasticsearch/guide/current/distrib-write.html#img-distrib-write" title="图 9. 新建、索引和删除单个文档">图&nbsp;9 &ldquo;新建、索引和删除单个文档&rdquo;</a>.</p>
+
+<p><strong>图&nbsp;9.&nbsp;新建、索引和删除单个文档</strong></p>
+
+<p><img alt="新建、索引和删除单个文档" src="https://www.elastic.co/guide/cn/elasticsearch/guide/current/images/elas_0402.png" /></p>
+
+<p>&nbsp;</p>
+
+<p>以下是在主副分片和任何副本分片上面&nbsp;成功新建，索引和删除文档所需要的步骤顺序：</p>
+
+<ol style="list-style-type:decimal">
+	<li>客户端向&nbsp;<code>Node 1</code>&nbsp;发送新建、索引或者删除请求。</li>
+	<li>节点使用文档的&nbsp;<code>_id</code>&nbsp;确定文档属于分片 0 。请求会被转发到&nbsp;<code>Node 3`，因为分片 0 的主分片目前被分配在 `Node 3</code>&nbsp;上。</li>
+	<li><code>Node 3</code>&nbsp;在主分片上面执行请求。如果成功了，它将请求并行转发到&nbsp;<code>Node 1</code>&nbsp;和&nbsp;<code>Node 2</code>&nbsp;的副本分片上。一旦所有的副本分片都报告成功,&nbsp;<code>Node 3</code>&nbsp;将向协调节点报告成功，协调节点向客户端报告成功。</li>
+</ol>
+
+<p>在客户端收到成功响应时，文档变更已经在主分片和所有副本分片执行完成，变更是安全的。</p>
+
+<p>有一些可选的请求参数允许您影响这个过程，可能以数据安全为代价提升性能。这些选项很少使用，因为Elasticsearch已经很快，但是为了完整起见，在这里阐述如下：</p>
+
+<p><code>consistency</code></p>
+
+<p>consistency，即一致性。在默认设置下，即使仅仅是在试图执行一个_写_操作之前，主分片都会要求必须要有 _规定数量(quorum)_（或者换种说法，也即必须要有大多数）的分片副本处于活跃可用状态，才会去执行_写_操作(其中分片副本可以是主分片或者副本分片)。这是为了避免在发生网络分区故障（network partition）的时候进行_写_操作，进而导致数据不一致。_规定数量_即：</p>
+
+<pre>
+int( (primary + number_of_replicas) / 2 ) + 1</pre>
+
+<p><code>consistency</code>&nbsp;参数的值可以设为&nbsp;<code>one</code>&nbsp;（只要主分片状态 ok 就允许执行_写_操作）,<code>all`（必须要主分片和所有副本分片的状态没问题才允许执行_写_操作）, 或 `quorum</code>&nbsp;。默认值为&nbsp;<code>quorum</code>&nbsp;, 即大多数的分片副本状态没问题就允许执行_写_操作。</p>
+
+<p>注意，<em>规定数量</em>&nbsp;的计算公式中&nbsp;<code>number_of_replicas</code>&nbsp;指的是在索引设置中的设定副本分片数，而不是指当前处理活动状态的副本分片数。如果你的索引设置中指定了当前索引拥有三个副本分片，那规定数量的计算结果即：</p>
+
+<pre>
+int( (primary + 3 replicas) / 2 ) + 1 = 3</pre>
+
+<p>如果此时你只启动两个节点，那么处于活跃状态的分片副本数量就达不到规定数量，也因此您将无法索引和删除任何文档。</p>
+
+<p><code>timeout</code></p>
+
+<p>如果没有足够的副本分片会发生什么？ Elasticsearch会等待，希望更多的分片出现。默认情况下，它最多等待1分钟。 如果你需要，你可以使用&nbsp;<code>timeout</code>&nbsp;参数&nbsp;使它更早终止：&nbsp;<code>100</code>&nbsp;100毫秒，<code>30s</code>&nbsp;是30秒。</p>
+
+<p><img alt="注意" src="https://www.elastic.co/guide/cn/elasticsearch/guide/current/images/icons/note.png" /></p>
+
+<p>新索引默认有&nbsp;<code>1</code>&nbsp;个副本分片，这意味着为满足&nbsp;<code>规定数量</code>&nbsp;<em>应该</em>&nbsp;需要两个活动的分片副本。 但是，这些默认的设置会阻止我们在单一节点上做任何事情。为了避免这个问题，要求只有当<code>number_of_replicas</code>&nbsp;大于1的时候，规定数量才会执行。</p>
+
+<h2>取回一个文档</h2>
+
+<p>可以从主分片或者从其它任意副本分片检索文档&nbsp;，如下图所示&nbsp;<a href="https://www.elastic.co/guide/cn/elasticsearch/guide/current/distrib-read.html#img-distrib-read" title="图 10. 取回单个文档">图&nbsp;10 &ldquo;取回单个文档&rdquo;</a>.</p>
+
+<p><strong>图&nbsp;10.&nbsp;取回单个文档</strong></p>
+
+<p><img alt="取回单个文档" src="https://www.elastic.co/guide/cn/elasticsearch/guide/current/images/elas_0403.png" /></p>
+
+<p>&nbsp;</p>
+
+<p>以下是从主分片或者副本分片检索文档的步骤顺序：</p>
+
+<p>1、客户端向&nbsp;<code>Node 1</code>&nbsp;发送获取请求。</p>
+
+<p>2、节点使用文档的&nbsp;<code>_id</code>&nbsp;来确定文档属于分片&nbsp;<code>0</code>&nbsp;。分片&nbsp;<code>0</code>&nbsp;的副本分片存在于所有的三个节点上。 在这种情况下，它将请求转发到&nbsp;<code>Node 2</code>&nbsp;。</p>
+
+<p>3、<code>Node 2</code>&nbsp;将文档返回给&nbsp;<code>Node 1</code>&nbsp;，然后将文档返回给客户端。</p>
+
+<p>在处理读取请求时，协调结点在每次请求的时候都会通过轮询所有的副本分片来达到负载均衡。</p>
+
+<p>在文档被检索时，已经被索引的文档可能已经存在于主分片上但是还没有复制到副本分片。 在这种情况下，副本分片可能会报告文档不存在，但是主分片可能成功返回文档。 一旦索引请求成功返回给用户，文档在主分片和副本分片都是可用的。</p>
+
+<h2>局部更新文档</h2>
+
+<p>如&nbsp;<a href="https://www.elastic.co/guide/cn/elasticsearch/guide/current/_partial_updates_to_a_document.html#img-distrib-update" title="图 11. 局部更新文档">图&nbsp;11 &ldquo;局部更新文档&rdquo;</a>&nbsp;所示，<code>update</code>&nbsp;API 结合了先前说明的读取和写入模式&nbsp;。</p>
+
+<p><strong>图&nbsp;11.&nbsp;局部更新文档</strong></p>
+
+<p><img alt="局部更新文档" src="https://www.elastic.co/guide/cn/elasticsearch/guide/current/images/elas_0404.png" /></p>
+
+<p>&nbsp;</p>
+
+<p>以下是部分更新一个文档的步骤：</p>
+
+<ol style="list-style-type:decimal">
+	<li>客户端向&nbsp;<code>Node 1</code>&nbsp;发送更新请求。</li>
+	<li>它将请求转发到主分片所在的&nbsp;<code>Node 3</code>&nbsp;。</li>
+	<li><code>Node 3</code>&nbsp;从主分片检索文档，修改&nbsp;<code>_source</code>&nbsp;字段中的 JSON ，并且尝试重新索引主分片的文档。 如果文档已经被另一个进程修改，它会重试步骤 3 ，超过&nbsp;<code>retry_on_conflict</code>&nbsp;次后放弃。</li>
+	<li>如果&nbsp;<code>Node 3</code>&nbsp;成功地更新文档，它将新版本的文档并行转发到&nbsp;<code>Node 1</code>&nbsp;和&nbsp;<code>Node 2</code>&nbsp;上的副本分片，重新建立索引。 一旦所有副本分片都返回成功，&nbsp;<code>Node 3</code>&nbsp;向协调节点也返回成功，协调节点向客户端返回成功。</li>
+</ol>
+
+<p><code>update</code>&nbsp;API 还接受&nbsp;<code>routing</code>&nbsp;、&nbsp;<code>replication</code>&nbsp;、&nbsp;<code>consistency</code>&nbsp;和<code>timeout</code>&nbsp;参数。</p>
+
+<p><strong>基于文档的复制</strong></p>
+
+<p>当主分片把更改转发到副本分片时，&nbsp;它不会转发更新请求。 相反，它转发完整文档的新版本。请记住，这些更改将会异步转发到副本分片，并且不能保证它们以发送它们相同的顺序到达。 如果Elasticsearch仅转发更改请求，则可能以错误的顺序应用更改，导致得到损坏的文档。</p>
+
+<h2>多文档模式</h2>
+
+<p><code>mget</code>&nbsp;和&nbsp;<code>bulk</code>&nbsp;API 的&nbsp;模式类似于单文档模式。区别在于协调节点知道每个文档存在于哪个分片中。 它将整个多文档请求分解成&nbsp;<em>每个分片</em>&nbsp;的多文档请求，并且将这些请求并行转发到每个参与节点。</p>
+
+<p>协调节点一旦收到来自每个节点的应答，就将每个节点的响应收集整理成单个响应，返回给客户端，如<a href="https://www.elastic.co/guide/cn/elasticsearch/guide/current/distrib-multi-doc.html#img-distrib-mget" title="图 12. 使用 mget 取回多个文档">图&nbsp;12 &ldquo;使用&nbsp;<code>mget</code>&nbsp;取回多个文档&rdquo;</a>&nbsp;所示。</p>
+
+<p><strong>图&nbsp;12.&nbsp;使用&nbsp;<code>mget</code>&nbsp;取回多个文档</strong></p>
+
+<p><img alt="“使用 `mget` 取回多个文档”" src="https://www.elastic.co/guide/cn/elasticsearch/guide/current/images/elas_0405.png" /></p>
+
+<p>&nbsp;</p>
+
+<p>以下是使用单个&nbsp;<code>mget</code>&nbsp;请求取回多个文档所需的步骤顺序：</p>
+
+<ol style="list-style-type:decimal">
+	<li>客户端向&nbsp;<code>Node 1</code>&nbsp;发送&nbsp;<code>mget</code>&nbsp;请求。</li>
+	<li><code>Node 1</code>&nbsp;为每个分片构建多文档获取请求，然后并行转发这些请求到托管在每个所需的主分片或者副本分片的节点上。一旦收到所有答复，&nbsp;<code>Node 1</code>&nbsp;构建响应并将其返回给客户端。</li>
+</ol>
+
+<p>可以对&nbsp;<code>docs</code>&nbsp;数组中每个文档设置&nbsp;<code>routing</code>&nbsp;参数。</p>
+
+<p>bulk API， 如&nbsp;<a href="https://www.elastic.co/guide/cn/elasticsearch/guide/current/distrib-multi-doc.html#img-distrib-bulk" title="图 13. 使用 bulk 修改多个文档">图&nbsp;13 &ldquo;使用&nbsp;<code>bulk</code>&nbsp;修改多个文档&rdquo;</a>&nbsp;所示， 允许在单个批量请求中执行多个创建、索引、删除和更新请求。</p>
+
+<p><strong>图&nbsp;13.&nbsp;使用&nbsp;<code>bulk</code>&nbsp;修改多个文档</strong></p>
+
+<p><img alt="“使用 `bulk` 修改多个文档”" src="https://www.elastic.co/guide/cn/elasticsearch/guide/current/images/elas_0406.png" /></p>
+
+<p>&nbsp;</p>
+
+<p><code>bulk</code>&nbsp;API&nbsp;按如下步骤顺序执行：</p>
+
+<ol style="list-style-type:decimal">
+	<li>客户端向&nbsp;<code>Node 1</code>&nbsp;发送&nbsp;<code>bulk</code>&nbsp;请求。</li>
+	<li><code>Node 1</code>&nbsp;为每个节点创建一个批量请求，并将这些请求并行转发到每个包含主分片的节点主机。</li>
+	<li>主分片一个接一个按顺序执行每个操作。当每个操作成功时，主分片并行转发新文档（或删除）到副本分片，然后执行下一个操作。 一旦所有的副本分片报告所有操作成功，该节点将向协调节点报告成功，协调节点将这些响应收集整理并返回给客户端。</li>
+</ol>
+
+<p><code>bulk</code>&nbsp;API 还可以在整个批量请求的最顶层使用&nbsp;<code>consistency</code>&nbsp;参数，以及在每个请求中的元数据中使用<code>routing</code>&nbsp;参数。</p>
+
+<h3>为什么是有趣的格式？</h3>
+
+<p>当我们了解批量请求时，&nbsp;您可能会问自己， &quot;为什么&nbsp;<code>bulk</code>&nbsp;API 需要有换行符的有趣格式，而不是发送包装在 JSON 数组中的请求，例如&nbsp;<code>mget</code>&nbsp;API？&quot; 。</p>
+
+<p>为了回答这一点，我们需要解释一点背景：在批量请求中引用的每个文档可能属于不同的主分片， 每个文档可能被分配给集群中的任何节点。这意味着批量请求&nbsp;<code>bulk</code>&nbsp;中的每个&nbsp;<em>操作</em>&nbsp;都需要被转发到正确节点上的正确分片。</p>
+
+<p>如果单个请求被包装在 JSON 数组中，那就意味着我们需要执行以下操作：</p>
+
+<ul style="list-style-type:disc">
+	<li>将 JSON 解析为数组（包括文档数据，可以非常大）</li>
+	<li>查看每个请求以确定应该去哪个分片</li>
+	<li>为每个分片创建一个请求数组</li>
+	<li>将这些数组序列化为内部传输格式</li>
+	<li>将请求发送到每个分片</li>
+</ul>
+
+<p>这是可行的，但需要大量的 RAM 来存储原本相同的数据的副本，并将创建更多的数据结构，Java虚拟机（JVM）将不得不花费时间进行垃圾回收。</p>
+
+<p>相反，Elasticsearch可以直接读取被网络缓冲区接收的原始数据。 它使用换行符字符来识别和解析小的<code>action/metadata</code>&nbsp;行来决定哪个分片应该处理每个请求。</p>
+
+<p>这些原始请求会被直接转发到正确的分片。没有冗余的数据复制，没有浪费的数据结构。整个请求尽可能在最小的内存中处理。</p>
+
+				    </section>
+					</article>
+				</main>
+            </div>
+        </div>
+    </section>
+    <a href="#top" id="goTop" ><i class="fa fa-angle-up fa-3x"></i></a>
+	<script src="../js/jquery.min.js"></script>
+    <script type="text/javascript" src="../js/datas/detailAngularJs.js"></script>
+    <script src="../plugins/scrolltopcontrol.js"></script>
+</body>
+</html>

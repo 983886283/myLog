@@ -1,0 +1,175 @@
+<html>
+<!DOCTYPE html>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <title>Elasticsearch（十二）</title>
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link rel="stylesheet" href="../css/bootstrap.min.css">
+	<link rel="stylesheet" href="../css/font-awesome.min.css">
+    <link rel="stylesheet" href="../plugins/ckeditor/plugins/codesnippet/lib/highlight/styles/googlecode.css">
+    <link rel="stylesheet" type="text/css" href="../css/front/screen.css">
+    <script src="../plugins/ckeditor/plugins/codesnippet/lib/highlight/highlight.pack.js"></script>
+	<style type="text/css">
+		.list{
+			margin-top:5em;
+			position: fixed;
+		}
+		
+		.list h4{
+			padding-bottom:0.5em;
+			border-bottom:2px solid lightgray;
+		}
+		
+		.list .readTitle li{
+			margin-top:0.4em;
+			padding-left:1em;
+			border:2px solid white;
+		}
+		.list .readTitle li:hover{
+			border-left:2px solid black;
+			color:blue;
+		}
+		.liHover{
+			border-left:2px solid black !important;
+		}
+		.aHover{
+			color:blue;
+		}
+		.list .readTitle li a:hover{
+			color:blue;
+			text-decoration: none;
+		}
+	</style>
+</head>
+<body>
+    <section class="content-wrap container-fluid">
+        <div class="container">
+            <div class="row">
+				<div class="col-md-3 visible-lg-block visible-md-block">
+					<div class="list">
+						<h4>阅读目录</h4>
+						<div>
+							<ul class="readTitle list-unstyled"></ul>
+						</div>
+					</div>
+				</div>
+                 <main class="col-md-19 main-content">
+					<article class="post row">
+					<header class="post-head">
+				        <h1 class="post-title">Elasticsearch（十二）</h1>
+				        <section class="post-meta">
+					        <span><span class="glyphicon glyphicon-user"></span>:<span>c</span></span>|
+				            <span><span class="glyphicon glyphicon-bookmark"></span>:<span>Elasticsearch</span></span>|
+				            <span><span class="glyphicon glyphicon-time"></span>:<span>2017-07-10</span></span>
+				        </section>
+				    </header>
+				    <section class="post-content"><p><a name="数据路由"></a>1、document路由到shard上是什么意思？</p>
+
+<p>一个index的数据会被分为多片，每片都在一个shard中，所以一个document，只能存在一个shard中，当客户端创建document时，es需要决定这个document放在这个index的哪个shard上，这个过程就被称为document routing，数据路由</p>
+
+<p>&nbsp;</p>
+
+<p><a name="路由算法"></a>2、路由算法？</p>
+
+<p>shard = hash(routing) % number_of_primary_shards</p>
+
+<p>举个例子，一个index有3个primary shard，P0，P1，P2</p>
+
+<p>每次增删改查一个document的时候，都会带过来一个routing number，默认就是这个document的_id（可能是手动指定，也可能是自动生成）</p>
+
+<p>假设routing = 1</p>
+
+<p>会将这个routing值，传入一个hash函数中，产出一个routing值的hash值，假设hash(routing) = 21</p>
+
+<p>然后将hash函数产出的值对这个index的primary shard的数量求余数，21 % 3 = 0</p>
+
+<p>这个document就放在P0上。</p>
+
+<p>决定一个document在哪个shard上，最重要的一个值就是routing值，默认是_id，也可以手动指定，相同的routing值，每次过来，从hash函数中，产出的hash值一定是相同的</p>
+
+<p>无论hash值是什么数字，对number_of_primary_shards求余数，结果一定是在0~number_of_primary_shards-1之间这个范围内的。本例为0,1,2，不会超出。</p>
+
+<p>&nbsp;</p>
+
+<p><a name="_id or custom routing value"></a>3、_id or custom routing value</p>
+
+<p>默认的routing就是_id</p>
+
+<p>也可以在发送请求的时候，手动指定一个routing value，比如说put /index/type/id?routing=user_id</p>
+
+<p>&nbsp;</p>
+
+<p>手动指定routing value是很有用的，可以保证说，某一类document一定被路由到一个shard上去，那么在后续进行应用级别的负载均衡，以及提升批量读取的性能的时候，是很有帮助的</p>
+
+<p>&nbsp;</p>
+
+<p><a name="谜底"></a>4、primary shard一旦index建立，primary&nbsp;shard数量不可变的谜底</p>
+
+<p>举例：查找数据时，因为routing为_id，所以routing不变，假如routing为21，primary&nbsp;shard数为3，查找数据的时候为21%3=0，到p0去寻找数据，如果primary&nbsp;shard增加了一个primary&nbsp;shard数为4，查找数据的时候为21%4=1，到p1去寻找数据，寻找不到，间接导致数据丢失，所以primary shard一旦index建立，primary&nbsp;shard数量不可变,但是replica shard可以改变</p>
+
+<p>&nbsp;</p>
+
+<p><a name="preference"></a>5、preference</p>
+
+<p>决定了哪些shard会被用来执行搜索操作</p>
+
+<p>_primary, _primary_first, _local, _only_node:xyz, _prefer_node:xyz, _shards:2,3</p>
+
+<p>bouncing results问题:</p>
+
+<p>两个document排序，field值相同；请求在不同的shard上，排序可能不同；每次页面上看到的搜索结果排序可能不一样。这就是bouncing result，也就是跳跃的结果。</p>
+
+<p>解决方案就是将preference设置为一个字符串，比如说user_id，让每个user每次搜索的时候，都使用同一个replica shard去执行，就不会看到bouncing results了</p>
+
+<p>&nbsp;</p>
+
+<p><a name="search_type"></a>6、search_type</p>
+
+<p>default：query_then_fetch</p>
+
+<p>dfs_query_then_fetch，可以提升revelance sort精准度</p>
+
+<p>&nbsp;</p>
+
+<p><a name="Document增删改内部原理"></a>7、Document增删改内部原理</p>
+
+<p>（1）客户端选择一个node发送请求过去，这个node就是coordinating node（协调节点）</p>
+
+<p>（2）coordinating node，对document进行路由，将请求转发给对应的node（有primary shard）</p>
+
+<p>（3）实际的node上的primary shard处理请求，然后将数据同步到replica node</p>
+
+<p>（4）coordinating node，如果发现primary node和所有replica node都搞定之后，就返回响应结果给客户端</p>
+
+<p>&nbsp;</p>
+
+<p><a name="Document查询内部原理"></a>8、Document查询内部原理</p>
+
+<p>（1）客户端发送请求到任意一个node，成为coordinate node（协调节点）</p>
+
+<p>（2）coordinate node对document进行路由，将请求转发到对应的node，此时会使用round-robin随机轮询算法，在primary shard以及其所有replica中随机选择一个，让读请求负载均衡</p>
+
+<p>（3）接收请求的node返回document给coordinate node</p>
+
+<p>（4）coordinate node返回document给客户端</p>
+
+<p>（5）特殊情况：document如果还在建立索引过程中，可能只有primary shard有，任何一个replica shard都没有，此时可能会导致无法读取到document，但是document完成索引建立之后，primary shard和replica shard就都有了</p>
+
+<p>注释：对于读请求，请求不仅可以发送至primary shard上也可以发送至replica shard上；</p>
+
+<p>round-robin随机轮询算法：如果coordinate node接收到对一个Document的4次请求，就会使用算法将两次查询请求发送给primary shard，两次查询请求发送给replica shard，得到负载均衡的效果</p>
+
+				    </section>
+					</article>
+				</main>
+            </div>
+        </div>
+    </section>
+    <a href="#top" id="goTop" ><i class="fa fa-angle-up fa-3x"></i></a>
+	<script src="../js/jquery.min.js"></script>
+    <script type="text/javascript" src="../js/datas/detailAngularJs.js"></script>
+    <script src="../plugins/scrolltopcontrol.js"></script>
+</body>
+</html>

@@ -1,0 +1,157 @@
+<html>
+<!DOCTYPE html>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <title>ES基础理论（五）</title>
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link rel="stylesheet" href="../css/bootstrap.min.css">
+	<link rel="stylesheet" href="../css/font-awesome.min.css">
+    <link rel="stylesheet" href="../plugins/ckeditor/plugins/codesnippet/lib/highlight/styles/googlecode.css">
+    <link rel="stylesheet" type="text/css" href="../css/front/screen.css">
+    <script src="../plugins/ckeditor/plugins/codesnippet/lib/highlight/highlight.pack.js"></script>
+	<style type="text/css">
+		.list{
+			margin-top:5em;
+			position: fixed;
+		}
+		
+		.list h4{
+			padding-bottom:0.5em;
+			border-bottom:2px solid lightgray;
+		}
+		
+		.list .readTitle li{
+			margin-top:0.4em;
+			padding-left:1em;
+			border:2px solid white;
+		}
+		.list .readTitle li:hover{
+			border-left:2px solid black;
+			color:blue;
+		}
+		.liHover{
+			border-left:2px solid black !important;
+		}
+		.aHover{
+			color:blue;
+		}
+		.list .readTitle li a:hover{
+			color:blue;
+			text-decoration: none;
+		}
+	</style>
+</head>
+<body>
+    <section class="content-wrap container-fluid">
+        <div class="container">
+            <div class="row">
+				<div class="col-md-3 visible-lg-block visible-md-block">
+					<div class="list">
+						<h4>阅读目录</h4>
+						<div>
+							<ul class="readTitle list-unstyled"></ul>
+						</div>
+					</div>
+				</div>
+                 <main class="col-md-19 main-content">
+					<article class="post row">
+					<header class="post-head">
+				        <h1 class="post-title">ES基础理论（五）</h1>
+				        <section class="post-meta">
+					        <span><span class="glyphicon glyphicon-user"></span>:<span>c</span></span>|
+				            <span><span class="glyphicon glyphicon-bookmark"></span>:<span>Elasticsearch</span></span>|
+				            <span><span class="glyphicon glyphicon-time"></span>:<span>2017-07-12</span></span>
+				        </section>
+				    </header>
+				    <section class="post-content"><p><a name="透明隐藏特性"></a>1、Elasticsearch对复杂分布式机制的透明隐藏特性</p>
+
+<p>Elasticsearch是一套分布式的系统，分布式是为了应对大数据量</p>
+
+<p>Elasticsearch隐藏了复杂的分布式机制</p>
+
+<p>分片机制（我们之前随随便便就将一些document插入到es集群中去了，我们有没有care过数据怎么进行分片的，数据到哪个shard中去）</p>
+
+<p>cluster discovery（集群发现机制，我们之前在做那个集群status从yellow转green的实验里，直接启动了第二个es进程，那个进程作为一个node自动就发现了集群，并且加入了进去，还接受了部分数据，replica shard）</p>
+
+<p>shard负载均衡（举例，假设现在有3个节点，总共有25个shard要分配到3个节点上去，es会自动进行均匀分配，以保持每个节点的均衡的读写负载请求）</p>
+
+<p>shard副本，请求路由，集群扩容，shard重分配</p>
+
+<p><a name="垂直扩容与水平扩容"></a>2、Elasticsearch的垂直扩容与水平扩容</p>
+
+<p>垂直扩容：采购更强大的服务器，成本非常高昂，而且会有瓶颈</p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;普通服务器：1T，1万</p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;强大服务器：10T，50万</p>
+
+<p>水平扩容：业界经常采用的方案，采购越来越多的普通服务器，性能比较一般，但是很多普通服务器组织在一起，就能构成强大的计算和存储能力</p>
+
+<p>&nbsp;</p>
+
+<p>扩容对应用程序的透明性</p>
+
+<p><a name="数据rebalance"></a>3、增加或减少节点时的数据rebalance</p>
+
+<p>保持负载均衡</p>
+
+<p><a name="master节点"></a>4、master节点</p>
+
+<p>master节点不承载请求，所以不会是一个单点瓶颈（不是请求先发送至master节点，然后再由master节点分配请求，不会导致程序受单台服务器的瓶颈限制）</p>
+
+<p>（1）管理es集群的元数据，比如说索引的创建和删除，维护索引的元数据，节点的增加和删除，维护节点的元数据</p>
+
+<p>（2）默认情况下，会自动选择出一个节点作为master节点</p>
+
+<p><a name="节点平等的分布式架构"></a>5、节点平等的分布式架构</p>
+
+<p>（1）节点对等，每个节点都能接收所有的请求</p>
+
+<p>（2）任何节点接收到请求，都会自动请求路由到有相关数据的节点上去处理请求</p>
+
+<p>（3）原始接收到请求的节点会从处理请求的节点收集响应数据，返回响应</p>
+
+<p><a name="横向扩容|超出扩容极限|提升容错性"></a>6、横向扩容过程，如何超出扩容极限，以及如何提升容错性</p>
+
+<p>（1）primary&amp;replica自动负载均衡，6个shard，3 primary，3 replica</p>
+
+<p>（2）扩容之后，每个node有更少的shard，IO/CPU/Memory资源给每个shard分配更多，每个shard性能更好</p>
+
+<p>（3）扩容的极限，6个shard（3 primary，3 replica），最多扩容到6台机器，每个shard可以占用单台服务器的所有资源，性能最好</p>
+
+<p>（4）超出扩容极限，动态修改replica数量，9个shard（3primary，6 replica），扩容到9台机器，比3台机器时，拥有3倍的读吞吐量</p>
+
+<p>（5）3台机器下，9个shard（3 primary，6 replica），资源更少，但是容错性更好，最多容纳2台机器宕机，6个shard只能容纳1台机器宕机</p>
+
+<p>（6）这里的这些知识点，你综合起来看，就是说，一方面告诉你扩容的原理，怎么扩容，怎么提升系统整体吞吐量；另一方面要考虑到系统的容错性，怎么保证提高容错性，让尽可能多的服务器宕机，保证数据不丢失</p>
+
+<p><a name="容错机制过程"></a>7、Elasticsearch容错机制：master选举，replica容错，数据恢复</p>
+
+<p>前提是9 shard(3个primary、6个replica)，3 node</p>
+
+<p>master node宕机（primary shard宕机）</p>
+
+<p>宕机的一瞬间集群状态red，开始容错，</p>
+
+<p>容错第一步：master选举，选举另外一个node成为新的master，承担起master的责任</p>
+
+<p>容错第二步：replica容错：新master将replica提升为primary shard，集群状态yellow</p>
+
+<p>容错第三步：重启宕机node，master 拷贝replica到该node，使用原有的shard并同步宕机后的修改，集群状态green</p>
+
+<p>&nbsp;</p>
+
+				    </section>
+					</article>
+				</main>
+            </div>
+        </div>
+    </section>
+    <a href="#top" id="goTop" ><i class="fa fa-angle-up fa-3x"></i></a>
+	<script src="../js/jquery.min.js"></script>
+    <script type="text/javascript" src="../js/datas/detailAngularJs.js"></script>
+    <script src="../plugins/scrolltopcontrol.js"></script>
+</body>
+</html>

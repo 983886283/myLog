@@ -1,0 +1,204 @@
+<html>
+<!DOCTYPE html>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <title>回归中的相关度和R平方值</title>
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link rel="stylesheet" href="../css/bootstrap.min.css">
+	<link rel="stylesheet" href="../css/font-awesome.min.css">
+    <link rel="stylesheet" href="../plugins/ckeditor/plugins/codesnippet/lib/highlight/styles/googlecode.css">
+    <link rel="stylesheet" type="text/css" href="../css/front/screen.css">
+    <script src="../plugins/ckeditor/plugins/codesnippet/lib/highlight/highlight.pack.js"></script>
+	<style type="text/css">
+		.list{
+			margin-top:5em;
+			position: fixed;
+		}
+		
+		.list h4{
+			padding-bottom:0.5em;
+			border-bottom:2px solid lightgray;
+		}
+		
+		.list .readTitle li{
+			margin-top:0.4em;
+			padding-left:1em;
+			border:2px solid white;
+		}
+		.list .readTitle li:hover{
+			border-left:2px solid black;
+			color:blue;
+		}
+		.liHover{
+			border-left:2px solid black !important;
+		}
+		.aHover{
+			color:blue;
+		}
+		.list .readTitle li a:hover{
+			color:blue;
+			text-decoration: none;
+		}
+	</style>
+</head>
+<body>
+    <section class="content-wrap container-fluid">
+        <div class="container">
+            <div class="row">
+				<div class="col-md-3 visible-lg-block visible-md-block">
+					<div class="list">
+						<h4>阅读目录</h4>
+						<div>
+							<ul class="readTitle list-unstyled"></ul>
+						</div>
+					</div>
+				</div>
+                 <main class="col-md-19 main-content">
+					<article class="post row">
+					<header class="post-head">
+				        <h1 class="post-title">回归中的相关度和R平方值</h1>
+				        <section class="post-meta">
+					        <span><span class="glyphicon glyphicon-user"></span>:<span>c</span></span>|
+				            <span><span class="glyphicon glyphicon-bookmark"></span>:<span>MachineLearning</span></span>|
+				            <span><span class="glyphicon glyphicon-time"></span>:<span>2017-11-27</span></span>
+				        </section>
+				    </header>
+				    <section class="post-content"><p><strong><a id="皮尔逊相关系数 (Pearson Correlation Coefficient)" name="皮尔逊相关系数 (Pearson Correlation Coefficient)"></a>皮尔逊相关系数 (Pearson Correlation Coefficient):&nbsp;</strong></p>
+
+<p>衡量两个值线性相关强度的量<br />
+取值范围 [-1, 1]:正向相关: &gt;0, 负向相关：&lt;0, 无相关性：=0<br />
+<img src="http://localhost:8080/myLog/images/PearsonCorrelationCoefficient/1.png" style="height:40px; width:266px" /></p>
+
+<p><strong><a id="计算方法举例" name="计算方法举例"></a>计算方法举例：</strong></p>
+
+<table border="1" cellspacing="0" style="border-collapse:collapse; border:0.5pt solid #000000; height:171px; width:600pt">
+	<tbody>
+		<tr>
+			<td style="background-color:#d0cece; height:14.25pt; text-align:center; vertical-align:middle; width:154.50pt"><span style="font-size:12.0pt"><span style="color:#000000"><span style="font-family:宋体">X</span></span></span></td>
+			<td style="background-color:#d0cece; height:14.25pt; text-align:center; vertical-align:middle; width:96.00pt"><span style="font-size:12.0pt"><span style="color:#000000"><span style="font-family:宋体">Y</span></span></span></td>
+			<td style="background-color:#d0cece; height:14.25pt; text-align:center; vertical-align:middle; width:66.00pt"><span style="font-size:12.0pt"><span style="color:#000000"><span style="font-family:宋体">X_bar（平均值）</span></span></span></td>
+			<td style="background-color:#d0cece; height:14.25pt; text-align:center; vertical-align:middle; width:66.00pt"><span style="font-size:12.0pt"><span style="color:#000000"><span style="font-family:宋体">Y_bar（平均值）</span></span></span></td>
+			<td style="background-color:#d0cece; height:14.25pt; text-align:center; vertical-align:middle; width:104.25pt"><span style="font-size:12.0pt"><span style="color:#000000"><span style="font-family:宋体">X-X_bar</span></span></span></td>
+			<td style="background-color:#d0cece; height:14.25pt; text-align:center; vertical-align:middle; width:66.00pt"><span style="font-size:12.0pt"><span style="color:#000000"><span style="font-family:宋体">Y-Y_bar</span></span></span></td>
+			<td style="background-color:#d0cece; height:14.25pt; text-align:center; vertical-align:middle; width:138.75pt"><span style="font-size:12.0pt"><span style="color:#000000"><span style="font-family:宋体">(X-X_bar)(Y-Y_bar)</span></span></span></td>
+			<td style="background-color:#d0cece; height:14.25pt; text-align:center; vertical-align:middle; width:96.00pt"><span style="font-size:12.0pt"><span style="color:#000000"><span style="font-family:宋体">(X-X_bar)^2</span></span></span></td>
+			<td style="background-color:#d0cece; height:14.25pt; text-align:center; vertical-align:middle; width:66.00pt"><span style="font-size:12.0pt"><span style="color:#000000"><span style="font-family:宋体">(Y-Y_bar)^2</span></span></span></td>
+		</tr>
+		<tr>
+			<td style="height:14.25pt; text-align:center; vertical-align:middle; width:154.50pt"><span style="font-size:12.0pt"><span style="color:#000000"><span style="font-family:宋体">1</span></span></span></td>
+			<td style="height:14.25pt; text-align:center; vertical-align:middle; width:96.00pt"><span style="font-size:12.0pt"><span style="color:#000000"><span style="font-family:宋体">10</span></span></span></td>
+			<td style="height:14.25pt; text-align:center; vertical-align:middle; width:66.00pt"><span style="font-size:12.0pt"><span style="color:#000000"><span style="font-family:宋体">9.333333333</span></span></span></td>
+			<td style="height:14.25pt; text-align:center; vertical-align:middle; width:66.00pt"><span style="font-size:12.0pt"><span style="color:#000000"><span style="font-family:宋体">33.66666667</span></span></span></td>
+			<td style="height:14.25pt; text-align:center; vertical-align:middle; width:104.25pt"><span style="font-size:12.0pt"><span style="color:#000000"><span style="font-family:宋体">-8.333333333</span></span></span></td>
+			<td style="height:14.25pt; text-align:center; vertical-align:middle; width:66.00pt"><span style="font-size:12.0pt"><span style="color:#000000"><span style="font-family:宋体">-23.66666667</span></span></span></td>
+			<td style="height:14.25pt; text-align:center; vertical-align:middle; width:138.75pt"><span style="font-size:12.0pt"><span style="color:#000000"><span style="font-family:宋体">197.2222222</span></span></span></td>
+			<td style="height:14.25pt; text-align:center; vertical-align:middle; width:96.00pt"><span style="font-size:12.0pt"><span style="color:#000000"><span style="font-family:宋体">69.44444444</span></span></span></td>
+			<td style="height:14.25pt; text-align:center; vertical-align:middle; width:66.00pt"><span style="font-size:12.0pt"><span style="color:#000000"><span style="font-family:宋体">560.1111111</span></span></span></td>
+		</tr>
+		<tr>
+			<td style="height:14.25pt; text-align:center; vertical-align:middle; width:154.50pt"><span style="font-size:12.0pt"><span style="color:#000000"><span style="font-family:宋体">3</span></span></span></td>
+			<td style="height:14.25pt; text-align:center; vertical-align:middle; width:96.00pt"><span style="font-size:12.0pt"><span style="color:#000000"><span style="font-family:宋体">12</span></span></span></td>
+			<td style="height:14.25pt; text-align:center; vertical-align:middle; width:66.00pt"><span style="font-size:12.0pt"><span style="color:#000000"><span style="font-family:宋体">9.333333333</span></span></span></td>
+			<td style="height:14.25pt; text-align:center; vertical-align:middle; width:66.00pt"><span style="font-size:12.0pt"><span style="color:#000000"><span style="font-family:宋体">33.66666667</span></span></span></td>
+			<td style="height:14.25pt; text-align:center; vertical-align:middle; width:104.25pt"><span style="font-size:12.0pt"><span style="color:#000000"><span style="font-family:宋体">-6.333333333</span></span></span></td>
+			<td style="height:14.25pt; text-align:center; vertical-align:middle; width:66.00pt"><span style="font-size:12.0pt"><span style="color:#000000"><span style="font-family:宋体">-21.66666667</span></span></span></td>
+			<td style="height:14.25pt; text-align:center; vertical-align:middle; width:138.75pt"><span style="font-size:12.0pt"><span style="color:#000000"><span style="font-family:宋体">137.2222222</span></span></span></td>
+			<td style="height:14.25pt; text-align:center; vertical-align:middle; width:96.00pt"><span style="font-size:12.0pt"><span style="color:#000000"><span style="font-family:宋体">40.11111111</span></span></span></td>
+			<td style="height:14.25pt; text-align:center; vertical-align:middle; width:66.00pt"><span style="font-size:12.0pt"><span style="color:#000000"><span style="font-family:宋体">469.4444444</span></span></span></td>
+		</tr>
+		<tr>
+			<td style="height:14.25pt; text-align:center; vertical-align:middle; width:154.50pt"><span style="font-size:12.0pt"><span style="color:#000000"><span style="font-family:宋体">8</span></span></span></td>
+			<td style="height:14.25pt; text-align:center; vertical-align:middle; width:96.00pt"><span style="font-size:12.0pt"><span style="color:#000000"><span style="font-family:宋体">24</span></span></span></td>
+			<td style="height:14.25pt; text-align:center; vertical-align:middle; width:66.00pt"><span style="font-size:12.0pt"><span style="color:#000000"><span style="font-family:宋体">9.333333333</span></span></span></td>
+			<td style="height:14.25pt; text-align:center; vertical-align:middle; width:66.00pt"><span style="font-size:12.0pt"><span style="color:#000000"><span style="font-family:宋体">33.66666667</span></span></span></td>
+			<td style="height:14.25pt; text-align:center; vertical-align:middle; width:104.25pt"><span style="font-size:12.0pt"><span style="color:#000000"><span style="font-family:宋体">-1.333333333</span></span></span></td>
+			<td style="height:14.25pt; text-align:center; vertical-align:middle; width:66.00pt"><span style="font-size:12.0pt"><span style="color:#000000"><span style="font-family:宋体">-9.666666667</span></span></span></td>
+			<td style="height:14.25pt; text-align:center; vertical-align:middle; width:138.75pt"><span style="font-size:12.0pt"><span style="color:#000000"><span style="font-family:宋体">12.88888889</span></span></span></td>
+			<td style="height:14.25pt; text-align:center; vertical-align:middle; width:96.00pt"><span style="font-size:12.0pt"><span style="color:#000000"><span style="font-family:宋体">1.777777778</span></span></span></td>
+			<td style="height:14.25pt; text-align:center; vertical-align:middle; width:66.00pt"><span style="font-size:12.0pt"><span style="color:#000000"><span style="font-family:宋体">93.44444444</span></span></span></td>
+		</tr>
+		<tr>
+			<td style="height:14.25pt; text-align:center; vertical-align:middle; width:154.50pt"><span style="font-size:12.0pt"><span style="color:#000000"><span style="font-family:宋体">7</span></span></span></td>
+			<td style="height:14.25pt; text-align:center; vertical-align:middle; width:96.00pt"><span style="font-size:12.0pt"><span style="color:#000000"><span style="font-family:宋体">21</span></span></span></td>
+			<td style="height:14.25pt; text-align:center; vertical-align:middle; width:66.00pt"><span style="font-size:12.0pt"><span style="color:#000000"><span style="font-family:宋体">9.333333333</span></span></span></td>
+			<td style="height:14.25pt; text-align:center; vertical-align:middle; width:66.00pt"><span style="font-size:12.0pt"><span style="color:#000000"><span style="font-family:宋体">33.66666667</span></span></span></td>
+			<td style="height:14.25pt; text-align:center; vertical-align:middle; width:104.25pt"><span style="font-size:12.0pt"><span style="color:#000000"><span style="font-family:宋体">-2.333333333</span></span></span></td>
+			<td style="height:14.25pt; text-align:center; vertical-align:middle; width:66.00pt"><span style="font-size:12.0pt"><span style="color:#000000"><span style="font-family:宋体">-12.66666667</span></span></span></td>
+			<td style="height:14.25pt; text-align:center; vertical-align:middle; width:138.75pt"><span style="font-size:12.0pt"><span style="color:#000000"><span style="font-family:宋体">29.55555556</span></span></span></td>
+			<td style="height:14.25pt; text-align:center; vertical-align:middle; width:96.00pt"><span style="font-size:12.0pt"><span style="color:#000000"><span style="font-family:宋体">5.444444444</span></span></span></td>
+			<td style="height:14.25pt; text-align:center; vertical-align:middle; width:66.00pt"><span style="font-size:12.0pt"><span style="color:#000000"><span style="font-family:宋体">160.4444444</span></span></span></td>
+		</tr>
+		<tr>
+			<td style="height:14.25pt; text-align:center; vertical-align:middle; width:154.50pt"><span style="font-size:12.0pt"><span style="color:#000000"><span style="font-family:宋体">9</span></span></span></td>
+			<td style="height:14.25pt; text-align:center; vertical-align:middle; width:96.00pt"><span style="font-size:12.0pt"><span style="color:#000000"><span style="font-family:宋体">34</span></span></span></td>
+			<td style="height:14.25pt; text-align:center; vertical-align:middle; width:66.00pt"><span style="font-size:12.0pt"><span style="color:#000000"><span style="font-family:宋体">9.333333333</span></span></span></td>
+			<td style="height:14.25pt; text-align:center; vertical-align:middle; width:66.00pt"><span style="font-size:12.0pt"><span style="color:#000000"><span style="font-family:宋体">33.66666667</span></span></span></td>
+			<td style="height:14.25pt; text-align:center; vertical-align:middle; width:104.25pt"><span style="font-size:12.0pt"><span style="color:#000000"><span style="font-family:宋体">-0.333333333</span></span></span></td>
+			<td style="height:14.25pt; text-align:center; vertical-align:middle; width:66.00pt"><span style="font-size:12.0pt"><span style="color:#000000"><span style="font-family:宋体">0.333333333</span></span></span></td>
+			<td style="height:14.25pt; text-align:center; vertical-align:middle; width:138.75pt"><span style="font-size:12.0pt"><span style="color:#000000"><span style="font-family:宋体">-0.111111111</span></span></span></td>
+			<td style="height:14.25pt; text-align:center; vertical-align:middle; width:96.00pt"><span style="font-size:12.0pt"><span style="color:#000000"><span style="font-family:宋体">0.111111111</span></span></span></td>
+			<td style="height:14.25pt; text-align:center; vertical-align:middle; width:66.00pt"><span style="font-size:12.0pt"><span style="color:#000000"><span style="font-family:宋体">0.111111111</span></span></span></td>
+		</tr>
+		<tr>
+			<td style="height:14.25pt; text-align:center; vertical-align:middle; width:154.50pt"><span style="font-size:12.0pt"><span style="color:#000000"><span style="font-family:宋体">28</span></span></span></td>
+			<td style="height:14.25pt; text-align:center; vertical-align:middle; width:96.00pt"><span style="font-size:12.0pt"><span style="color:#000000"><span style="font-family:宋体">101</span></span></span></td>
+			<td style="height:14.25pt; text-align:center; vertical-align:middle; width:66.00pt"><span style="font-size:12.0pt"><span style="color:#000000"><span style="font-family:宋体">9.333333333</span></span></span></td>
+			<td style="height:14.25pt; text-align:center; vertical-align:middle; width:66.00pt"><span style="font-size:12.0pt"><span style="color:#000000"><span style="font-family:宋体">33.66666667</span></span></span></td>
+			<td style="height:14.25pt; text-align:center; vertical-align:middle; width:104.25pt"><span style="font-size:12.0pt"><span style="color:#000000"><span style="font-family:宋体">18.66666667</span></span></span></td>
+			<td style="height:14.25pt; text-align:center; vertical-align:middle; width:66.00pt"><span style="font-size:12.0pt"><span style="color:#000000"><span style="font-family:宋体">67.33333333</span></span></span></td>
+			<td style="height:14.25pt; text-align:center; vertical-align:middle; width:138.75pt"><span style="font-size:12.0pt"><span style="color:#000000"><span style="font-family:宋体">1256.888889</span></span></span></td>
+			<td style="height:14.25pt; text-align:center; vertical-align:middle; width:96.00pt"><span style="font-size:12.0pt"><span style="color:#000000"><span style="font-family:宋体">348.4444444</span></span></span></td>
+			<td style="height:14.25pt; text-align:center; vertical-align:middle; width:66.00pt"><span style="font-size:12.0pt"><span style="color:#000000"><span style="font-family:宋体">4533.777778</span></span></span></td>
+		</tr>
+		<tr>
+			<td style="height:14.25pt; text-align:center; vertical-align:middle; width:154.50pt">&nbsp;</td>
+			<td style="height:14.25pt; text-align:center; vertical-align:middle; width:96.00pt"><span style="font-size:12.0pt"><span style="color:#000000"><span style="font-family:宋体">sum</span></span></span></td>
+			<td style="height:14.25pt; text-align:center; vertical-align:middle; width:66.00pt"><span style="font-size:12.0pt"><span style="color:#000000"><span style="font-family:宋体">56</span></span></span></td>
+			<td style="height:14.25pt; text-align:center; vertical-align:middle; width:66.00pt"><span style="font-size:12.0pt"><span style="color:#000000"><span style="font-family:宋体">202</span></span></span></td>
+			<td style="height:14.25pt; text-align:center; vertical-align:middle; width:104.25pt"><span style="font-size:12.0pt"><span style="color:#000000"><span style="font-family:宋体">0</span></span></span></td>
+			<td style="height:14.25pt; text-align:center; vertical-align:middle; width:66.00pt"><span style="font-size:12.0pt"><span style="color:#000000"><span style="font-family:宋体">0</span></span></span></td>
+			<td style="height:14.25pt; text-align:center; vertical-align:middle; width:138.75pt"><span style="font-size:12.0pt"><span style="color:#000000"><span style="font-family:宋体">1633.666667</span></span></span></td>
+			<td style="height:14.25pt; text-align:center; vertical-align:middle; width:96.00pt"><span style="font-size:12.0pt"><span style="color:#000000"><span style="font-family:宋体">465.3333333</span></span></span></td>
+			<td style="height:14.25pt; text-align:center; vertical-align:middle; width:66.00pt"><span style="font-size:12.0pt"><span style="color:#000000"><span style="font-family:宋体">5817.333333</span></span></span></td>
+		</tr>
+		<tr>
+			<td style="height:14.25pt; text-align:general; vertical-align:middle; width:154.50pt">&nbsp;</td>
+			<td style="height:14.25pt; text-align:center; vertical-align:middle; width:96.00pt"><span style="font-size:12.0pt"><span style="color:#000000"><span style="font-family:宋体">&rho;</span></span></span></td>
+			<td style="height:14.25pt; text-align:center; vertical-align:middle; width:66.00pt">0.992931735</td>
+			<td style="height:14.25pt; text-align:center; vertical-align:middle; width:66.00pt">&nbsp;</td>
+			<td style="height:14.25pt; text-align:center; vertical-align:middle; width:104.25pt">&nbsp;</td>
+			<td style="height:14.25pt; text-align:center; vertical-align:middle; width:66.00pt">&nbsp;</td>
+			<td style="height:14.25pt; text-align:center; vertical-align:middle; width:138.75pt">&nbsp;</td>
+			<td style="height:14.25pt; text-align:center; vertical-align:middle; width:96.00pt">&nbsp;</td>
+			<td style="height:14.25pt; text-align:center; vertical-align:middle; width:66.00pt">&nbsp;</td>
+		</tr>
+	</tbody>
+</table>
+
+<p><strong><a id="R平方值" name="R平方值"></a>R平方值:</strong><br />
+定义：决定系数，反应因变量的全部变异能通过回归关系被自变量解释的比例。<br />
+描述：如R平方为0.8，则表示回归关系可以解释因变量80%的变异。换句话说，如果我们能控制自变量不变，则因变量的变异程度会减少80%<br />
+简单线性回归：R^2 = r * r<br />
+多元线性回归：<sub><img src="http://localhost:8080/myLog/images/PearsonCorrelationCoefficient/2.jpg" style="height:45px; width:119px" /></sub><br />
+<sub><img src="http://localhost:8080/myLog/images/PearsonCorrelationCoefficient/3.png" style="height:35px; width:376px" /></sub><br />
+其中SS<sub>R</sub>为模型可以解释的值，SS<sub>E</sub>为误差值，关系为SS<sub>T</sub> = SS<sub>R</sub>+SS<sub>E</sub></p>
+
+<p>R平方也有其局限性：R平方随着自变量的增加会变大，R平方和样本量是有关系的。因此，我们要到R平方进行修正。修正的方法：<br />
+<sub><img src="http://localhost:8080/myLog/images/PearsonCorrelationCoefficient/4.png" style="height:35px; width:178px" /></sub><br />
+N:样本量<br />
+P:要预测的值量</p>
+
+				    </section>
+					</article>
+				</main>
+            </div>
+        </div>
+    </section>
+    <a href="#top" id="goTop" ><i class="fa fa-angle-up fa-3x"></i></a>
+	<script src="../js/jquery.min.js"></script>
+    <script type="text/javascript" src="../js/datas/detailAngularJs.js"></script>
+    <script src="../plugins/scrolltopcontrol.js"></script>
+</body>
+</html>

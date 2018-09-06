@@ -1,0 +1,259 @@
+<html>
+<!DOCTYPE html>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <title>神经网络NN算法笔记</title>
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link rel="stylesheet" href="../css/bootstrap.min.css">
+	<link rel="stylesheet" href="../css/font-awesome.min.css">
+    <link rel="stylesheet" href="../plugins/ckeditor/plugins/codesnippet/lib/highlight/styles/googlecode.css">
+    <link rel="stylesheet" type="text/css" href="../css/front/screen.css">
+    <script src="../plugins/ckeditor/plugins/codesnippet/lib/highlight/highlight.pack.js"></script>
+	<style type="text/css">
+		.list{
+			margin-top:5em;
+			position: fixed;
+		}
+		
+		.list h4{
+			padding-bottom:0.5em;
+			border-bottom:2px solid lightgray;
+		}
+		
+		.list .readTitle li{
+			margin-top:0.4em;
+			padding-left:1em;
+			border:2px solid white;
+		}
+		.list .readTitle li:hover{
+			border-left:2px solid black;
+			color:blue;
+		}
+		.liHover{
+			border-left:2px solid black !important;
+		}
+		.aHover{
+			color:blue;
+		}
+		.list .readTitle li a:hover{
+			color:blue;
+			text-decoration: none;
+		}
+	</style>
+</head>
+<body>
+    <section class="content-wrap container-fluid">
+        <div class="container">
+            <div class="row">
+				<div class="col-md-3 visible-lg-block visible-md-block">
+					<div class="list">
+						<h4>阅读目录</h4>
+						<div>
+							<ul class="readTitle list-unstyled"></ul>
+						</div>
+					</div>
+				</div>
+                 <main class="col-md-19 main-content">
+					<article class="post row">
+					<header class="post-head">
+				        <h1 class="post-title">神经网络NN算法笔记</h1>
+				        <section class="post-meta">
+					        <span><span class="glyphicon glyphicon-user"></span>:<span>c</span></span>|
+				            <span><span class="glyphicon glyphicon-bookmark"></span>:<span>MachineLearning</span></span>|
+				            <span><span class="glyphicon glyphicon-time"></span>:<span>2017-11-22</span></span>
+				        </section>
+				    </header>
+				    <section class="post-content"><p><strong><a id="背景:" name="背景:"></a>背景:</strong></p>
+
+<pre>
+<code>以人脑中的神经网络为启发，历史上出现过很多不同版本
+最著名的算法是1980年的 backpropagation</code></pre>
+
+<p><strong><a id="多层向前神经网络" name="多层向前神经网络"></a>多层向前神经网络(Multilayer Feed-Forward Neural Network)</strong></p>
+
+<p><img src="http://localhost:8080/myLog/images/nn/nn1.png" style="height:248px; width:340px" /></p>
+
+<pre>
+<code>Backpropagation被使用在多层向前神经网络上
+多层向前神经网络由以下部分组成：输入层(input layer), 隐藏层 (hidden layers), 输出层 (output layers)
+每层由单元(units)组成
+输入层(input layer)是由训练集的实例特征向量传入
+经过连接结点的权重(weight)传入下一层，一层的输出是下一层的输入
+隐藏层的个数可以是任意的，输入层有一层，输出层有一层
+每个单元(unit)也可以被称作神经结点，根据生物学来源定义
+上图为二层的神经网络（输入层不算）
+一层中加权的求和，然后根据非线性方程转化输出
+作为多层向前神经网络，理论上，如果有足够多的隐藏层(hidden layers) 和足够大的训练集, 可以模拟出任何方程</code></pre>
+
+<p><strong><a id="设计神经网络结构" name="设计神经网络结构"></a>设计神经网络结构</strong></p>
+
+<pre>
+<code>使用神经网络训练数据之前，必须确定神经网络的层数，以及每层单元的个数
+特征向量在被传入输入层时通常被先标准化(normalize）到0和1之间 （为了加速学习过程）
+离散型变量可以被编码成每一个输入单元对应一个特征值可能赋的值
+比如：特征值A可能取三个值（a0, a1, a2), 可以使用3个输入单元来代表A。
+如果A=a0, 那么代表a0的单元值就取1, 其他取0；
+如果A=a1, 那么代表a1de单元值就取1，其他取0，以此类推
+神经网络即可以用来做分类(classification）问题，也可以解决回归(regression)问题
+对于分类问题，如果是两类，可以用一个输出单元表示（0和1分别代表2类）
+如果多于两类，那么每一个类别用一个输出单元表示
+如果没有明确的规则来设计最好有多少个隐藏层，需要根据实验测试和误差，以及准确度来实验并改进</code></pre>
+
+<p><strong><a id="交叉验证方法" name="交叉验证方法"></a>交叉验证方法(Cross-Validation)</strong></p>
+
+<p><img src="http://localhost:8080/myLog/images/nn/nn2.jpg" style="height:250px; width:350px" /></p>
+
+<p><strong><a id="Backpropagation算法" name="Backpropagation算法"></a>Backpropagation算法</strong></p>
+
+<p>通过迭代性的来处理训练集中的实例<br />
+对比经过神经网络后输入层预测值(predicted value)与真实值(target value)之间<br />
+反方向（从输出层=&gt;隐藏层=&gt;输入层）来以最小化误差(error)来更新每个连接的权重(weight)<br />
+算法详细介绍<br />
+输入：D：数据集，l 学习率(learning rate)， 一个多层前向神经网络<br />
+输入：一个训练好的神经网络(a trained neural network)</p>
+
+<pre>
+<code>加权的求和，然后根据非线性方程转化输出</code></pre>
+
+<p><img src="http://localhost:8080/myLog/images/nn/nn3.png" style="height:226px; width:376px" /></p>
+
+<p><span style="font-size:20px">加权求和：</span><img src="http://localhost:8080/myLog/images/nn/nn4.png" style="height:29px; width:100px" /><br />
+<span style="font-size:20px">非线性方程转化：</span><img src="http://localhost:8080/myLog/images/nn/nn5.png" style="height:42px; width:87px" /></p>
+
+<p><span style="font-size:16px">根据误差(error)反向传送：</span></p>
+
+<p>对于输入层：<br />
+<img src="http://localhost:8080/myLog/images/nn/nn6.png" style="height:18px; width:150px" /></p>
+
+<p><span style="font-size:14px">对于隐藏层：</span><br />
+<img src="http://localhost:8080/myLog/images/nn/nn7.png" style="height:31px; width:162px" /></p>
+
+<p>权重更新：<br />
+<img src="http://localhost:8080/myLog/images/nn/nn8.png" style="height:41px; width:95px" /></p>
+
+<p>偏向更新：<br />
+<img src="http://localhost:8080/myLog/images/nn/nn9.png" style="height:51px; width:91px" /></p>
+
+<p><span style="font-size:16px">终止条件:</span></p>
+
+<p>权重的更新低于某个阈值<br />
+预测的错误率低于某个阈值<br />
+达到预设一定的循环次数</p>
+
+<p><strong><a id="Backpropagation 算法举例" name="Backpropagation 算法举例"></a>Backpropagation 算法举例</strong></p>
+
+<p style="margin-left:0pt; margin-right:0pt; text-align:justify"><img src="http://localhost:8080/myLog/images/nn/nn10.png" style="height:200px; width:306px" /></p>
+
+<table border="1" cellspacing="0" style="width:500px">
+	<tbody>
+		<tr>
+			<td>X<sub><span style="font-size:10px">1</span></sub></td>
+			<td>X<sub><span style="font-size:10px">2</span></sub></td>
+			<td>X<sub><span style="font-size:10px">3</span></sub></td>
+			<td>X<span style="font-size:10px"><sub>14</sub></span></td>
+			<td>X<sub><span style="font-size:10px">15</span></sub></td>
+			<td>X<span style="font-size:10px"><sub>24</sub></span></td>
+			<td>X<sub><span style="font-size:10px">25</span></sub></td>
+			<td>X<span style="font-size:10px"><sub>34</sub></span></td>
+			<td>X<span style="font-size:10px"><sub>35</sub></span></td>
+			<td>X<span style="font-size:10px"><sub>46</sub></span></td>
+			<td>X<sub><span style="font-size:10px">56</span></sub></td>
+			<td>&theta;<sub><span style="font-size:10px">4</span></sub></td>
+			<td>&theta;<span style="font-size:10px"><sub>5</sub></span></td>
+			<td>&theta;<sub><span style="font-size:10px">6</span></sub></td>
+		</tr>
+		<tr>
+			<td>1</td>
+			<td>0</td>
+			<td>1</td>
+			<td>0.2</td>
+			<td>-0.3</td>
+			<td>0.4</td>
+			<td>0.1</td>
+			<td>-0.5</td>
+			<td>0.2</td>
+			<td>-0.3</td>
+			<td>-0.2</td>
+			<td>-0.4</td>
+			<td>0.2</td>
+			<td>0.1</td>
+		</tr>
+	</tbody>
+</table>
+
+<p><strong>加权求和及非线性方程转化</strong></p>
+
+<p>单元4&gt;&gt;</p>
+
+<ul>
+	<li>I<sub>j&nbsp;</sub>= x<sub>1&nbsp;</sub>* w<sub>14&nbsp;</sub>+ x<sub>2&nbsp;</sub>* w<sub>24&nbsp;</sub>+ x<sub>3&nbsp;</sub>* w<sub>34&nbsp;</sub>+ &theta;<sub>4</sub> = 1 * 0.2 + 0 * 0.4 + 1 * ( -0.5 ) + ( -0.4 ) = 0.2 + 0 - 0.5 - 0.4 = -0.7</li>
+	<li>O<sub>j</sub> = 1 / ( 1 + e<sup>0.7&nbsp;</sup>) = 0.332</li>
+</ul>
+
+<p>单元5&gt;&gt;</p>
+
+<ul>
+	<li>I<sub>j&nbsp;</sub>= x<sub>1&nbsp;</sub>* w<sub>15&nbsp;</sub>+ x<sub>2&nbsp;</sub>* w<sub>25&nbsp;</sub>+ x<sub>3&nbsp;</sub>* w<sub>35&nbsp;</sub>+ &theta;<sub>5</sub> = 1 * ( -0.3 ) + 0 * 0.1 + 1 * 0.2 + 0.2 = -0.3 + 0 + 0.2 + 0.2 = 0.1</li>
+	<li>O<sub>j</sub> = 1 / ( 1+e<sup>-0.1&nbsp;</sup>) = 0.525</li>
+</ul>
+
+<p>单元6&gt;&gt;</p>
+
+<ul>
+	<li>I<sub>j&nbsp;</sub>= x<sub>4&nbsp;</sub>* w<sub>46&nbsp;</sub>+ x<sub>5 </sub>* w<sub>56 </sub>+ &theta;<sub>6</sub> = 0.332 * ( -0.3 ) + 0.525 * ( -0.2 ) + 0.1 = -0.0996 - 0.105 + 0.1 = -0.105</li>
+	<li>O<sub>j</sub> = 1 / ( 1 + e<sup>0.105&nbsp;</sup>) = 0.474</li>
+</ul>
+
+<p><strong>误差（error）反向传送</strong></p>
+
+<p>单元6（输入层）&gt;&gt;</p>
+
+<ul>
+	<li>Err<sub>j</sub> = 0.474 * (&nbsp;1-0.474 ) * ( 1 - 0.474 ) = 0.1311</li>
+</ul>
+
+<p>单元5（隐藏层）&gt;&gt;</p>
+
+<ul>
+	<li>Err<sub>j</sub> = 0.525 * ( 1 - 0.525 ) * ( 0.1311 )&nbsp;* ( -0.2 ) = -0.0065</li>
+</ul>
+
+<p>单元4（隐藏层）&gt;&gt;</p>
+
+<ul>
+	<li>Err<sub>j</sub> = 0.332 * ( 1 - 0.332 ) * ( 0.1311 ) * ( -0.3 ) = -0.0087</li>
+</ul>
+
+<p>权重更新&gt;&gt;</p>
+
+<p>w<sub>46</sub> = -0.3 + ( 0.9 ) * ( 0.1311 ) * ( 0.332 ) = -0.261<br />
+w<sub>56</sub> = -0.2 + ( 0.9 ) * ( 0.1311 ) * ( 0.521 ) = -0.138<br />
+w<sub>15</sub> = -0.3 + ( 0.9 ) * ( -0.0065 ) * ( 1 ) = -0.306<br />
+w<sub>25</sub> = 0.1 + ( 0.9 ) * ( -0.0065 ) * ( 0 ) = 0.1<br />
+w<sub>35</sub> = 0.2 + ( 0.9 ) * ( -0.0065 ) * ( 1 ) = 0.194<br />
+w<sub>14</sub> = 0.2 + ( 0.9 ) * ( -0.0087 ) * ( 1 ) = 0.192<br />
+w<sub>24</sub> = 0.4 + ( 0.9 ) * ( -0.0087 ) * ( 0 ) = 0.4<br />
+w<sub>34</sub> = -0.5 + ( 0.9 ) * ( -0.0087 ) * ( 1 ) = -0.508<br />
+&theta;<sub>6</sub> = 0.1 + ( 0.9 ) ( 0.1311 ) = 0.218<br />
+&theta;<sub>5</sub> = 0.2 + ( 0.9 ) ( -0.0065 ) = 0.194<br />
+&theta;<sub>4</sub> = -0.4 + ( 0.9 ) ( -0.0087 ) = -0.408</p>
+
+<p><strong><a id="关于非线性转化方程" name="关于非线性转化方程"></a>关于非线性转化方程(non-linear transformation function)</strong>&nbsp;<br />
+sigmoid函数(S 曲线)用来作为activation function:<br />
+双曲函数(tanh)<br />
+逻辑函数(logistic function)</p>
+
+				    </section>
+					</article>
+				</main>
+            </div>
+        </div>
+    </section>
+    <a href="#top" id="goTop" ><i class="fa fa-angle-up fa-3x"></i></a>
+	<script src="../js/jquery.min.js"></script>
+    <script type="text/javascript" src="../js/datas/detailAngularJs.js"></script>
+    <script src="../plugins/scrolltopcontrol.js"></script>
+</body>
+</html>

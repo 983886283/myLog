@@ -1,0 +1,215 @@
+<html>
+<!DOCTYPE html>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <title>高性能Mysql笔记六</title>
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link rel="stylesheet" href="../css/bootstrap.min.css">
+	<link rel="stylesheet" href="../css/font-awesome.min.css">
+    <link rel="stylesheet" href="../plugins/ckeditor/plugins/codesnippet/lib/highlight/styles/googlecode.css">
+    <link rel="stylesheet" type="text/css" href="../css/front/screen.css">
+    <script src="../plugins/ckeditor/plugins/codesnippet/lib/highlight/highlight.pack.js"></script>
+	<style type="text/css">
+		.list{
+			margin-top:5em;
+			position: fixed;
+		}
+		
+		.list h4{
+			padding-bottom:0.5em;
+			border-bottom:2px solid lightgray;
+		}
+		
+		.list .readTitle li{
+			margin-top:0.4em;
+			padding-left:1em;
+			border:2px solid white;
+		}
+		.list .readTitle li:hover{
+			border-left:2px solid black;
+			color:blue;
+		}
+		.liHover{
+			border-left:2px solid black !important;
+		}
+		.aHover{
+			color:blue;
+		}
+		.list .readTitle li a:hover{
+			color:blue;
+			text-decoration: none;
+		}
+	</style>
+</head>
+<body>
+    <section class="content-wrap container-fluid">
+        <div class="container">
+            <div class="row">
+				<div class="col-md-3 visible-lg-block visible-md-block">
+					<div class="list">
+						<h4>阅读目录</h4>
+						<div>
+							<ul class="readTitle list-unstyled"></ul>
+						</div>
+					</div>
+				</div>
+                 <main class="col-md-19 main-content">
+					<article class="post row">
+					<header class="post-head">
+				        <h1 class="post-title">高性能Mysql笔记六</h1>
+				        <section class="post-meta">
+					        <span><span class="glyphicon glyphicon-user"></span>:<span>c</span></span>|
+				            <span><span class="glyphicon glyphicon-bookmark"></span>:<span>Database</span></span>|
+				            <span><span class="glyphicon glyphicon-time"></span>:<span>2018-09-02</span></span>
+				        </section>
+				    </header>
+				    <section class="post-content"><h2>MySQL配置的工作原理</h2>
+
+<p>my.cnf</p>
+
+<pre>
+<code>[client]
+port = 3306 #端口号
+socket = /tmp/mysql.sock #socket所在路径
+[mysqld]
+!include /home/mysql/etc/mysqld.cnf #包含的配置文件 ，把用户名，密码文件单独存放
+port = 3306
+socket = /tmp/mysql.sock
+pid-file = /home/mysql/var/mysql.pid#进程pid
+basedir = /home/mysql/#mysql的安装路径
+datadir = /home/mysql/var/ #数据文件所在路径
+tmpdir = /home/mysql/tmp/#临时文件保存路径
+slave-load-tmpdir=/home/mysql/tmp#当slave执行load data infile时用
+skip-name-resolve#grant时，必须使用ip不能使用主机名
+skip-symbolic-links#不能使用连接文件
+skip-external-locking#不指定系统锁定
+back_log = 50 #接受队列，对于没建立 tcp 连接的请求队列放入缓存中，队列大小为 back_log，受限制与 OS 参数
+max_connections = 1000 #最大并发连接数 ，增大该值需要相应增加允许打开的文件描述符数
+max_connect_errors = 10000 #如果某个用户发起的连接 error 超过该数值，则该用户的下次连接将被阻塞
+open_files_limit = 10240#打开文件限制
+connect-timeout = 10 #连接超时之前的最大秒数
+wait-timeout = 28800 #等待关闭连接的时间
+interactive-timeout = 28800 #关闭连接之前，允许 interactive_timeout（取代了wait_timeout）秒的不活动时间。
+slave-net-timeout = 600#从服务器超过slave_net_timeout 秒没有从主服务器收到数据才通知网络中断
+net_read_timeout = 30 #从服务器读取信息的超时
+net_write_timeout = 60 #从服务器写入信息的超时
+net_retry_count = 10 #如果某个通信端口的读操作中断了，在放弃前重试多次
+net_buffer_length = 16384 #包消息缓冲区初始化字节
+table_cache = 512 #所有线程打开的表的数目
+thread_stack = 192K #每个线程的堆栈大小
+thread_cache_size = 20 #线程缓存
+thread_concurrency = 8 #同时运行的线程的数据 此处最好为 CPU 个数两倍。
+query_cache_size = 256M #查询缓存大小
+query_cache_limit = 2M #不缓存查询大于该值的结果
+query_cache_min_res_unit = 2K #查询缓存分配的最小块大小
+default_table_type = INNODB#默认表存储引擎
+default-time-zone = system #服务器时区
+character-set-server = utf8 #server 级别字符集
+default-storage-engine = InnoDB #默认存储
+tmp_table_size = 512M #临时表大小
+log-bin = mysql-bin #打开binlog
+log-bin-index = mysql-bin.index
+relay-log = relay-log
+relay_log_index = relay-log.index
+log-error = /home/mysql/log/mysql.err#错误文件路径
+log_output = FILE #慢查询输出格式
+slow_query_log = 1
+long-query-time = 1 #慢查询时间 超过 1 秒则为慢查询
+slow_query_log_file = /home/mysql/log/slow.log#慢查询存储路径
+general_log = 1
+general_log_file = /home/mysql/log/mysql.log#一般查询存储路径
+max_binlog_size = 1G#最大binlog
+max_relay_log_size = 1G#最大relaylog
+relay-log-purge = 1 #当不用中继日志时，删除他们。这个操作有 SQL 线程完成
+expire_logs_days = 30 #超过 30 天的 binlog 删除
+binlog_cache_size = 1M #session 级别
+replicate-wild-ignore-table = mysql.% #复制时忽略数据库及表
+replicate-wild-ignore-table = test.% #复制时忽略数据库及表
+key_buffer_size = 256M#查询排序时所能使用的缓冲区大小
+sort_buffer_size = 2M #排序 buffer 大小
+read_buffer_size = 2M #读查询操作所能使用的缓冲区大小
+join_buffer_size = 8M # join buffer 大小
+query_cache_size = 64M#指定 MySQL 查询缓冲区的大小
+read_rnd_buffer_size = 8M#随机读缓存大小
+innodb_file_per_table#独立表空间
+innodb_additional_mem_pool_size = 100M#附加的内存池
+innodb_buffer_pool_size = 2G #缓冲池
+innodb_data_file_path = ibdata1:1G:autoextend#表空间，自动递增
+innodb_file_io_threads = 4 #io 线程数
+innodb_thread_concurrency = 16 #并发线程数
+innodb_flush_log_at_trx_commit = 1#刷新事务日志到磁盘
+innodb_log_buffer_size = 8M #事物日志缓存
+innodb_log_file_size = 500M #事物日志大小
+innodb_log_files_in_group = 2 #两组事物日志
+innodb_log_group_home_dir = /home/mysql/var/#日志组
+innodb_max_dirty_pages_pct = 90 #innodb 主线程刷新缓存池中的数据，使脏数据比例小于 90%
+innodb_lock_wait_timeout = 50 #InnoDB 事务在被回滚之前可以等待一个锁定的超时秒数
+innodb_flush_method = O_DSYNC  # InnoDB 用来刷新日志的方法
+innodb_force_recovery=1#导出表空间损坏的表
+innodb_fast_shutdown#加速innodb关闭
+max_allowed_packet = 64M#最大允许的包大小
+[mysql]
+default-character-set = utf8
+connect-timeout = 3
+[mysqld_safe]
+open-files-limit  = 8192#可打开文件数量</code></pre>
+
+<pre>
+<code>MySQL从命令行参数和配置文件中获得配置信息，在类UNIX系统中，配置文件的位置一般在/etc/my.cnf或者/etc/mysql/my.cnf（注：大部分变量和它们对应的命令行选项名称一样，但是有一些例外,不要简单的替换使用）。
+MySQL有大量的可以修改的参数,但不应该随便修改.应该将更多时间花在schema的优化,索引,查询设计上。
+任何打算长期使用的设置都应该写到全局配置文件，而不是在命令行特别指定。
+所有的配置文件放在同一个地方以方便检查。
+不建议动态修改变量,因为可能导致意外的副作用。
+设置变量并不是值越大就越好。
+
+配置内存使用
+确定可使用内存上限
+每个连接使用多少内存,如排序缓冲和临时表
+确定操作系统内存使用量
+把剩下的分配给缓存,如InnoDB缓存池
+
+配置MySQL的I/O行为
+有些配置项影响如何同步数据到磁盘及如何恢复操作,这对性能影响很大,而且表现了性能和数据安全之间的平衡
+InnoDB I/O配置
+重要配置: InnoDB日志文件大小,InnoDB怎样刷新日志缓冲,InnoDB怎样执行I/O
+InnoDB使用日志减少提交事务时开销,不用每个事务提交时把缓冲池的脏块刷到磁盘中
+事务日志可以把随机IO变成顺序IO,同时如果发生断电,InnoDB可以重放日志恢复已经提交的事务
+sync_binlog选项控制MySQL怎么刷新二进制日志到磁盘
+把二进制日志放到一个带有电池保护的写缓存的RAID卷可以极大的提升性能
+MyISAM的I/O配置
+因为MyISAM表每次写入都会将索引变更刷新到磁盘
+批量操作时,通过设置delay_key_write可以延迟索引写入,可以提升性能
+配置MyISAM怎样尝试从损坏中恢复
+
+配置MySQL并发
+InnoDB并发配置
+如果在InnoDB并发方面有问题,解决方案通常是升级服务器
+innodb_thread_concurrency: 限制一次性可以有多少线程进入内核(根据实践取合适值)
+innodb_thread_sleep_delay: 线程第一次进入内核失败等的时间,如果还不能进入则放入等待线程队列
+innodb_commit_concurrency: 控制有多少线程可以在同一时间提交
+使用线程池限制并发: MariaDB已经实现
+MyISAM并发配置
+concurrency_insert: 配置MyISAM打开并发插入
+
+其他
+基于工作负载的配置: 利用工具分析并调整配置
+max_connections: 保证服务器不会因应用程序激增的连接而不堪重负
+安全和稳定的设置: 感兴趣者请自行google
+高级InnoDB设置: 感兴趣者请自行google
+InnoDB两个重要配置: innodb_buffer_pool_size和innodb_log_file_size</code></pre>
+
+<p>&nbsp;</p>
+				    </section>
+					</article>
+				</main>
+            </div>
+        </div>
+    </section>
+    <a href="#top" id="goTop" ><i class="fa fa-angle-up fa-3x"></i></a>
+	<script src="../js/jquery.min.js"></script>
+    <script type="text/javascript" src="../js/datas/detailAngularJs.js"></script>
+    <script src="../plugins/scrolltopcontrol.js"></script>
+</body>
+</html>

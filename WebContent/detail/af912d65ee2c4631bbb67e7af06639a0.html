@@ -1,0 +1,357 @@
+<html>
+<!DOCTYPE html>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <title>xlwt模块操作Excel笔记</title>
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link rel="stylesheet" href="../css/bootstrap.min.css">
+	<link rel="stylesheet" href="../css/font-awesome.min.css">
+    <link rel="stylesheet" href="../plugins/ckeditor/plugins/codesnippet/lib/highlight/styles/googlecode.css">
+    <link rel="stylesheet" type="text/css" href="../css/front/screen.css">
+    <script src="../plugins/ckeditor/plugins/codesnippet/lib/highlight/highlight.pack.js"></script>
+	<style type="text/css">
+		.list{
+			margin-top:5em;
+			position: fixed;
+		}
+		
+		.list h4{
+			padding-bottom:0.5em;
+			border-bottom:2px solid lightgray;
+		}
+		
+		.list .readTitle li{
+			margin-top:0.4em;
+			padding-left:1em;
+			border:2px solid white;
+		}
+		.list .readTitle li:hover{
+			border-left:2px solid black;
+			color:blue;
+		}
+		.liHover{
+			border-left:2px solid black !important;
+		}
+		.aHover{
+			color:blue;
+		}
+		.list .readTitle li a:hover{
+			color:blue;
+			text-decoration: none;
+		}
+	</style>
+</head>
+<body>
+    <section class="content-wrap container-fluid">
+        <div class="container">
+            <div class="row">
+				<div class="col-md-3 visible-lg-block visible-md-block">
+					<div class="list">
+						<h4>阅读目录</h4>
+						<div>
+							<ul class="readTitle list-unstyled"></ul>
+						</div>
+					</div>
+				</div>
+                 <main class="col-md-19 main-content">
+					<article class="post row">
+					<header class="post-head">
+				        <h1 class="post-title">xlwt模块操作Excel笔记</h1>
+				        <section class="post-meta">
+					        <span><span class="glyphicon glyphicon-user"></span>:<span>c</span></span>|
+				            <span><span class="glyphicon glyphicon-bookmark"></span>:<span>Python</span></span>|
+				            <span><span class="glyphicon glyphicon-time"></span>:<span>2017-08-12</span></span>
+				        </section>
+				    </header>
+				    <section class="post-content"><p><a id="Python环境和xlwt模块安装" name="Python环境和xlwt模块安装"></a>Python环境:</p>
+
+<pre>
+<code class="language-bash">Windows版3.6.2</code></pre>
+
+<p>安装xlwt模块</p>
+
+<pre>
+<code class="language-python">pip3 install xlwt</code></pre>
+
+<p><a id="导入模块" name="导入模块"></a>Head:设置编码和导入模块</p>
+
+<pre>
+<code class="language-python"># -*- coding:utf8 -*-
+import xlwt
+import datetime</code></pre>
+
+<p><a id="创建Excel对象和Excel的sheet对象" name="创建Excel对象和Excel的sheet对象"></a>创建Excel对象和Excel的sheet对象</p>
+
+<pre>
+<code class="language-python">wb=xlwt.Workbook(encoding = 'ascii')#默认ascii可省略
+sheet=wb.add_sheet('sheetName')</code></pre>
+
+<p><a id="xlwt操作Excel" name="xlwt操作Excel"></a>操作</p>
+
+<pre>
+<code class="language-python">#插入数据i:行数0开始;j:列数0开始;value:插入值;style:Style对象;
+sheet.write(i,j,value,style);
+
+#合并单元格i:行数0开始;j:跨越行数0开始;k:列数0开始;l:跨越列数0开始;value:插入值;style:Style对象;
+sheet.write_merge(i, j, k, l, value,style)
+
+#设置单元格宽度
+sheet.col(0).width = 10000 # 数值10000约为Excel的38.29
+
+#设置日期格式
+style = xlwt.XFStyle()
+style.num_format_str = 'M/D/YY' # （D-MMM-YY, D-MMM,MMM-YY, h:mm, h:mm:ss, h:mm, h:mm:ss, M/D/YY h:mm, mm:ss,[h]:mm:ss, mm:ss.0）
+
+#单元格计算
+sheet.write(0, 0, 5) # A1单元格值为5
+sheet.write(0, 1, 2) # B1单元格值为2
+sheet.write(1, 0, xlwt.Formula('A1*B1')) # 输出10(A1[5] * A2[2])
+sheet.write(1, 1, xlwt.Formula('SUM(A1,B1)')) # 输出"7" (A1[5] + A2[2])
+
+#链接
+sheet.write(0, 0,xlwt.Formula('HYPERLINK("http://www.google.com";"Google")')) #点击"Google"链至http://www.google.com
+
+#保存Excel
+wb.save(r"D://NewCreateWorkbook.xls")</code></pre>
+
+<p><a id="xlwt控制Excel样式" name="xlwt控制Excel样式"></a>样式</p>
+
+<pre>
+<code class="language-python">style = xlwt.XFStyle() # 创建XFStyle对象
+
+#设置字体
+font = xlwt.Font() # 创建Font对象
+font.name = 'Times New Roman' # 设置字体_简易版
+font.bold = True # 设置粗体（True,False）
+font.italic = True # 设置斜体（True,False）
+font.struck_out = True # 删除线（True, False）
+font.underline = xlwt.Font.UNDERLINE_SINGLE # 下划线_可配版（UNDERLINE_NONE, UNDERLINE_SINGLE, UNDERLINE_SINGLE_ACC,UNDERLINE_DOUBLE, UNDERLINE_DOUBLE_ACC）
+font.escapement = xlwt.Font.ESCAPEMENT_SUPERSCRIPT # 上标（ESCAPEMENT_NONE, ESCAPEMENT_SUPERSCRIPT, ESCAPEMENT_SUBSCRIPT）
+font.charset = xlwt.Font.CHARSET_ANSI_LATIN # 编码（CHARSET_ANSI_LATIN, CHARSET_SYS_DEFAULT, CHARSET_SYMBOL,CHARSET_APPLE_ROMAN, CHARSET_ANSI_JAP_SHIFT_JIS,CHARSET_ANSI_KOR_HANGUL, CHARSET_ANSI_KOR_JOHAB,CHARSET_ANSI_CHINESE_GBK, CHARSET_ANSI_CHINESE_BIG5,CHARSET_ANSI_GREEK, CHARSET_ANSI_TURKISH, CHARSET_ANSI_VIETNAMESE,CHARSET_ANSI_HEBREW, CHARSET_ANSI_ARABIC, CHARSET_ANSI_BALTIC,CHARSET_ANSI_CYRILLIC, CHARSET_ANSI_THAI, CHARSET_ANSI_LATIN_II,CHARSET_OEM_LATIN_I）
+font.colour_index = 5 # 字体颜色,见颜色图
+font.height = 1000 # Excel字号 = 数值/20
+style.font = font # 将Font对象赋给XFStyle对象
+
+#设置对齐方式
+alignment = xlwt.Alignment() # 创建Alignment对象
+alignment.horz = xlwt.Alignment.HORZ_CENTER # 水平对齐（HORZ_GENERAL,HORZ_LEFT, HORZ_CENTER, HORZ_RIGHT, HORZ_FILLED, HORZ_JUSTIFIED,HORZ_CENTER_ACROSS_SEL, HORZ_DISTRIBUTED）
+alignment.vert = xlwt.Alignment.VERT_CENTER # 垂直对齐（VERT_TOP,VERT_CENTER, VERT_BOTTOM, VERT_JUSTIFIED, VERT_DISTRIBUTED）
+style.alignment = alignment # 将Alignment对象赋给XFStyle对象
+
+#设置边框
+borders = xlwt.Borders() # 创建Borders对象
+borders.left = xlwt.Borders.DASHED # 左边框（NO_LINE, THIN, MEDIUM,DASHED, DOTTED, THICK, DOUBLE, HAIR, MEDIUM_DASHED,THIN_DASH_DOTTED, MEDIUM_DASH_DOTTED, THIN_DASH_DOT_DOTTED,MEDIUM_DASH_DOT_DOTTED, SLANTED_MEDIUM_DASH_DOTTED）
+borders.right = xlwt.Borders.DASHED # 右边框
+borders.top = xlwt.Borders.DASHED # 上边框
+borders.bottom = xlwt.Borders.DASHED # 下边框
+borders.left_colour = 5 # 左边框颜色,见颜色图
+borders.right_colour = 5 # 右边框颜色,见颜色图
+borders.top_colour = 5 # 上边框颜色,见颜色图
+borders.bottom_colour = 5 # 下边框颜色,见颜色图
+style.borders = borders # 将Borders对象赋给XFStyle对象
+
+#设置背景色
+pattern = xlwt.Pattern() # 创建Pattern对象
+pattern.pattern = xlwt.Pattern.SOLID_PATTERN # （NO_PATTERN,SOLID_PATTERN）
+pattern.pattern_fore_colour = 5 # 背景色,见颜色图
+style.pattern = pattern # 将Pattern对象赋给XFStyle对象
+
+</code></pre>
+
+<p><a id="颜色图" name="颜色图"></a>颜色图</p>
+
+<table border="2" cellspacing="0" style="border-collapse:collapse; border:none">
+	<tbody>
+		<tr>
+			<td style="background-color:black; height:13.5pt; vertical-align:bottom; white-space:nowrap; width:54pt"><span style="font-size:11pt"><span style="color:black"><span style="font-family:宋体">　</span></span></span></td>
+			<td style="height:13.5pt; vertical-align:bottom; white-space:nowrap; width:15pt"><span style="font-size:11pt"><span style="color:black"><span style="font-family:宋体">0</span></span></span></td>
+			<td style="background-color:black; height:13.5pt; vertical-align:bottom; white-space:nowrap; width:54pt"><span style="font-size:11pt"><span style="color:black"><span style="font-family:宋体">　</span></span></span></td>
+			<td style="height:13.5pt; vertical-align:bottom; white-space:nowrap; width:21pt"><span style="font-size:11pt"><span style="color:black"><span style="font-family:宋体">8</span></span></span></td>
+			<td style="background-color:maroon; height:13.5pt; vertical-align:bottom; white-space:nowrap; width:54pt"><span style="font-size:11pt"><span style="color:black"><span style="font-family:宋体">　</span></span></span></td>
+			<td style="height:13.5pt; vertical-align:bottom; white-space:nowrap; width:21pt"><span style="font-size:11pt"><span style="color:black"><span style="font-family:宋体">16</span></span></span></td>
+			<td style="background-color:#9999ff; height:13.5pt; vertical-align:bottom; white-space:nowrap; width:54pt"><span style="font-size:11pt"><span style="color:black"><span style="font-family:宋体">　</span></span></span></td>
+			<td style="height:13.5pt; vertical-align:bottom; white-space:nowrap; width:21pt"><span style="font-size:11pt"><span style="color:black"><span style="font-family:宋体">24</span></span></span></td>
+			<td style="background-color:navy; height:13.5pt; vertical-align:bottom; white-space:nowrap; width:54pt"><span style="font-size:11pt"><span style="color:black"><span style="font-family:宋体">　</span></span></span></td>
+			<td style="height:13.5pt; vertical-align:bottom; white-space:nowrap; width:21pt"><span style="font-size:11pt"><span style="color:black"><span style="font-family:宋体">32</span></span></span></td>
+			<td style="background-color:#00ccff; height:13.5pt; vertical-align:bottom; white-space:nowrap; width:54pt"><span style="font-size:11pt"><span style="color:black"><span style="font-family:宋体">　</span></span></span></td>
+			<td style="height:13.5pt; vertical-align:bottom; white-space:nowrap; width:21pt"><span style="font-size:11pt"><span style="color:black"><span style="font-family:宋体">40</span></span></span></td>
+			<td style="background-color:#3366ff; height:13.5pt; vertical-align:bottom; white-space:nowrap; width:54pt"><span style="font-size:11pt"><span style="color:black"><span style="font-family:宋体">　</span></span></span></td>
+			<td style="height:13.5pt; vertical-align:bottom; white-space:nowrap; width:21pt"><span style="font-size:11pt"><span style="color:black"><span style="font-family:宋体">48</span></span></span></td>
+			<td style="background-color:#003366; height:13.5pt; vertical-align:bottom; white-space:nowrap; width:54pt"><span style="font-size:11pt"><span style="color:black"><span style="font-family:宋体">　</span></span></span></td>
+			<td style="height:13.5pt; vertical-align:bottom; white-space:nowrap; width:21pt"><span style="font-size:11pt"><span style="color:black"><span style="font-family:宋体">56</span></span></span></td>
+			<td style="height:13.5pt; vertical-align:bottom; white-space:nowrap; width:54pt">&nbsp;</td>
+			<td style="height:13.5pt; vertical-align:bottom; white-space:nowrap; width:21pt"><span style="font-size:11pt"><span style="color:black"><span style="font-family:宋体">64</span></span></span></td>
+			<td style="background-color:black; height:13.5pt; vertical-align:bottom; white-space:nowrap; width:54pt"><span style="font-size:11pt"><span style="color:black"><span style="font-family:宋体">　</span></span></span></td>
+			<td style="height:13.5pt; vertical-align:bottom; white-space:nowrap; width:21pt"><span style="font-size:11pt"><span style="color:black"><span style="font-family:宋体">72</span></span></span></td>
+		</tr>
+		<tr>
+			<td style="background-color:white; height:13.5pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:宋体">　</span></span></span></td>
+			<td style="height:13.5pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:宋体">1</span></span></span></td>
+			<td style="background-color:white; height:13.5pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:宋体">　</span></span></span></td>
+			<td style="height:13.5pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:宋体">9</span></span></span></td>
+			<td style="background-color:green; height:13.5pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:宋体">　</span></span></span></td>
+			<td style="height:13.5pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:宋体">17</span></span></span></td>
+			<td style="background-color:#993366; height:13.5pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:宋体">　</span></span></span></td>
+			<td style="height:13.5pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:宋体">25</span></span></span></td>
+			<td style="background-color:fuchsia; height:13.5pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:宋体">　</span></span></span></td>
+			<td style="height:13.5pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:宋体">33</span></span></span></td>
+			<td style="background-color:#ccffff; height:13.5pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:宋体">　</span></span></span></td>
+			<td style="height:13.5pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:宋体">41</span></span></span></td>
+			<td style="background-color:#33cccc; height:13.5pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:宋体">　</span></span></span></td>
+			<td style="height:13.5pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:宋体">49</span></span></span></td>
+			<td style="background-color:#339966; height:13.5pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:宋体">　</span></span></span></td>
+			<td style="height:13.5pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:宋体">57</span></span></span></td>
+			<td style="height:13.5pt; vertical-align:bottom; white-space:nowrap">&nbsp;</td>
+			<td style="height:13.5pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:宋体">65</span></span></span></td>
+			<td style="background-color:#c8c8c8; height:13.5pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:宋体">　</span></span></span></td>
+			<td style="height:13.5pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:宋体">73</span></span></span></td>
+		</tr>
+		<tr>
+			<td style="background-color:red; height:13.5pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:宋体">　</span></span></span></td>
+			<td style="height:13.5pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:宋体">2</span></span></span></td>
+			<td style="background-color:red; height:13.5pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:宋体">　</span></span></span></td>
+			<td style="height:13.5pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:宋体">10</span></span></span></td>
+			<td style="background-color:navy; height:13.5pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:宋体">　</span></span></span></td>
+			<td style="height:13.5pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:宋体">18</span></span></span></td>
+			<td style="background-color:#ffffcc; height:13.5pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:宋体">　</span></span></span></td>
+			<td style="height:13.5pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:宋体">26</span></span></span></td>
+			<td style="background-color:yellow; height:13.5pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:宋体">　</span></span></span></td>
+			<td style="height:13.5pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:宋体">34</span></span></span></td>
+			<td style="background-color:#ccffcc; height:13.5pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:宋体">　</span></span></span></td>
+			<td style="height:13.5pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:宋体">42</span></span></span></td>
+			<td style="background-color:#99cc00; height:13.5pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:宋体">　</span></span></span></td>
+			<td style="height:13.5pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:宋体">50</span></span></span></td>
+			<td style="background-color:#003300; height:13.5pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:宋体">　</span></span></span></td>
+			<td style="height:13.5pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:宋体">58</span></span></span></td>
+			<td style="background-color:#646464; height:13.5pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:宋体">　</span></span></span></td>
+			<td style="height:13.5pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:宋体">66</span></span></span></td>
+			<td style="background-color:#373737; height:13.5pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:宋体">　</span></span></span></td>
+			<td style="height:13.5pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:宋体">74</span></span></span></td>
+		</tr>
+		<tr>
+			<td style="background-color:lime; height:13.5pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:宋体">　</span></span></span></td>
+			<td style="height:13.5pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:宋体">3</span></span></span></td>
+			<td style="background-color:lime; height:13.5pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:宋体">　</span></span></span></td>
+			<td style="height:13.5pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:宋体">11</span></span></span></td>
+			<td style="background-color:olive; height:13.5pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:宋体">　</span></span></span></td>
+			<td style="height:13.5pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:宋体">19</span></span></span></td>
+			<td style="background-color:#ccffff; height:13.5pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:宋体">　</span></span></span></td>
+			<td style="height:13.5pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:宋体">27</span></span></span></td>
+			<td style="background-color:aqua; height:13.5pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:宋体">　</span></span></span></td>
+			<td style="height:13.5pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:宋体">35</span></span></span></td>
+			<td style="background-color:#ffff99; height:13.5pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:宋体">　</span></span></span></td>
+			<td style="height:13.5pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:宋体">43</span></span></span></td>
+			<td style="background-color:#ffcc00; height:13.5pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:宋体">　</span></span></span></td>
+			<td style="height:13.5pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:宋体">51</span></span></span></td>
+			<td style="background-color:#333300; height:13.5pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:宋体">　</span></span></span></td>
+			<td style="height:13.5pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:宋体">59</span></span></span></td>
+			<td style="background-color:#f0f0f0; height:13.5pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:宋体">　</span></span></span></td>
+			<td style="height:13.5pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:宋体">67</span></span></span></td>
+			<td style="background-color:#cce8cf; height:13.5pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:宋体">　</span></span></span></td>
+			<td style="height:13.5pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:宋体">75</span></span></span></td>
+		</tr>
+		<tr>
+			<td style="background-color:blue; height:13.5pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:宋体">　</span></span></span></td>
+			<td style="height:13.5pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:宋体">4</span></span></span></td>
+			<td style="background-color:blue; height:13.5pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:宋体">　</span></span></span></td>
+			<td style="height:13.5pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:宋体">12</span></span></span></td>
+			<td style="background-color:purple; height:13.5pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:宋体">　</span></span></span></td>
+			<td style="height:13.5pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:宋体">20</span></span></span></td>
+			<td style="background-color:#660066; height:13.5pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:宋体">　</span></span></span></td>
+			<td style="height:13.5pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:宋体">28</span></span></span></td>
+			<td style="background-color:purple; height:13.5pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:宋体">　</span></span></span></td>
+			<td style="height:13.5pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:宋体">36</span></span></span></td>
+			<td style="background-color:#99ccff; height:13.5pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:宋体">　</span></span></span></td>
+			<td style="height:13.5pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:宋体">44</span></span></span></td>
+			<td style="background-color:#ff9900; height:13.5pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:宋体">　</span></span></span></td>
+			<td style="height:13.5pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:宋体">52</span></span></span></td>
+			<td style="background-color:#993300; height:13.5pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:宋体">　</span></span></span></td>
+			<td style="height:13.5pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:宋体">60</span></span></span></td>
+			<td style="background-color:black; height:13.5pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:宋体">　</span></span></span></td>
+			<td style="height:13.5pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:宋体">68</span></span></span></td>
+			<td style="background-color:#646464; height:13.5pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:宋体">　</span></span></span></td>
+			<td style="height:13.5pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:宋体">76</span></span></span></td>
+		</tr>
+		<tr>
+			<td style="background-color:yellow; height:13.5pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:宋体">　</span></span></span></td>
+			<td style="height:13.5pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:宋体">5</span></span></span></td>
+			<td style="background-color:yellow; height:13.5pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:宋体">　</span></span></span></td>
+			<td style="height:13.5pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:宋体">13</span></span></span></td>
+			<td style="background-color:teal; height:13.5pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:宋体">　</span></span></span></td>
+			<td style="height:13.5pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:宋体">21</span></span></span></td>
+			<td style="background-color:#ff8080; height:13.5pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:宋体">　</span></span></span></td>
+			<td style="height:13.5pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:宋体">29</span></span></span></td>
+			<td style="background-color:maroon; height:13.5pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:宋体">　</span></span></span></td>
+			<td style="height:13.5pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:宋体">37</span></span></span></td>
+			<td style="background-color:#ff99cc; height:13.5pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:宋体">　</span></span></span></td>
+			<td style="height:13.5pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:宋体">45</span></span></span></td>
+			<td style="background-color:#ff6600; height:13.5pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:宋体">　</span></span></span></td>
+			<td style="height:13.5pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:宋体">53</span></span></span></td>
+			<td style="background-color:#993366; height:13.5pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:宋体">　</span></span></span></td>
+			<td style="height:13.5pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:宋体">61</span></span></span></td>
+			<td style="background-color:white; height:13.5pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:宋体">　</span></span></span></td>
+			<td style="height:13.5pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:宋体">69</span></span></span></td>
+			<td style="background-color:black; height:13.5pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:宋体">　</span></span></span></td>
+			<td style="height:13.5pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:宋体">77</span></span></span></td>
+		</tr>
+		<tr>
+			<td style="background-color:fuchsia; height:13.5pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:宋体">　</span></span></span></td>
+			<td style="height:13.5pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:宋体">6</span></span></span></td>
+			<td style="background-color:fuchsia; height:13.5pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:宋体">　</span></span></span></td>
+			<td style="height:13.5pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:宋体">14</span></span></span></td>
+			<td style="background-color:silver; height:13.5pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:宋体">　</span></span></span></td>
+			<td style="height:13.5pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:宋体">22</span></span></span></td>
+			<td style="background-color:#0066cc; height:13.5pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:宋体">　</span></span></span></td>
+			<td style="height:13.5pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:宋体">30</span></span></span></td>
+			<td style="background-color:teal; height:13.5pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:宋体">　</span></span></span></td>
+			<td style="height:13.5pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:宋体">38</span></span></span></td>
+			<td style="background-color:#cc99ff; height:13.5pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:宋体">　</span></span></span></td>
+			<td style="height:13.5pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:宋体">46</span></span></span></td>
+			<td style="background-color:#666699; height:13.5pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:宋体">　</span></span></span></td>
+			<td style="height:13.5pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:宋体">54</span></span></span></td>
+			<td style="background-color:#333399; height:13.5pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:宋体">　</span></span></span></td>
+			<td style="height:13.5pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:宋体">62</span></span></span></td>
+			<td style="background-color:#a0a0a0; height:13.5pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:宋体">　</span></span></span></td>
+			<td style="height:13.5pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:宋体">70</span></span></span></td>
+			<td style="background-color:#cce8cf; height:13.5pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:宋体">　</span></span></span></td>
+			<td style="height:13.5pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:宋体">78</span></span></span></td>
+		</tr>
+		<tr>
+			<td style="background-color:aqua; height:13.5pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:宋体">　</span></span></span></td>
+			<td style="height:13.5pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:宋体">7</span></span></span></td>
+			<td style="background-color:aqua; height:13.5pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:宋体">　</span></span></span></td>
+			<td style="height:13.5pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:宋体">15</span></span></span></td>
+			<td style="background-color:gray; height:13.5pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:宋体">　</span></span></span></td>
+			<td style="height:13.5pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:宋体">23</span></span></span></td>
+			<td style="background-color:#ccccff; height:13.5pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:宋体">　</span></span></span></td>
+			<td style="height:13.5pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:宋体">31</span></span></span></td>
+			<td style="background-color:blue; height:13.5pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:宋体">　</span></span></span></td>
+			<td style="height:13.5pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:宋体">39</span></span></span></td>
+			<td style="background-color:#ffcc99; height:13.5pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:宋体">　</span></span></span></td>
+			<td style="height:13.5pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:宋体">47</span></span></span></td>
+			<td style="background-color:#969696; height:13.5pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:宋体">　</span></span></span></td>
+			<td style="height:13.5pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:宋体">55</span></span></span></td>
+			<td style="background-color:#333333; height:13.5pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:宋体">　</span></span></span></td>
+			<td style="height:13.5pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:宋体">63</span></span></span></td>
+			<td style="background-color:#0078d7; height:13.5pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:宋体">　</span></span></span></td>
+			<td style="height:13.5pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:宋体">71</span></span></span></td>
+			<td style="background-color:black; height:13.5pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:宋体">　</span></span></span></td>
+			<td style="height:13.5pt; vertical-align:bottom; white-space:nowrap"><span style="font-size:11pt"><span style="color:black"><span style="font-family:宋体">79</span></span></span></td>
+		</tr>
+	</tbody>
+</table>
+
+				    </section>
+					</article>
+				</main>
+            </div>
+        </div>
+    </section>
+    <a href="#top" id="goTop" ><i class="fa fa-angle-up fa-3x"></i></a>
+	<script src="../js/jquery.min.js"></script>
+    <script type="text/javascript" src="../js/datas/detailAngularJs.js"></script>
+    <script src="../plugins/scrolltopcontrol.js"></script>
+</body>
+</html>

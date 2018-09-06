@@ -1,0 +1,249 @@
+<html>
+<!DOCTYPE html>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <title>多元线性回归笔记</title>
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link rel="stylesheet" href="../css/bootstrap.min.css">
+	<link rel="stylesheet" href="../css/font-awesome.min.css">
+    <link rel="stylesheet" href="../plugins/ckeditor/plugins/codesnippet/lib/highlight/styles/googlecode.css">
+    <link rel="stylesheet" type="text/css" href="../css/front/screen.css">
+    <script src="../plugins/ckeditor/plugins/codesnippet/lib/highlight/highlight.pack.js"></script>
+	<style type="text/css">
+		.list{
+			margin-top:5em;
+			position: fixed;
+		}
+		
+		.list h4{
+			padding-bottom:0.5em;
+			border-bottom:2px solid lightgray;
+		}
+		
+		.list .readTitle li{
+			margin-top:0.4em;
+			padding-left:1em;
+			border:2px solid white;
+		}
+		.list .readTitle li:hover{
+			border-left:2px solid black;
+			color:blue;
+		}
+		.liHover{
+			border-left:2px solid black !important;
+		}
+		.aHover{
+			color:blue;
+		}
+		.list .readTitle li a:hover{
+			color:blue;
+			text-decoration: none;
+		}
+	</style>
+</head>
+<body>
+    <section class="content-wrap container-fluid">
+        <div class="container">
+            <div class="row">
+				<div class="col-md-3 visible-lg-block visible-md-block">
+					<div class="list">
+						<h4>阅读目录</h4>
+						<div>
+							<ul class="readTitle list-unstyled"></ul>
+						</div>
+					</div>
+				</div>
+                 <main class="col-md-19 main-content">
+					<article class="post row">
+					<header class="post-head">
+				        <h1 class="post-title">多元线性回归笔记</h1>
+				        <section class="post-meta">
+					        <span><span class="glyphicon glyphicon-user"></span>:<span>c</span></span>|
+				            <span><span class="glyphicon glyphicon-bookmark"></span>:<span>MachineLearning</span></span>|
+				            <span><span class="glyphicon glyphicon-time"></span>:<span>2017-11-26</span></span>
+				        </section>
+				    </header>
+				    <section class="post-content"><p><strong><a id="多元线性回归与简单线性回归区别" name="多元线性回归与简单线性回归区别"></a>多元线性回归(multiple regression)与简单线性回归区别(simple linear regression)</strong><br />
+多个自变量(x)</p>
+
+<p><strong><a id="多元回归模型" name="多元回归模型"></a>多元回归模型</strong><br />
+y = &beta;<sub>0&nbsp;</sub>＋ &beta;<sub>１</sub>x<sub>1&nbsp;</sub>+ &beta;<sub>2</sub>x<sub>2&nbsp;</sub>+ ... +&beta;<sub>p</sub>x<sub>p&nbsp;</sub>+ &epsilon;<br />
+其中：&beta;<sub>0</sub>，&beta;<sub>１</sub>，&beta;<sub>2</sub>... &beta;<sub>p</sub>是参数，&epsilon;是误差值</p>
+
+<p><strong><a id="多元回归方程" name="多元回归方程"></a>多元回归方程</strong><br />
+E(y)=&beta;<sub>0</sub>＋&beta;<sub>１</sub>x<sub>1</sub>+&beta;<sub>2</sub>x<sub>2</sub>+ ... +&beta;<sub>p</sub>x<sub>p</sub></p>
+
+<p><strong><a id="估计多元回归方程" name="估计多元回归方程"></a>估计多元回归方程</strong><br />
+ŷ=b<sub>0</sub>＋b<sub>１</sub>x<sub>1</sub>+b<sub>2</sub>x<sub>2</sub>+ ... +b<sub>p</sub>x<sub>p</sub></p>
+
+<p><strong><a id="估计流程" name="估计流程"></a>估计流程 &nbsp;(与简单线性回归类似）</strong><br />
+估计方法（使sum of squares最小）<br />
+<img src="http://localhost:8080/myLog/images/linear_regression/simple/10.png" style="height:25px; width:90px" /></p>
+
+<p><strong><a id="多元回归模型举例" name="多元回归模型举例"></a>多元回归模型举例</strong></p>
+
+<table border="1" cellspacing="0" style="border-collapse:collapse; border:2pt double #000000; height:300px; width:400pt">
+	<tbody>
+		<tr>
+			<td style="background-color:#aeaaaa; height:21.38pf; text-align:center; vertical-align:middle; width:58.50pt"><span style="font-size:12.0pt"><span style="color:#000000"><span style="font-family:宋体">运输车</span></span></span></td>
+			<td style="background-color:#aeaaaa; height:21.38pf; text-align:center; vertical-align:middle; width:111.00pt"><span style="font-size:12.0pt"><span style="color:#000000"><span style="font-family:宋体">运输里程(X1)</span></span></span></td>
+			<td style="background-color:#aeaaaa; height:21.38pf; text-align:center; vertical-align:middle; width:66.00pt"><span style="font-size:12.0pt"><span style="color:#000000"><span style="font-family:宋体">运输次数(X2)</span></span></span></td>
+			<td style="background-color:#aeaaaa; height:21.38pf; text-align:center; vertical-align:middle; width:119.25pt"><span style="font-size:12.0pt"><span style="color:#000000"><span style="font-family:宋体">总运输时间(Y)</span></span></span></td>
+		</tr>
+		<tr>
+			<td style="height:21.38pf; text-align:center; vertical-align:middle; width:58.50pt"><span style="font-size:12.0pt"><span style="color:#000000"><span style="font-family:宋体">1</span></span></span></td>
+			<td style="height:21.38pf; text-align:center; vertical-align:middle; width:111.00pt"><span style="font-size:12.0pt"><span style="color:#000000"><span style="font-family:宋体">100</span></span></span></td>
+			<td style="height:21.38pf; text-align:center; vertical-align:middle; width:66.00pt"><span style="font-size:12.0pt"><span style="color:#000000"><span style="font-family:宋体">4</span></span></span></td>
+			<td style="height:21.38pf; text-align:center; vertical-align:middle; width:119.25pt"><span style="font-size:12.0pt"><span style="color:#000000"><span style="font-family:宋体">9.3</span></span></span></td>
+		</tr>
+		<tr>
+			<td style="height:40.88pf; text-align:center; vertical-align:middle; white-space:normal; width:58.50pt"><span style="font-size:12.0pt"><span style="color:#000000"><span style="font-family:宋体">2<br />
+			3</span></span></span></td>
+			<td style="height:40.88pf; text-align:center; vertical-align:middle; white-space:normal; width:111.00pt"><span style="font-size:12.0pt"><span style="color:#000000"><span style="font-family:宋体">50<br />
+			100</span></span></span></td>
+			<td style="height:40.88pf; text-align:center; vertical-align:middle; white-space:normal; width:66.00pt"><span style="font-size:12.0pt"><span style="color:#000000"><span style="font-family:宋体">3<br />
+			4</span></span></span></td>
+			<td style="height:40.88pf; text-align:center; vertical-align:middle; white-space:normal; width:119.25pt"><span style="font-size:12.0pt"><span style="color:#000000"><span style="font-family:宋体">4.8<br />
+			8.9</span></span></span></td>
+		</tr>
+		<tr>
+			<td style="height:40.88pf; text-align:center; vertical-align:middle; white-space:normal; width:58.50pt"><span style="font-size:12.0pt"><span style="color:#000000"><span style="font-family:宋体">4<br />
+			5</span></span></span></td>
+			<td style="height:40.88pf; text-align:center; vertical-align:middle; white-space:normal; width:111.00pt"><span style="font-size:12.0pt"><span style="color:#000000"><span style="font-family:宋体">100<br />
+			50</span></span></span></td>
+			<td style="height:40.88pf; text-align:center; vertical-align:middle; white-space:normal; width:66.00pt"><span style="font-size:12.0pt"><span style="color:#000000"><span style="font-family:宋体">2<br />
+			2</span></span></span></td>
+			<td style="height:40.88pf; text-align:center; vertical-align:middle; white-space:normal; width:119.25pt"><span style="font-size:12.0pt"><span style="color:#000000"><span style="font-family:宋体">6.5<br />
+			4.2</span></span></span></td>
+		</tr>
+		<tr>
+			<td style="height:40.88pf; text-align:center; vertical-align:middle; white-space:normal; width:58.50pt"><span style="font-size:12.0pt"><span style="color:#000000"><span style="font-family:宋体">6<br />
+			7</span></span></span></td>
+			<td style="height:40.88pf; text-align:center; vertical-align:middle; white-space:normal; width:111.00pt"><span style="font-size:12.0pt"><span style="color:#000000"><span style="font-family:宋体">80<br />
+			75</span></span></span></td>
+			<td style="height:40.88pf; text-align:center; vertical-align:middle; white-space:normal; width:66.00pt"><span style="font-size:12.0pt"><span style="color:#000000"><span style="font-family:宋体">2<br />
+			3</span></span></span></td>
+			<td style="height:40.88pf; text-align:center; vertical-align:middle; white-space:normal; width:119.25pt"><span style="font-size:12.0pt"><span style="color:#000000"><span style="font-family:宋体">6.2<br />
+			7.4</span></span></span></td>
+		</tr>
+		<tr>
+			<td style="height:40.88pf; text-align:center; vertical-align:middle; white-space:normal; width:58.50pt"><span style="font-size:12.0pt"><span style="color:#000000"><span style="font-family:宋体">8<br />
+			9</span></span></span></td>
+			<td style="height:40.88pf; text-align:center; vertical-align:middle; white-space:normal; width:111.00pt"><span style="font-size:12.0pt"><span style="color:#000000"><span style="font-family:宋体">65<br />
+			90</span></span></span></td>
+			<td style="height:40.88pf; text-align:center; vertical-align:middle; white-space:normal; width:66.00pt"><span style="font-size:12.0pt"><span style="color:#000000"><span style="font-family:宋体">4<br />
+			3</span></span></span></td>
+			<td style="height:40.88pf; text-align:center; vertical-align:middle; white-space:normal; width:119.25pt"><span style="font-size:12.0pt"><span style="color:#000000"><span style="font-family:宋体">6<br />
+			7.6</span></span></span></td>
+		</tr>
+		<tr>
+			<td style="height:21.38pf; text-align:center; vertical-align:middle; width:58.50pt"><span style="font-size:12.0pt"><span style="color:#000000"><span style="font-family:宋体">10</span></span></span></td>
+			<td style="height:21.38pf; text-align:center; vertical-align:middle; width:111.00pt"><span style="font-size:12.0pt"><span style="color:#000000"><span style="font-family:宋体">90</span></span></span></td>
+			<td style="height:21.38pf; text-align:center; vertical-align:middle; width:66.00pt"><span style="font-size:12.0pt"><span style="color:#000000"><span style="font-family:宋体">2</span></span></span></td>
+			<td style="height:21.38pf; text-align:center; vertical-align:middle; width:119.25pt"><span style="font-size:12.0pt"><span style="color:#000000"><span style="font-family:宋体">6.1</span></span></span></td>
+		</tr>
+	</tbody>
+</table>
+
+<p>过程省略：Y =&nbsp;b<sub>0&nbsp;</sub>+ b<sub>1&nbsp;</sub>* X<sub>1</sub> + b<sub>2</sub> * X<sub>2</sub> =&nbsp;-0.869 + 0.0611 * X<sub>1</sub>&nbsp;+ 0.923 * X<sub>2</sub></p>
+
+<p><strong><a id="自变量中有分类型变量, 如何处理" name="自变量中有分类型变量, 如何处理"></a>如果自变量中有分类型变量(categorical data) , 如何处理？</strong></p>
+
+<table border="1" cellspacing="0" style="border-collapse:collapse; border:0.5pt solid #000000; height:112px; width:400pt">
+	<tbody>
+		<tr>
+			<td style="background-color:#aeaaaa; height:21.38pf; text-align:center; vertical-align:middle; width:56.25pt"><span style="font-size:12.0pt"><span style="color:#000000"><span style="font-family:宋体">英里数(X1)</span></span></span></td>
+			<td style="background-color:#aeaaaa; height:21.38pf; text-align:center; vertical-align:middle; width:41.25pt"><span style="font-size:12.0pt"><span style="color:#000000"><span style="font-family:宋体">次数(X2)</span></span></span></td>
+			<td style="background-color:#aeaaaa; height:21.38pf; text-align:center; vertical-align:middle; width:66.00pt"><span style="font-size:12.0pt"><span style="color:#000000"><span style="font-family:宋体">车型(X3)</span></span></span></td>
+			<td style="background-color:#aeaaaa; height:21.38pf; text-align:center; vertical-align:middle; width:66.00pt"><span style="font-size:12.0pt"><span style="color:#000000"><span style="font-family:宋体">时间(Y)</span></span></span></td>
+		</tr>
+		<tr>
+			<td style="height:20.44pf; text-align:center; vertical-align:middle; width:56.25pt"><span style="font-size:12.0pt"><span style="color:#000000"><span style="font-family:宋体">100</span></span></span></td>
+			<td style="height:20.44pf; text-align:center; vertical-align:middle; width:41.25pt"><span style="font-size:12.0pt"><span style="color:#000000"><span style="font-family:宋体">4</span></span></span></td>
+			<td style="height:20.44pf; text-align:center; vertical-align:middle; width:66.00pt"><span style="font-size:12.0pt"><span style="color:#000000"><span style="font-family:宋体">1</span></span></span></td>
+			<td style="height:20.44pf; text-align:center; vertical-align:middle; width:66.00pt"><span style="font-size:12.0pt"><span style="color:#000000"><span style="font-family:宋体">9.3</span></span></span></td>
+		</tr>
+		<tr>
+			<td style="height:14.25pt; text-align:center; vertical-align:middle; width:56.25pt"><span style="font-size:12.0pt"><span style="color:#000000"><span style="font-family:宋体">50</span></span></span></td>
+			<td style="height:14.25pt; text-align:center; vertical-align:middle; width:41.25pt"><span style="font-size:12.0pt"><span style="color:#000000"><span style="font-family:宋体">3</span></span></span></td>
+			<td style="height:14.25pt; text-align:center; vertical-align:middle; width:66.00pt"><span style="font-size:12.0pt"><span style="color:#000000"><span style="font-family:宋体">0</span></span></span></td>
+			<td style="height:14.25pt; text-align:center; vertical-align:middle; width:66.00pt"><span style="font-size:12.0pt"><span style="color:#000000"><span style="font-family:宋体">4.8</span></span></span></td>
+		</tr>
+		<tr>
+			<td style="height:14.25pt; text-align:center; vertical-align:middle; width:56.25pt"><span style="font-size:12.0pt"><span style="color:#000000"><span style="font-family:宋体">100</span></span></span></td>
+			<td style="height:14.25pt; text-align:center; vertical-align:middle; width:41.25pt"><span style="font-size:12.0pt"><span style="color:#000000"><span style="font-family:宋体">4</span></span></span></td>
+			<td style="height:14.25pt; text-align:center; vertical-align:middle; width:66.00pt"><span style="font-size:12.0pt"><span style="color:#000000"><span style="font-family:宋体">1</span></span></span></td>
+			<td style="height:14.25pt; text-align:center; vertical-align:middle; width:66.00pt"><span style="font-size:12.0pt"><span style="color:#000000"><span style="font-family:宋体">8.9</span></span></span></td>
+		</tr>
+		<tr>
+			<td style="height:14.25pt; text-align:center; vertical-align:middle; width:56.25pt"><span style="font-size:12.0pt"><span style="color:#000000"><span style="font-family:宋体">100</span></span></span></td>
+			<td style="height:14.25pt; text-align:center; vertical-align:middle; width:41.25pt"><span style="font-size:12.0pt"><span style="color:#000000"><span style="font-family:宋体">2</span></span></span></td>
+			<td style="height:14.25pt; text-align:center; vertical-align:middle; width:66.00pt"><span style="font-size:12.0pt"><span style="color:#000000"><span style="font-family:宋体">2</span></span></span></td>
+			<td style="height:14.25pt; text-align:center; vertical-align:middle; width:66.00pt"><span style="font-size:12.0pt"><span style="color:#000000"><span style="font-family:宋体">6.5</span></span></span></td>
+		</tr>
+	</tbody>
+</table>
+
+<p>由于车型中的0、1、2并不是代表数字而是代表了车型，所以需要作出转化</p>
+
+<table border="1" cellspacing="0" style="border-collapse:collapse; border:0.5pt solid #000000; height:112px; width:400pt">
+	<tbody>
+		<tr>
+			<td style="background-color:#aeaaaa; height:21.38pf; text-align:center; vertical-align:middle; width:56.25pt"><span style="font-size:12.0pt"><span style="color:#000000"><span style="font-family:宋体">英里数(X1)</span></span></span></td>
+			<td style="background-color:#aeaaaa; height:21.38pf; text-align:center; vertical-align:middle; width:41.25pt"><span style="font-size:12.0pt"><span style="color:#000000"><span style="font-family:宋体">次数(X2)</span></span></span></td>
+			<td style="background-color:#aeaaaa; height:21.38pf; text-align:center; vertical-align:middle; width:48.75pt"><span style="font-size:12.0pt"><span style="color:#000000"><span style="font-family:宋体">车型0(X3)</span></span></span></td>
+			<td style="background-color:#aeaaaa; height:21.38pf; text-align:center; vertical-align:middle; width:66.00pt"><span style="font-size:12.0pt"><span style="color:#000000"><span style="font-family:宋体">车型1(X4)</span></span></span></td>
+			<td style="background-color:#aeaaaa; height:21.38pf; text-align:center; vertical-align:middle; width:66.00pt"><span style="font-size:12.0pt"><span style="color:#000000"><span style="font-family:宋体">车型2(X5)</span></span></span></td>
+			<td style="background-color:#aeaaaa; height:21.38pf; text-align:center; vertical-align:middle; width:41.25pt"><span style="font-size:12.0pt"><span style="color:#000000"><span style="font-family:宋体">时间(Y)</span></span></span></td>
+		</tr>
+		<tr>
+			<td style="height:20.44pf; text-align:center; vertical-align:middle; width:56.25pt"><span style="font-size:12.0pt"><span style="color:#000000"><span style="font-family:宋体">100</span></span></span></td>
+			<td style="height:20.44pf; text-align:center; vertical-align:middle; width:41.25pt"><span style="font-size:12.0pt"><span style="color:#000000"><span style="font-family:宋体">4</span></span></span></td>
+			<td style="height:20.44pf; text-align:center; vertical-align:middle; width:48.75pt"><span style="font-size:12.0pt"><span style="color:#000000"><span style="font-family:宋体">0</span></span></span></td>
+			<td style="height:20.44pf; text-align:center; vertical-align:middle; width:66.00pt"><span style="font-size:12.0pt"><span style="color:#000000"><span style="font-family:宋体">1</span></span></span></td>
+			<td style="height:20.44pf; text-align:center; vertical-align:middle; width:66.00pt"><span style="font-size:12.0pt"><span style="color:#000000"><span style="font-family:宋体">0</span></span></span></td>
+			<td style="height:20.44pf; text-align:center; vertical-align:middle; width:41.25pt"><span style="font-size:12.0pt"><span style="color:#000000"><span style="font-family:宋体">9.3</span></span></span></td>
+		</tr>
+		<tr>
+			<td style="height:14.25pt; text-align:center; vertical-align:middle; width:56.25pt"><span style="font-size:12.0pt"><span style="color:#000000"><span style="font-family:宋体">50</span></span></span></td>
+			<td style="height:14.25pt; text-align:center; vertical-align:middle; width:41.25pt"><span style="font-size:12.0pt"><span style="color:#000000"><span style="font-family:宋体">3</span></span></span></td>
+			<td style="height:14.25pt; text-align:center; vertical-align:middle; width:48.75pt"><span style="font-size:12.0pt"><span style="color:#000000"><span style="font-family:宋体">1</span></span></span></td>
+			<td style="height:14.25pt; text-align:center; vertical-align:middle; width:66.00pt"><span style="font-size:12.0pt"><span style="color:#000000"><span style="font-family:宋体">0</span></span></span></td>
+			<td style="height:14.25pt; text-align:center; vertical-align:middle; width:66.00pt"><span style="font-size:12.0pt"><span style="color:#000000"><span style="font-family:宋体">0</span></span></span></td>
+			<td style="height:14.25pt; text-align:center; vertical-align:middle; width:41.25pt"><span style="font-size:12.0pt"><span style="color:#000000"><span style="font-family:宋体">4.8</span></span></span></td>
+		</tr>
+		<tr>
+			<td style="height:14.25pt; text-align:center; vertical-align:middle; width:56.25pt"><span style="font-size:12.0pt"><span style="color:#000000"><span style="font-family:宋体">100</span></span></span></td>
+			<td style="height:14.25pt; text-align:center; vertical-align:middle; width:41.25pt"><span style="font-size:12.0pt"><span style="color:#000000"><span style="font-family:宋体">4</span></span></span></td>
+			<td style="height:14.25pt; text-align:center; vertical-align:middle; width:48.75pt"><span style="font-size:12.0pt"><span style="color:#000000"><span style="font-family:宋体">0</span></span></span></td>
+			<td style="height:14.25pt; text-align:center; vertical-align:middle; width:66.00pt"><span style="font-size:12.0pt"><span style="color:#000000"><span style="font-family:宋体">1</span></span></span></td>
+			<td style="height:14.25pt; text-align:center; vertical-align:middle; width:66.00pt"><span style="font-size:12.0pt"><span style="color:#000000"><span style="font-family:宋体">0</span></span></span></td>
+			<td style="height:14.25pt; text-align:center; vertical-align:middle; width:41.25pt"><span style="font-size:12.0pt"><span style="color:#000000"><span style="font-family:宋体">8.9</span></span></span></td>
+		</tr>
+		<tr>
+			<td style="height:14.25pt; text-align:center; vertical-align:middle; width:56.25pt"><span style="font-size:12.0pt"><span style="color:#000000"><span style="font-family:宋体">100</span></span></span></td>
+			<td style="height:14.25pt; text-align:center; vertical-align:middle; width:41.25pt"><span style="font-size:12.0pt"><span style="color:#000000"><span style="font-family:宋体">2</span></span></span></td>
+			<td style="height:14.25pt; text-align:center; vertical-align:middle; width:48.75pt"><span style="font-size:12.0pt"><span style="color:#000000"><span style="font-family:宋体">0</span></span></span></td>
+			<td style="height:14.25pt; text-align:center; vertical-align:middle; width:66.00pt"><span style="font-size:12.0pt"><span style="color:#000000"><span style="font-family:宋体">0</span></span></span></td>
+			<td style="height:14.25pt; text-align:center; vertical-align:middle; width:66.00pt"><span style="font-size:12.0pt"><span style="color:#000000"><span style="font-family:宋体">1</span></span></span></td>
+			<td style="height:14.25pt; text-align:center; vertical-align:middle; width:41.25pt"><span style="font-size:12.0pt"><span style="color:#000000"><span style="font-family:宋体">6.5</span></span></span></td>
+		</tr>
+	</tbody>
+</table>
+
+<p>过程省略：Y =&nbsp;b<sub>0&nbsp;</sub>+ b<sub>1&nbsp;</sub>* X<sub>1</sub> + b<sub>2</sub> * X<sub>2</sub> + b<sub>3</sub> * X<sub>3</sub> + b<sub>4</sub> * X<sub>4</sub> + b<sub>5</sub> * X<sub>5</sub>  =&nbsp;-0.797 + 0.06X<sub>1</sub> + 0.8667X<sub>2</sub> -0.0012X<sub>3</sub> + 0.4339X<sub>4</sub> -0.4327X<sub>5</sub></p>
+
+				    </section>
+					</article>
+				</main>
+            </div>
+        </div>
+    </section>
+    <a href="#top" id="goTop" ><i class="fa fa-angle-up fa-3x"></i></a>
+	<script src="../js/jquery.min.js"></script>
+    <script type="text/javascript" src="../js/datas/detailAngularJs.js"></script>
+    <script src="../plugins/scrolltopcontrol.js"></script>
+</body>
+</html>

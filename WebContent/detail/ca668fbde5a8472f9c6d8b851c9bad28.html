@@ -1,0 +1,140 @@
+<html>
+<!DOCTYPE html>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <title>ES基础理论（八）</title>
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link rel="stylesheet" href="../css/bootstrap.min.css">
+	<link rel="stylesheet" href="../css/font-awesome.min.css">
+    <link rel="stylesheet" href="../plugins/ckeditor/plugins/codesnippet/lib/highlight/styles/googlecode.css">
+    <link rel="stylesheet" type="text/css" href="../css/front/screen.css">
+    <script src="../plugins/ckeditor/plugins/codesnippet/lib/highlight/highlight.pack.js"></script>
+	<style type="text/css">
+		.list{
+			margin-top:5em;
+			position: fixed;
+		}
+		
+		.list h4{
+			padding-bottom:0.5em;
+			border-bottom:2px solid lightgray;
+		}
+		
+		.list .readTitle li{
+			margin-top:0.4em;
+			padding-left:1em;
+			border:2px solid white;
+		}
+		.list .readTitle li:hover{
+			border-left:2px solid black;
+			color:blue;
+		}
+		.liHover{
+			border-left:2px solid black !important;
+		}
+		.aHover{
+			color:blue;
+		}
+		.list .readTitle li a:hover{
+			color:blue;
+			text-decoration: none;
+		}
+	</style>
+</head>
+<body>
+    <section class="content-wrap container-fluid">
+        <div class="container">
+            <div class="row">
+				<div class="col-md-3 visible-lg-block visible-md-block">
+					<div class="list">
+						<h4>阅读目录</h4>
+						<div>
+							<ul class="readTitle list-unstyled"></ul>
+						</div>
+					</div>
+				</div>
+                 <main class="col-md-19 main-content">
+					<article class="post row">
+					<header class="post-head">
+				        <h1 class="post-title">ES基础理论（八）</h1>
+				        <section class="post-meta">
+					        <span><span class="glyphicon glyphicon-user"></span>:<span>c</span></span>|
+				            <span><span class="glyphicon glyphicon-bookmark"></span>:<span>Elasticsearch</span></span>|
+				            <span><span class="glyphicon glyphicon-time"></span>:<span>2017-07-12</span></span>
+				        </section>
+				    </header>
+				    <section class="post-content"><p><a name="document的全量替换"></a>1、document的全量替换</p>
+
+<p>（1）语法与创建文档是一样的，如果document id不存在，那么就是创建；如果document id已经存在，那么就是全量替换操作，替换document的json串内容</p>
+
+<p>（2）document是不可变的，如果要修改document的内容，第一种方式就是全量替换，直接对document重新建立索引，替换里面所有的内容</p>
+
+<p>（3）es会将老的document标记为deleted但是并没有被删除，然后新增我们给定的一个document，当我们创建越来越多的document的时候，es会在适当的时机在后台自动物理删除标记为deleted的document来释放空间</p>
+
+<p>（4）document的修改原理</p>
+
+<pre>
+<code class="language-json">每次commit point时，会有一个.del文件，标记了哪些segment中的哪些document被标记为deleted了
+搜索的时候，会依次查询所有的segment，从旧的到新的，被修改过的document，在旧的segment中，会标记为deleted，在新的
+segment中会有其新的数据，被标记为deleted的数据会被过滤掉，不会做为搜索结果返回</code></pre>
+
+<p><a name="document的强制创建"></a>2、document的强制创建</p>
+
+<p>（1）创建文档与全量替换的语法是一样的，有时我们只是想新建文档，不想替换文档，如果强制进行创建呢？</p>
+
+<p>（2）PUT /index/type/id?op_type=create，PUT /index/type/id/_create</p>
+
+<p>（3）document的写入原理</p>
+
+<pre>
+<code class="language-json">&lt;1&gt;数据写入buffer缓冲和translog日志文件
+&lt;2&gt;每隔一秒钟，buffer中的数据被写入新的segment file，并立即进入os cache，此时segment被打开并供search使用
+&lt;3&gt;buffer被清空
+&lt;4&gt;重复1~3，新的segment不断添加，buffer不断被清空，而translog中的数据不断累加
+&lt;5&gt;当translog长度达到一定程度的时候，commit操作发生
+  buffer中的所有数据写入一个新的segment，并写入os cache，打开供使用
+  buffer被清空
+  一个commit point被写入磁盘，标明了所有的index segment
+  filesystem cache中的所有index segment file缓存数据，被fsync强行刷到磁盘上
+  现有的translog被清空，创建一个新的translog
+&lt;6&gt;如果宕机导致os cache数据丢失，当机器重启后，会根据translog中的变更记录进行回放，进行还原</code></pre>
+
+<p><a name="document的删除"></a>3、document的删除</p>
+
+<p>（1）DELETE /index/type/id</p>
+
+<p>（2）不会进行物理删除，只会将其标记为deleted，当数据越来越多的时候，在后台自动删除</p>
+
+<p>（3）document的删除原理</p>
+
+<pre>
+<code class="language-json">每次commit point时，会有一个.del文件，标记了哪些segment中的哪些document被标记为deleted了
+被标记为deleted的数据会被过滤掉，不会做为搜索结果返回</code></pre>
+
+<pre>
+<code class="language-json">每秒一个segment file，文件过多，而且每次search都要搜索所有的segment，很耗时
+默认会在后台执行segment merge操作，在merge的时候，被标记为deleted的document也会被彻底物理删除
+每次merge操作的执行流程
+（1）选择一些有相似大小的segment，merge成一个大的segment
+（2）将新的segment flush到磁盘上去
+（3）写一个新的commit point，包括了新的segment，并且排除旧的那些segment
+（4）将新的segment打开供搜索
+（5）将旧的segment删除
+POST /my_index/_optimize?max_num_segments=1，尽量不要手动执行，让它自动默认执行就可以了</code></pre>
+
+<p>&nbsp;</p>
+
+				    </section>
+					</article>
+				</main>
+            </div>
+        </div>
+    </section>
+    <a href="#top" id="goTop" ><i class="fa fa-angle-up fa-3x"></i></a>
+	<script src="../js/jquery.min.js"></script>
+    <script type="text/javascript" src="../js/datas/detailAngularJs.js"></script>
+    <script src="../plugins/scrolltopcontrol.js"></script>
+</body>
+</html>

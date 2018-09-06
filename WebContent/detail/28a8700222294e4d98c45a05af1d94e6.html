@@ -1,0 +1,537 @@
+<html>
+<!DOCTYPE html>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <title>七、排序与相关性</title>
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link rel="stylesheet" href="../css/bootstrap.min.css">
+	<link rel="stylesheet" href="../css/font-awesome.min.css">
+    <link rel="stylesheet" href="../plugins/ckeditor/plugins/codesnippet/lib/highlight/styles/googlecode.css">
+    <link rel="stylesheet" type="text/css" href="../css/front/screen.css">
+    <script src="../plugins/ckeditor/plugins/codesnippet/lib/highlight/highlight.pack.js"></script>
+	<style type="text/css">
+		.list{
+			margin-top:5em;
+			position: fixed;
+		}
+		
+		.list h4{
+			padding-bottom:0.5em;
+			border-bottom:2px solid lightgray;
+		}
+		
+		.list .readTitle li{
+			margin-top:0.4em;
+			padding-left:1em;
+			border:2px solid white;
+		}
+		.list .readTitle li:hover{
+			border-left:2px solid black;
+			color:blue;
+		}
+		.liHover{
+			border-left:2px solid black !important;
+		}
+		.aHover{
+			color:blue;
+		}
+		.list .readTitle li a:hover{
+			color:blue;
+			text-decoration: none;
+		}
+	</style>
+</head>
+<body>
+    <section class="content-wrap container-fluid">
+        <div class="container">
+            <div class="row">
+				<div class="col-md-3 visible-lg-block visible-md-block">
+					<div class="list">
+						<h4>阅读目录</h4>
+						<div>
+							<ul class="readTitle list-unstyled"></ul>
+						</div>
+					</div>
+				</div>
+                 <main class="col-md-19 main-content">
+					<article class="post row">
+					<header class="post-head">
+				        <h1 class="post-title">七、排序与相关性</h1>
+				        <section class="post-meta">
+					        <span><span class="glyphicon glyphicon-user"></span>:<span>c</span></span>|
+				            <span><span class="glyphicon glyphicon-bookmark"></span>:<span>Elasticsearch</span></span>|
+				            <span><span class="glyphicon glyphicon-time"></span>:<span>2018-06-27</span></span>
+				        </section>
+				    </header>
+				    <section class="post-content"><h2>排序与相关性</h2>
+
+<h2>排序</h2>
+
+<p>为了按照相关性来排序，需要将相关性表示为一个数值。在 Elasticsearch 中，&nbsp;<em>相关性得分</em>&nbsp;由一个浮点数进行表示，并在搜索结果中通过&nbsp;<code>_score</code>&nbsp;参数返回，&nbsp;默认排序是&nbsp;<code>_score</code>&nbsp;降序。</p>
+
+<p>有时，相关性评分对你来说并没有意义。例如，下面的查询返回所有&nbsp;<code>user_id</code>&nbsp;字段包含&nbsp;<code>1</code>&nbsp;的结果：</p>
+
+<pre>
+GET /_search
+{
+    &quot;query&quot; : {
+        &quot;bool&quot; : {
+            &quot;filter&quot; : {
+                &quot;term&quot; : {
+                    &quot;user_id&quot; : 1
+                }
+            }
+        }
+    }
+}</pre>
+
+<p>这里没有一个有意义的分数：因为我们使用的是 filter （过滤），这表明我们只希望获取匹配&nbsp;<code>user_id: 1</code>的文档，并没有试图确定这些文档的相关性。 实际上文档将按照随机顺序返回，并且每个文档都会评为零分。</p>
+
+<p><img alt="注意" src="https://www.elastic.co/guide/cn/elasticsearch/guide/current/images/icons/note.png" /></p>
+
+<p>如果评分为零对你造成了困扰，你可以使用&nbsp;<code>constant_score</code>&nbsp;查询进行替代：</p>
+
+<pre>
+GET /_search
+{
+    &quot;query&quot; : {
+        &quot;constant_score&quot; : {
+            &quot;filter&quot; : {
+                &quot;term&quot; : {
+                    &quot;user_id&quot; : 1
+                }
+            }
+        }
+    }
+}</pre>
+
+<p>这将让所有文档应用一个恒定分数（默认为&nbsp;<code>1</code>&nbsp;）。它将执行与前述查询相同的查询，并且所有的文档将像之前一样随机返回，这些文档只是有了一个分数而不是零分。</p>
+
+<h3>按照字段的值排序</h3>
+
+<p>在这个案例中，通过时间来对 tweets 进行排序是有意义的，最新的 tweets 排在最前。&nbsp;我们可以使用<code>sort</code>&nbsp;参数进行实现：</p>
+
+<pre>
+<code>GET /_search
+{
+    "query" : {
+        "bool" : {
+            "filter" : { "term" : { "user_id" : 1 }}
+        }
+    },
+    "sort": { "date": { "order": "desc" }}
+}</code></pre>
+
+<p>你会注意到结果中的两个不同点：</p>
+
+<pre>
+<code>"hits" : {
+    "total" :           6,
+    "max_score" :       null, 
+    "hits" : [ {
+        "_index" :      "us",
+        "_type" :       "tweet",
+        "_id" :         "14",
+        "_score" :      null, 
+        "_source" :     {
+             "date":    "2014-09-24",
+             ...
+        },
+        "sort" :        [ 1411516800000 ] 
+    },
+    ...
+}</code></pre>
+
+<table border="0" summary="Callout list">
+	<tbody>
+		<tr>
+			<td style="vertical-align:top">
+			<p><a href="https://www.elastic.co/guide/cn/elasticsearch/guide/current/_Sorting.html#CO27-1"><img alt="" src="https://www.elastic.co/guide/cn/elasticsearch/guide/current/images/icons/callouts/1.png" /></a>&nbsp;<a href="https://www.elastic.co/guide/cn/elasticsearch/guide/current/_Sorting.html#CO27-2"><img alt="" src="https://www.elastic.co/guide/cn/elasticsearch/guide/current/images/icons/callouts/2.png" /></a></p>
+			</td>
+			<td style="vertical-align:top">
+			<p><code>_score</code>&nbsp;不被计算, 因为它并没有用于排序。</p>
+			</td>
+		</tr>
+		<tr>
+			<td style="vertical-align:top">
+			<p><a href="https://www.elastic.co/guide/cn/elasticsearch/guide/current/_Sorting.html#CO27-3"><img alt="" src="https://www.elastic.co/guide/cn/elasticsearch/guide/current/images/icons/callouts/3.png" /></a></p>
+			</td>
+			<td style="vertical-align:top">
+			<p><code>date</code>&nbsp;字段的值表示为自 epoch (January 1, 1970 00:00:00 UTC)以来的毫秒数，通过&nbsp;<code>sort</code>&nbsp;字段的值进行返回。</p>
+			</td>
+		</tr>
+	</tbody>
+</table>
+
+<p>首先我们在每个结果中有一个新的名为&nbsp;<code>sort</code>&nbsp;的元素，它包含了我们用于排序的值。 在这个案例中，我们按照&nbsp;<code>date</code>&nbsp;进行排序，在内部被索引为&nbsp;<em>自 epoch 以来的毫秒数</em>&nbsp;。 long 类型数&nbsp;<code>1411516800000</code>&nbsp;等价于日期字符串&nbsp;<code>2014-09-24 00:00:00 UTC</code>&nbsp;。</p>
+
+<p>其次&nbsp;<code>_score</code>&nbsp;和&nbsp;<code>max_score</code>&nbsp;字段都是&nbsp;<code>null</code>&nbsp;。&nbsp;计算&nbsp;<code>_score</code>&nbsp;的花销巨大，通常仅用于排序； 我们并不根据相关性排序，所以记录&nbsp;<code>_score</code>&nbsp;是没有意义的。如果无论如何你都要计算&nbsp;<code>_score</code>&nbsp;， 你可以将<code>track_scores</code>&nbsp;参数设置为&nbsp;<code>true</code>&nbsp;。</p>
+
+<p><img alt="提示" src="https://www.elastic.co/guide/cn/elasticsearch/guide/current/images/icons/tip.png" /></p>
+
+<p>一个简便方法是, 你可以&nbsp;指定一个字段用来排序：</p>
+
+<pre>
+    &quot;sort&quot;: &quot;number_of_children&quot;</pre>
+
+<p>字段将会默认升序排序&nbsp;，而按照&nbsp;<code>_score</code>&nbsp;的值进行降序排序。</p>
+
+<h3>多级排序</h3>
+
+<p>假定我们想要结合使用&nbsp;<code>date</code>&nbsp;和&nbsp;<code>_score</code>&nbsp;进行查询，并且匹配的结果首先按照日期排序，然后按照相关性排序：</p>
+
+<pre>
+GET /_search
+{
+    &quot;query&quot; : {
+        &quot;bool&quot; : {
+            &quot;must&quot;:   { &quot;match&quot;: { &quot;tweet&quot;: &quot;manage text search&quot; }},
+            &quot;filter&quot; : { &quot;term&quot; : { &quot;user_id&quot; : 2 }}
+        }
+    },
+    &quot;sort&quot;: [
+        { &quot;date&quot;:   { &quot;order&quot;: &quot;desc&quot; }},
+        { &quot;_score&quot;: { &quot;order&quot;: &quot;desc&quot; }}
+    ]
+}
+</pre>
+
+<p>排序条件的顺序是很重要的。结果首先按第一个条件排序，仅当结果集的第一个&nbsp;<code>sort</code>&nbsp;值完全相同时才会按照第二个条件进行排序，以此类推。</p>
+
+<p>多级排序并不一定包含&nbsp;<code>_score</code>&nbsp;。你可以根据一些不同的字段进行排序，&nbsp;如地理距离或是脚本计算的特定值。</p>
+
+<p><img alt="注意" src="https://www.elastic.co/guide/cn/elasticsearch/guide/current/images/icons/note.png" /></p>
+
+<p>Query-string 搜索&nbsp;也支持自定义排序，可以在查询字符串中使用&nbsp;<code>sort</code>&nbsp;参数：</p>
+
+<pre>
+GET /_search?sort=date:desc&amp;sort=_score&amp;q=search</pre>
+
+<h3>多值字段的排序</h3>
+
+<p>一种情形是字段有多个值的排序，&nbsp;需要记住这些值并没有固有的顺序；一个多值的字段仅仅是多个值的包装，这时应该选择哪个进行排序呢？</p>
+
+<p>对于数字或日期，你可以将多值字段减为单值，这可以通过使用&nbsp;<code>min</code>&nbsp;、&nbsp;<code>max</code>&nbsp;、&nbsp;<code>avg</code>&nbsp;或是&nbsp;<code>sum</code>&nbsp;<em>排序模式</em>&nbsp;。例如你可以按照每个&nbsp;<code>date</code>&nbsp;字段中的最早日期进行排序，通过以下方法：</p>
+
+<pre>
+&quot;sort&quot;: {
+    &quot;dates&quot;: {
+        &quot;order&quot;: &quot;asc&quot;,
+        &quot;mode&quot;:  &quot;min&quot;
+    }
+}</pre>
+
+<p>被解析的字符串字段也是多值字段，&nbsp;但是很少会按照你想要的方式进行排序。如果你想分析一个字符串，如&nbsp;<code>fine old art</code>&nbsp;， 这包含 3 项。我们很可能想要按第一项的字母排序，然后按第二项的字母排序，诸如此类，但是 Elasticsearch 在排序过程中没有这样的信息。</p>
+
+<p>你可以使用&nbsp;<code>min</code>&nbsp;和&nbsp;<code>max</code>&nbsp;排序模式（默认是&nbsp;<code>min</code>&nbsp;），但是这会导致排序以&nbsp;<code>art</code>&nbsp;或是&nbsp;<code>old</code>&nbsp;，任何一个都不是所希望的。</p>
+
+<p>为了以字符串字段进行排序，这个字段应仅包含一项： 整个&nbsp;<code>not_analyzed</code>&nbsp;字符串。&nbsp;但是我们仍需要<code>analyzed</code>&nbsp;字段，这样才能以全文进行查询</p>
+
+<p>一个简单的方法是用两种方式对同一个字符串进行索引，这将在文档中包括两个字段：&nbsp;<code>analyzed</code>&nbsp;用于搜索，&nbsp;<code>not_analyzed</code>&nbsp;用于排序</p>
+
+<p>但是保存相同的字符串两次在&nbsp;<code>_source</code>&nbsp;字段是浪费空间的。 我们真正想要做的是传递一个&nbsp;<em>单字段</em>&nbsp;但是却用两种方式索引它。所有的 _core_field 类型 (strings, numbers, Booleans, dates) 接收一个&nbsp;<code>fields</code>&nbsp;参数</p>
+
+<p>该参数允许你转化一个简单的映射如：</p>
+
+<pre>
+&quot;tweet&quot;: {
+    &quot;type&quot;:     &quot;string&quot;,
+    &quot;analyzer&quot;: &quot;english&quot;
+}</pre>
+
+<p>为一个多字段映射如：</p>
+
+<pre>
+&quot;tweet&quot;: { <img alt="" src="https://www.elastic.co/guide/cn/elasticsearch/guide/current/images/icons/callouts/1.png" />
+    &quot;type&quot;:     &quot;string&quot;,
+    &quot;analyzer&quot;: &quot;english&quot;,
+    &quot;fields&quot;: {
+        &quot;raw&quot;: { <img alt="" src="https://www.elastic.co/guide/cn/elasticsearch/guide/current/images/icons/callouts/2.png" />
+            &quot;type&quot;:  &quot;string&quot;,
+            &quot;index&quot;: &quot;not_analyzed&quot;
+        }
+    }
+}
+</pre>
+
+<table border="0" summary="Callout list">
+	<tbody>
+		<tr>
+			<td style="vertical-align:top">
+			<p><a href="https://www.elastic.co/guide/cn/elasticsearch/guide/current/multi-fields.html#CO28-1"><img alt="" src="https://www.elastic.co/guide/cn/elasticsearch/guide/current/images/icons/callouts/1.png" /></a></p>
+			</td>
+			<td style="vertical-align:top">
+			<p><code>tweet</code>&nbsp;主字段与之前的一样: 是一个&nbsp;<code>analyzed</code>&nbsp;全文字段。</p>
+			</td>
+		</tr>
+		<tr>
+			<td style="vertical-align:top">
+			<p><a href="https://www.elastic.co/guide/cn/elasticsearch/guide/current/multi-fields.html#CO28-2"><img alt="" src="https://www.elastic.co/guide/cn/elasticsearch/guide/current/images/icons/callouts/2.png" /></a></p>
+			</td>
+			<td style="vertical-align:top">
+			<p>新的&nbsp;<code>tweet.raw</code>&nbsp;子字段是&nbsp;<code>not_analyzed</code>.</p>
+			</td>
+		</tr>
+	</tbody>
+</table>
+
+<p>现在，至少只要我们重新索引了我们的数据，使用&nbsp;<code>tweet</code>&nbsp;字段用于搜索，<code>tweet.raw</code>&nbsp;字段用于排序：</p>
+
+<pre>
+GET /_search
+{
+    &quot;query&quot;: {
+        &quot;match&quot;: {
+            &quot;tweet&quot;: &quot;elasticsearch&quot;
+        }
+    },
+    &quot;sort&quot;: &quot;tweet.raw&quot;
+}
+</pre>
+
+<p><img alt="警告" src="https://www.elastic.co/guide/cn/elasticsearch/guide/current/images/icons/warning.png" /></p>
+
+<p>以全文&nbsp;<code>analyzed</code>&nbsp;字段排序会消耗大量的内存。</p>
+
+<h2>什么是相关性?</h2>
+
+<p>我们曾经讲过，默认情况下，返回结果是按相关性倒序排列的。&nbsp;但是什么是相关性？ 相关性如何计算？</p>
+
+<p>每个文档都有相关性评分，用一个正浮点数字段&nbsp;<code>_score</code>&nbsp;来表示&nbsp;。&nbsp;<code>_score</code>&nbsp;的评分越高，相关性越高。</p>
+
+<p>查询语句会为每个文档生成一个&nbsp;<code>_score</code>&nbsp;字段。评分的计算方式取决于查询类型&nbsp;不同的查询语句用于不同的目的：&nbsp;<code>fuzzy</code>&nbsp;查询会计算与关键词的拼写相似程度，<code>terms</code>&nbsp;查询会计算 找到的内容与关键词组成部分匹配的百分比，但是通常我们说的&nbsp;<em>relevance</em>&nbsp;是我们用来计算全文本字段的值相对于全文本检索词相似程度的算法。</p>
+
+<p>Elasticsearch 的相似度算法&nbsp;被定义为检索词频率/反向文档频率，&nbsp;<em>TF/IDF</em>&nbsp;，包括以下内容：</p>
+
+<p>检索词频率</p>
+
+<p>检索词在该字段出现的频率？出现频率越高，相关性也越高。 字段中出现过 5 次要比只出现过 1 次的相关性高。</p>
+
+<p>反向文档频率</p>
+
+<p>每个检索词在索引中出现的频率？频率越高，相关性越低。检索词出现在多数文档中会比出现在少数文档中的权重更低。</p>
+
+<p>字段长度准则</p>
+
+<p>字段的长度是多少？长度越长，相关性越低。 检索词出现在一个短的 title 要比同样的词出现在一个长的 content 字段权重更大。</p>
+
+<p>单个查询可以联合使用 TF/IDF 和其他方式，比如短语查询中检索词的距离或模糊查询里的检索词相似度。</p>
+
+<p>相关性并不只是全文本检索的专利。也适用于 yes|no 的子句，匹配的子句越多，相关性评分越高。</p>
+
+<p>如果多条查询子句被合并为一条复合查询语句&nbsp;，比如 bool 查询，则每个查询子句计算得出的评分会被合并到总的相关性评分中。</p>
+
+<p><img alt="提示" src="https://www.elastic.co/guide/cn/elasticsearch/guide/current/images/icons/tip.png" /></p>
+
+<p>我们有一️整章着眼于相关性计算和如何让其配合你的需求&nbsp;<a href="https://www.elastic.co/guide/cn/elasticsearch/guide/current/controlling-relevance.html" title="控制相关度"><em>控制相关度</em></a>。</p>
+
+<h3>理解评分标准</h3>
+
+<p>当调试一条复杂的查询语句时，&nbsp;想要理解&nbsp;<code>_score</code>&nbsp;究竟是如何计算是比较困难的。Elasticsearch 在 每个查询语句中都有一个 explain 参数，将&nbsp;<code>explain</code>&nbsp;设为&nbsp;<code>true</code>&nbsp;就可以得到更详细的信息。</p>
+
+<pre>
+GET /_search?explain <img alt="" src="https://www.elastic.co/guide/cn/elasticsearch/guide/current/images/icons/callouts/1.png" />
+{
+   &quot;query&quot;   : { &quot;match&quot; : { &quot;tweet&quot; : &quot;honeymoon&quot; }}
+}</pre>
+
+<table border="0" summary="Callout list">
+	<tbody>
+		<tr>
+			<td style="vertical-align:top">
+			<p><a href="https://www.elastic.co/guide/cn/elasticsearch/guide/current/relevance-intro.html#CO29-1"><img alt="" src="https://www.elastic.co/guide/cn/elasticsearch/guide/current/images/icons/callouts/1.png" /></a></p>
+			</td>
+			<td style="vertical-align:top">
+			<p><code>explain</code>&nbsp;参数可以让返回结果添加一个&nbsp;<code>_score</code>&nbsp;评分的得来依据。</p>
+			</td>
+		</tr>
+	</tbody>
+</table>
+
+<p><img alt="注意" src="https://www.elastic.co/guide/cn/elasticsearch/guide/current/images/icons/note.png" /></p>
+
+<p>增加一个&nbsp;<code>explain</code>&nbsp;参数会为每个匹配到的文档产生一大堆额外内容，但是花时间去理解它是很有意义的。 如果现在看不明白也没关系&thinsp;&mdash;&thinsp;等你需要的时候再来回顾这一节就行。下面我们来一点点的了解这块知识点。</p>
+
+<p>首先，我们看一下普通查询返回的元数据：</p>
+
+<pre>
+{
+    &quot;_index&quot; :      &quot;us&quot;,
+    &quot;_type&quot; :       &quot;tweet&quot;,
+    &quot;_id&quot; :         &quot;12&quot;,
+    &quot;_score&quot; :      0.076713204,
+    &quot;_source&quot; :     { ... trimmed ... },</pre>
+
+<p>这里加入了该文档来自于哪个节点哪个分片上的信息，这对我们是比较有帮助的，因为词频率和 文档频率是在每个分片中计算出来的，而不是每个索引中：</p>
+
+<pre>
+    &quot;_shard&quot; :      1,
+    &quot;_node&quot; :       &quot;mzIVYCsqSWCG_M_ZffSs9Q&quot;,</pre>
+
+<p>然后它提供了&nbsp;<code>_explanation</code>&nbsp;。每个&nbsp;入口都包含一个&nbsp;<code>description</code>&nbsp;、&nbsp;<code>value</code>&nbsp;、&nbsp;<code>details</code>&nbsp;字段，它分别告诉你计算的类型、计算结果和任何我们需要的计算细节。</p>
+
+<pre>
+&quot;_explanation&quot;: { <img alt="" src="https://www.elastic.co/guide/cn/elasticsearch/guide/current/images/icons/callouts/1.png" />
+   &quot;description&quot;: &quot;weight(tweet:honeymoon in 0)
+                  [PerFieldSimilarity], result of:&quot;,
+   &quot;value&quot;:       0.076713204,
+   &quot;details&quot;: [
+      {
+         &quot;description&quot;: &quot;fieldWeight in 0, product of:&quot;,
+         &quot;value&quot;:       0.076713204,
+         &quot;details&quot;: [
+            {  <img alt="" src="https://www.elastic.co/guide/cn/elasticsearch/guide/current/images/icons/callouts/2.png" />
+               &quot;description&quot;: &quot;tf(freq=1.0), with freq of:&quot;,
+               &quot;value&quot;:       1,
+               &quot;details&quot;: [
+                  {
+                     &quot;description&quot;: &quot;termFreq=1.0&quot;,
+                     &quot;value&quot;:       1
+                  }
+               ]
+            },
+            { <img alt="" src="https://www.elastic.co/guide/cn/elasticsearch/guide/current/images/icons/callouts/3.png" />
+               &quot;description&quot;: &quot;idf(docFreq=1, maxDocs=1)&quot;,
+               &quot;value&quot;:       0.30685282
+            },
+            { <img alt="" src="https://www.elastic.co/guide/cn/elasticsearch/guide/current/images/icons/callouts/4.png" />
+               &quot;description&quot;: &quot;fieldNorm(doc=0)&quot;,
+               &quot;value&quot;:        0.25,
+            }
+         ]
+      }
+   ]
+}</pre>
+
+<table border="0" summary="Callout list">
+	<tbody>
+		<tr>
+			<td style="vertical-align:top">
+			<p><a href="https://www.elastic.co/guide/cn/elasticsearch/guide/current/relevance-intro.html#CO30-1"><img alt="" src="https://www.elastic.co/guide/cn/elasticsearch/guide/current/images/icons/callouts/1.png" /></a></p>
+			</td>
+			<td style="vertical-align:top">
+			<p><code>honeymoon</code>&nbsp;相关性评分计算的总结</p>
+			</td>
+		</tr>
+		<tr>
+			<td style="vertical-align:top">
+			<p><a href="https://www.elastic.co/guide/cn/elasticsearch/guide/current/relevance-intro.html#CO30-2"><img alt="" src="https://www.elastic.co/guide/cn/elasticsearch/guide/current/images/icons/callouts/2.png" /></a></p>
+			</td>
+			<td style="vertical-align:top">
+			<p>检索词频率</p>
+			</td>
+		</tr>
+		<tr>
+			<td style="vertical-align:top">
+			<p><a href="https://www.elastic.co/guide/cn/elasticsearch/guide/current/relevance-intro.html#CO30-3"><img alt="" src="https://www.elastic.co/guide/cn/elasticsearch/guide/current/images/icons/callouts/3.png" /></a></p>
+			</td>
+			<td style="vertical-align:top">
+			<p>反向文档频率</p>
+			</td>
+		</tr>
+		<tr>
+			<td style="vertical-align:top">
+			<p><a href="https://www.elastic.co/guide/cn/elasticsearch/guide/current/relevance-intro.html#CO30-4"><img alt="" src="https://www.elastic.co/guide/cn/elasticsearch/guide/current/images/icons/callouts/4.png" /></a></p>
+			</td>
+			<td style="vertical-align:top">
+			<p>字段长度准则</p>
+			</td>
+		</tr>
+	</tbody>
+</table>
+
+<p><img alt="警告" src="https://www.elastic.co/guide/cn/elasticsearch/guide/current/images/icons/warning.png" /></p>
+
+<p>输出&nbsp;<code>explain</code>&nbsp;结果代价是十分昂贵的，它只能用作调试工具&nbsp;。千万不要用于生产环境。</p>
+
+<p>第一部分是关于计算的总结。告诉了我们&nbsp;<code>honeymoon</code>&nbsp;在&nbsp;<code>tweet</code>&nbsp;字段中的检索词频率/反向文档频率或TF/IDF， （这里的文档&nbsp;<code>0</code>&nbsp;是一个内部的 ID，跟我们没有关系，可以忽略。）</p>
+
+<p>然后它提供了权重是如何计算的细节：</p>
+
+<p>检索词频率:</p>
+
+<pre>
+检索词 `honeymoon` 在这个文档的 `tweet` 字段中的出现次数。</pre>
+
+<p>反向文档频率:</p>
+
+<pre>
+检索词 `honeymoon` 在索引上所有文档的 `tweet` 字段中出现的次数。</pre>
+
+<p>字段长度准则:</p>
+
+<pre>
+在这个文档中， `tweet` 字段内容的长度 -- 内容越长，值越小。</pre>
+
+<p>复杂的查询语句解释也非常复杂，但是包含的内容与上面例子大致相同。 通过这段信息我们可以了解搜索结果是如何产生的。</p>
+
+<p><img alt="提示" src="https://www.elastic.co/guide/cn/elasticsearch/guide/current/images/icons/tip.png" /></p>
+
+<p>JSON 形式的&nbsp;<code>explain</code>&nbsp;描述是难以阅读的， 但是转成 YAML 会好很多，只需要在参数中加上<code>format=yaml</code>&nbsp;。</p>
+
+<h3>理解文档是如何被匹配到的</h3>
+
+<p>当&nbsp;<code>explain</code>&nbsp;选项加到某一文档上时，&nbsp;<code>explain</code>&nbsp;api 会帮助你理解为何这个文档会被匹配，更重要的是，一个文档为何没有被匹配。</p>
+
+<p>请求路径为&nbsp;<code>/index/type/id/_explain</code>&nbsp;，如下所示：</p>
+
+<pre>
+GET /us/tweet/12/_explain
+{
+   &quot;query&quot; : {
+      &quot;bool&quot; : {
+         &quot;filter&quot; : { &quot;term&quot; :  { &quot;user_id&quot; : 2           }},
+         &quot;must&quot; :  { &quot;match&quot; : { &quot;tweet&quot; :   &quot;honeymoon&quot; }}
+      }
+   }
+}</pre>
+
+<p>不只是我们之前看到的充分解释&nbsp;，我们现在有了一个&nbsp;<code>description</code>&nbsp;元素，它将告诉我们：</p>
+
+<pre>
+&quot;failure to match filter: cache(user_id:[2 TO 2])&quot;</pre>
+
+<p>也就是说我们的&nbsp;<code>user_id</code>&nbsp;过滤子句使该文档不能匹配到。</p>
+
+<h2>Doc Values 介绍</h2>
+
+<p>本章的最后一个话题是关于&nbsp;<code>Elasticsearch</code>&nbsp;内部的一些运行情况。在这里我们先不介绍新的知识点，所以我们应该意识到，<code>Doc Values</code>&nbsp;是我们需要反复提到的一个重要话题。</p>
+
+<p>当你对一个字段进行排序时，<code>Elasticsearch</code>&nbsp;需要访问每个匹配到的文档得到相关的值。倒排索引的检索性能是非常快的，但是在字段值排序时却不是理想的结构。</p>
+
+<ul style="list-style-type:disc">
+	<li>在搜索的时候，我们能通过搜索关键词快速得到结果集。</li>
+	<li>当排序的时候，我们需要倒排索引里面某个字段值的集合。换句话说，我们需要&nbsp;<code>转置</code>&nbsp;倒排索引。</li>
+</ul>
+
+<p><code>转置</code>&nbsp;结构在其他系统中经常被称作&nbsp;<code>列存储</code>&nbsp;。实质上，它将所有单字段的值存储在单数据列中，这使得对其进行操作是十分高效的，例如排序。</p>
+
+<p>在&nbsp;<code>Elasticsearch</code>&nbsp;中，<code>Doc Values</code>&nbsp;就是一种列式存储结构，默认情况下每个字段的&nbsp;<code>Doc Values</code>&nbsp;都是激活的，<code>Doc Values</code>&nbsp;是在索引时创建的，当字段索引时，<code>Elasticsearch</code>&nbsp;为了能够快速检索，会把字段的值加入倒排索引中，同时它也会存储该字段的 `Doc Values`。</p>
+
+<p><code>Elasticsearch</code>&nbsp;中的&nbsp;<code>Doc Values</code>&nbsp;常被应用到以下场景：</p>
+
+<ul style="list-style-type:disc">
+	<li>对一个字段进行排序</li>
+	<li>对一个字段进行聚合</li>
+	<li>某些过滤，比如地理位置过滤</li>
+	<li>某些与字段相关的脚本计算</li>
+</ul>
+
+<p>因为文档值被序列化到磁盘，我们可以依靠操作系统的帮助来快速访问。当&nbsp;<code>working set</code>&nbsp;远小于节点的可用内存，系统会自动将所有的文档值保存在内存中，使得其读写十分高速； 当其远大于可用内存，操作系统会自动把&nbsp;<code>Doc Values</code>&nbsp;加载到系统的页缓存中，从而避免了&nbsp;<code>jvm</code>&nbsp;堆内存溢出异常。</p>
+
+<p>我们稍后会深入讨论 `Doc Values`。现在所有你需要知道的是排序发生在索引时建立的平行数据结构中。</p>
+
+				    </section>
+					</article>
+				</main>
+            </div>
+        </div>
+    </section>
+    <a href="#top" id="goTop" ><i class="fa fa-angle-up fa-3x"></i></a>
+	<script src="../js/jquery.min.js"></script>
+    <script type="text/javascript" src="../js/datas/detailAngularJs.js"></script>
+    <script src="../plugins/scrolltopcontrol.js"></script>
+</body>
+</html>

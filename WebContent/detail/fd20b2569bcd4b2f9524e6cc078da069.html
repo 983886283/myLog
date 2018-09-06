@@ -1,0 +1,137 @@
+<html>
+<!DOCTYPE html>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <title>支持向量机(SVM)算法笔记二</title>
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link rel="stylesheet" href="../css/bootstrap.min.css">
+	<link rel="stylesheet" href="../css/font-awesome.min.css">
+    <link rel="stylesheet" href="../plugins/ckeditor/plugins/codesnippet/lib/highlight/styles/googlecode.css">
+    <link rel="stylesheet" type="text/css" href="../css/front/screen.css">
+    <script src="../plugins/ckeditor/plugins/codesnippet/lib/highlight/highlight.pack.js"></script>
+	<style type="text/css">
+		.list{
+			margin-top:5em;
+			position: fixed;
+		}
+		
+		.list h4{
+			padding-bottom:0.5em;
+			border-bottom:2px solid lightgray;
+		}
+		
+		.list .readTitle li{
+			margin-top:0.4em;
+			padding-left:1em;
+			border:2px solid white;
+		}
+		.list .readTitle li:hover{
+			border-left:2px solid black;
+			color:blue;
+		}
+		.liHover{
+			border-left:2px solid black !important;
+		}
+		.aHover{
+			color:blue;
+		}
+		.list .readTitle li a:hover{
+			color:blue;
+			text-decoration: none;
+		}
+	</style>
+</head>
+<body>
+    <section class="content-wrap container-fluid">
+        <div class="container">
+            <div class="row">
+				<div class="col-md-3 visible-lg-block visible-md-block">
+					<div class="list">
+						<h4>阅读目录</h4>
+						<div>
+							<ul class="readTitle list-unstyled"></ul>
+						</div>
+					</div>
+				</div>
+                 <main class="col-md-19 main-content">
+					<article class="post row">
+					<header class="post-head">
+				        <h1 class="post-title">支持向量机(SVM)算法笔记二</h1>
+				        <section class="post-meta">
+					        <span><span class="glyphicon glyphicon-user"></span>:<span>c</span></span>|
+				            <span><span class="glyphicon glyphicon-bookmark"></span>:<span>MachineLearning</span></span>|
+				            <span><span class="glyphicon glyphicon-time"></span>:<span>2017-11-20</span></span>
+				        </section>
+				    </header>
+				    <section class="post-content"><p><strong>SVM算法特性：</strong></p>
+
+<pre>
+<code>训练好的模型的算法复杂度是由支持向量的个数决定的，而不是由数据的维度决定的。所以SVM不太容易产生overfitting
+SVM训练出来的模型完全依赖于支持向量(Support Vectors), 即使训练集里面所有非支持向量的点都被去除，重复训练过程，结果仍然会得到完全一样的模型。
+一个SVM如果训练得出的支持向量个数比较小，SVM训练出的模型比较容易被泛化。</code></pre>
+
+<p><strong>线性不可分的情况（linearly inseparable case)：</strong></p>
+
+<p>即数据集在空间中对应的向量不可被一个超平面区分开；</p>
+
+<pre>
+<code>两个步骤来解决：
+利用一个非线性的映射把原数据集中的向量点转化到一个更高维度的空间中
+在这个高维度的空间中找一个线性的超平面来根据线性可分的情况处理</code></pre>
+
+<p><img src="http://localhost:8080/myLog/images/svm/6.png" style="height:160px; width:389px" /></p>
+
+<pre>
+<code>如何利用非线性映射把原始数据转化到高维中：</code></pre>
+
+<p>例子：</p>
+
+<p>3维输入向量：X = (x<sub>1</sub>,x<sub>2</sub>,x<sub>3</sub>)<br />
+转化到6维空间 Z 中去&phi;<sub>1</sub>(X) = x<sub>1</sub>，&phi;<sub>2</sub>(X) = x<sub>2</sub>，&phi;<sub>3</sub>(X) = x<sub>3</sub>，&phi;<sub>4</sub>(X) = (x<sub>1</sub>)<sup>2</sup>，&phi;<sub>5</sub>(X) = x<sub>1</sub>x<sub>2</sub>，&phi;<sub>6</sub>(X) = x<sub>1</sub>x<sub>3</sub><br />
+带入线性可区分超平面：d(Z) = WZ+b，其中W和Z是向量<br />
+得d(Z) = w<sub>1</sub>x<sub>1</sub>+&nbsp;w<sub>2</sub>x<sub>2</sub>+&nbsp;w<sub>3</sub>x<sub>3</sub>+&nbsp;w<sub>4</sub>(x<sub>1</sub>)<sup>2</sup>+&nbsp;w<sub>5</sub>x<sub>1</sub>x<sub>2</sub>&nbsp;+&nbsp;w<sub>6</sub>x<sub>1</sub>x<sub>3</sub> + b =&nbsp;w<sub>1</sub>z<sub>1</sub> +&nbsp;w<sub>2</sub>z<sub>2</sub> +&nbsp;w<sub>3</sub>z<sub>3</sub> +&nbsp;w<sub>4</sub>z<sub>4</sub> +&nbsp;w<sub>5</sub>z<sub>5</sub> +&nbsp;w<sub>6</sub>z<sub>6</sub> + b</p>
+
+<pre>
+<code>思考问题：
+如何选择合理的非线性转化把数据转到高纬度中？
+如何解决计算内积时算法复杂度非常高的问题？</code></pre>
+
+<p>使用核方法（kernel trick)</p>
+
+<p>常用核函数(kernel functions)<br />
+h度多项式核函数(polynomial kernel of degree h)：K( X<sub>i ，&nbsp;</sub>X<sub>j&nbsp;</sub>) = ( X<sub>i&nbsp;</sub>&middot; X<sub>j </sub>+ 1)<sup>h</sup><br />
+高斯径向基核函数(Gaussian radial basis function kernel)：K( X<sub>i ，&nbsp;</sub>X<sub>j&nbsp;</sub>) = <img src="http://localhost:8080/myLog/images/svm/7.png" style="height:20px; width:94px" /><br />
+S型核函数(Sigmoid function kernel):&nbsp;：K( X<sub>i ，&nbsp;</sub>X<sub>j&nbsp;</sub>) = tanh ( kX<span style="font-size:10.8333px">i</span>&middot;X<sub>j&nbsp;</sub>- &delta;)</p>
+
+<p>根据先验知识，比如图像分类，通常使用RBF，文字不使用RBF，尝试不同的kernel，根据结果准确度而定</p>
+
+<p>核函数举例:<br />
+假设定义两个向量： x = (x<sub>1</sub>, x<sub>2</sub>, x<sub>3</sub>); y = (y<sub>1</sub>, y<sub>2</sub>, y<sub>3</sub>)<br />
+定义方程：f(x) = (x<sub>1</sub>x<sub>1</sub>, x<sub>1</sub>x<sub>2</sub>, x<sub>1</sub>x<sub>3</sub>, x<sub>2</sub>x<sub>1</sub>, x<sub>2</sub>x<sub>2</sub>, x<sub>2</sub>x<sub>3</sub>, x<sub>3</sub>x<sub>1</sub>, x<sub>3</sub>x<sub>2</sub>, x<sub>3</sub>x<sub>3</sub>)<br />
+核函数：K(x, y ) = (&lt;x, y&gt;)<sup>2</sup><br />
+假设x = ( 1 , 2 , 3 ); y = ( 4 , 5 , 6 )<br />
+普通算法：f ( x ) = ( 1 , 2 , 3 , 2&nbsp;, 4&nbsp;, 6 , 3&nbsp;, 6&nbsp;, 9&nbsp;)<br />
+f ( y ) = ( 16 , 20 , 24 , 20 , 25 , 30 , 24 , 30&nbsp;, 36&nbsp;)<br />
+&lt;f ( x ), f ( y )&gt; = 16 + 40 + 72 + 40 + 100+ 180 + 72 + 180 + 324 = 1024<br />
+核函数算法：K(x, y) = ( 4 &nbsp;+ 10 + 18 ) <sup>2</sup> = 322 = 1024<br />
+同样的结果，使用kernel方法计算容易很多</p>
+
+<pre>
+<code>SVM扩展可解决多个类别分类问题
+对于每个类，有一个当前类和其他类的二类分类器（one-vs-rest)</code></pre>
+
+<p>&nbsp;</p>
+				    </section>
+					</article>
+				</main>
+            </div>
+        </div>
+    </section>
+    <a href="#top" id="goTop" ><i class="fa fa-angle-up fa-3x"></i></a>
+	<script src="../js/jquery.min.js"></script>
+    <script type="text/javascript" src="../js/datas/detailAngularJs.js"></script>
+    <script src="../plugins/scrolltopcontrol.js"></script>
+</body>
+</html>

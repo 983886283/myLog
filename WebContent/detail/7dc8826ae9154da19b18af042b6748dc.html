@@ -1,0 +1,130 @@
+<html>
+<!DOCTYPE html>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <title>非线性回归笔记</title>
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link rel="stylesheet" href="../css/bootstrap.min.css">
+	<link rel="stylesheet" href="../css/font-awesome.min.css">
+    <link rel="stylesheet" href="../plugins/ckeditor/plugins/codesnippet/lib/highlight/styles/googlecode.css">
+    <link rel="stylesheet" type="text/css" href="../css/front/screen.css">
+    <script src="../plugins/ckeditor/plugins/codesnippet/lib/highlight/highlight.pack.js"></script>
+	<style type="text/css">
+		.list{
+			margin-top:5em;
+			position: fixed;
+		}
+		
+		.list h4{
+			padding-bottom:0.5em;
+			border-bottom:2px solid lightgray;
+		}
+		
+		.list .readTitle li{
+			margin-top:0.4em;
+			padding-left:1em;
+			border:2px solid white;
+		}
+		.list .readTitle li:hover{
+			border-left:2px solid black;
+			color:blue;
+		}
+		.liHover{
+			border-left:2px solid black !important;
+		}
+		.aHover{
+			color:blue;
+		}
+		.list .readTitle li a:hover{
+			color:blue;
+			text-decoration: none;
+		}
+	</style>
+</head>
+<body>
+    <section class="content-wrap container-fluid">
+        <div class="container">
+            <div class="row">
+				<div class="col-md-3 visible-lg-block visible-md-block">
+					<div class="list">
+						<h4>阅读目录</h4>
+						<div>
+							<ul class="readTitle list-unstyled"></ul>
+						</div>
+					</div>
+				</div>
+                 <main class="col-md-19 main-content">
+					<article class="post row">
+					<header class="post-head">
+				        <h1 class="post-title">非线性回归笔记</h1>
+				        <section class="post-meta">
+					        <span><span class="glyphicon glyphicon-user"></span>:<span>c</span></span>|
+				            <span><span class="glyphicon glyphicon-bookmark"></span>:<span>MachineLearning</span></span>|
+				            <span><span class="glyphicon glyphicon-time"></span>:<span>2017-11-26</span></span>
+				        </section>
+				    </header>
+				    <section class="post-content"><p><strong><a id="概率简述" name="概率简述"></a>概率：</strong></p>
+
+<p>定义 &nbsp; 概率(P)robability: 对一件事情发生的可能性的衡量<br />
+范围 &nbsp; 0 &lt;= P &lt;= 1<br />
+计算方法：&nbsp;根据个人置信、根据历史数据、根据模拟数据<br />
+条件概率：在B发生的前提下A发生的概率，即</p>
+
+<p><sub><img src="http://localhost:8080/myLog/images/logistic_regression_files/1.png" style="height:25px; width:93px" /></sub></p>
+
+<p><strong><a id="Logistic Regression (逻辑回归)" name="Logistic Regression (逻辑回归)"></a>Logistic Regression (逻辑回归)</strong></p>
+
+<p><sub><img src="http://localhost:8080/myLog/images/logistic_regression_files/2.png" style="height:100px; width:343px" /></sub></p>
+
+<p><sub>引出逻辑回归：上图1为恶性肿瘤，2为良性肿瘤，如果根据线性回归方程，那么当X值非常大的时候，Y值可能出现在线性方程下方，造成Y值错误分类，即右侧的红X</sub></p>
+
+<p><strong><a id="基本模型" name="基本模型"></a>基本模型</strong><br />
+测试数据为X（x<sub>0</sub>，x<sub>1</sub>，x<sub>2</sub>&middot;&middot;&middot;x<sub>n</sub>）<br />
+要学习的参数为： &Theta;（&theta;<sub>0</sub>，&theta;<sub>1</sub>，&theta;<sub>2</sub>，&middot;&middot;&middot;&theta;<sub>n</sub>）</p>
+
+<p>向量表示：<br />
+<img src="http://localhost:8080/myLog/images/logistic_regression_files/3.jpg" style="height:15px; width:56px" /></p>
+
+<p>引入Sigmoid函数时曲线平滑化&nbsp;<br />
+<img src="http://localhost:8080/myLog/images/logistic_regression_files/4.jpg" style="height:30px; width:79px" /><br />
+<img src="http://localhost:8080/myLog/images/logistic_regression_files/5.jpg" style="height:100px; width:134px" /></p>
+
+<p>预测函数：<br />
+<img src="http://localhost:8080/myLog/images/logistic_regression_files/6.jpg" style="height:35px; width:157px" /></p>
+
+<p>用概率表示：</p>
+
+<p>正例(y=1)：<br />
+<img src="http://localhost:8080/myLog/images/logistic_regression_files/7.jpg" style="height:20px; width:159px" /></p>
+
+<p>反例(y=0)：<br />
+<img src="http://localhost:8080/myLog/images/logistic_regression_files/8.jpg" style="height:20px; width:187px" /></p>
+
+<p>Cost函数<br />
+<img src="http://localhost:8080/myLog/images/logistic_regression_files/9.jpg" style="height:100px; width:500px" /><br />
+目标：找到合适的 &theta;<sub>0</sub>，&theta;<sub>1</sub>使上式最小</p>
+
+<p>梯度下降（gradient decent)<br />
+通过梯度下降来实现找到合适的 &theta;<sub>0</sub>，&theta;<sub>1</sub><br />
+<img src="http://localhost:8080/myLog/images/logistic_regression_files/10.jpg" style="height:120px; width:164px" /><img src="http://localhost:8080/myLog/images/logistic_regression_files/11.jpg" style="height:120px; width:112px" /><br />
+<img src="http://localhost:8080/myLog/images/logistic_regression_files/12.jpg" style="height:35px; width:166px" /><br />
+更新法则：<br />
+<img src="http://localhost:8080/myLog/images/logistic_regression_files/13.jpg" style="height:35px; width:243px" /><br />
+设置学习率<br />
+同时对所有的&theta;进行更新<br />
+重复更新直到收敛 &nbsp;</p>
+
+				    </section>
+					</article>
+				</main>
+            </div>
+        </div>
+    </section>
+    <a href="#top" id="goTop" ><i class="fa fa-angle-up fa-3x"></i></a>
+	<script src="../js/jquery.min.js"></script>
+    <script type="text/javascript" src="../js/datas/detailAngularJs.js"></script>
+    <script src="../plugins/scrolltopcontrol.js"></script>
+</body>
+</html>

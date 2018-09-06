@@ -1,0 +1,210 @@
+<html>
+<!DOCTYPE html>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <title>最邻近规则分类KNN算法笔记</title>
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link rel="stylesheet" href="../css/bootstrap.min.css">
+	<link rel="stylesheet" href="../css/font-awesome.min.css">
+    <link rel="stylesheet" href="../plugins/ckeditor/plugins/codesnippet/lib/highlight/styles/googlecode.css">
+    <link rel="stylesheet" type="text/css" href="../css/front/screen.css">
+    <script src="../plugins/ckeditor/plugins/codesnippet/lib/highlight/highlight.pack.js"></script>
+	<style type="text/css">
+		.list{
+			margin-top:5em;
+			position: fixed;
+		}
+		
+		.list h4{
+			padding-bottom:0.5em;
+			border-bottom:2px solid lightgray;
+		}
+		
+		.list .readTitle li{
+			margin-top:0.4em;
+			padding-left:1em;
+			border:2px solid white;
+		}
+		.list .readTitle li:hover{
+			border-left:2px solid black;
+			color:blue;
+		}
+		.liHover{
+			border-left:2px solid black !important;
+		}
+		.aHover{
+			color:blue;
+		}
+		.list .readTitle li a:hover{
+			color:blue;
+			text-decoration: none;
+		}
+	</style>
+</head>
+<body>
+    <section class="content-wrap container-fluid">
+        <div class="container">
+            <div class="row">
+				<div class="col-md-3 visible-lg-block visible-md-block">
+					<div class="list">
+						<h4>阅读目录</h4>
+						<div>
+							<ul class="readTitle list-unstyled"></ul>
+						</div>
+					</div>
+				</div>
+                 <main class="col-md-19 main-content">
+					<article class="post row">
+					<header class="post-head">
+				        <h1 class="post-title">最邻近规则分类KNN算法笔记</h1>
+				        <section class="post-meta">
+					        <span><span class="glyphicon glyphicon-user"></span>:<span>c</span></span>|
+				            <span><span class="glyphicon glyphicon-bookmark"></span>:<span>MachineLearning</span></span>|
+				            <span><span class="glyphicon glyphicon-time"></span>:<span>2017-10-28</span></span>
+				        </section>
+				    </header>
+				    <section class="post-content"><p><a id="综述" name="综述"></a>综述</p>
+
+<pre>
+<code>Cover和Hart在1968年提出了最初的邻近算法
+分类(classification)算法
+输入基于实例的学习(instance-based learning), 懒惰学习(lazy learning)</code></pre>
+
+<p><img src="https://gss2.bdstatic.com/9fo3dSag_xI4khGkpoWK1HF6hhy/baike/c0%3Dbaike80%2C5%2C5%2C80%2C26/sign=8fabe2c8d5c8a786aa27425c0660a258/03087bf40ad162d95867202e15dfa9ec8a13cd73.jpg" style="height:174px; width:200px" /></p>
+
+<p><a id="算法详述" name="算法详述"></a>算法详述</p>
+
+<pre>
+<code>步骤：
+为了判断未知实例的类别，以所有已知类别的实例作为参照
+选择参数K，K的值一般不会太大，需要不断去优化
+计算未知实例与所有已知实例的距离
+选择最近K个已知实例
+根据少数服从多数的投票法则(majority-voting)，让未知实例归类为K个最邻近样本中最多数的类别</code></pre>
+
+<p>关于距离的衡量方法，最常用的是Euclidean distance:&nbsp;</p>
+
+<p><img alt="这里写图片描述" src="http://img.blog.csdn.net/20161012163552322" /></p>
+
+<p>二维的下距离计算公式如上图简单的数学公式,对于n维下P1、P2两点的距离公式为</p>
+
+<p><img alt="这里写图片描述" src="http://img.blog.csdn.net/20161012163659532" style="height:51px; width:150px" /></p>
+
+<p>其他距离衡量：余弦值（cos）, 相关度 （correlation）, 曼哈顿距离 （Manhattan distance）</p>
+
+<table border="1" cellpadding="1" cellspacing="1" style="width:500px">
+	<tbody>
+		<tr>
+			<td>电影名称</td>
+			<td>打斗次数</td>
+			<td>接吻次数</td>
+			<td>电影类型</td>
+		</tr>
+		<tr>
+			<td>A</td>
+			<td>3</td>
+			<td>104</td>
+			<td>Romance</td>
+		</tr>
+		<tr>
+			<td>B</td>
+			<td>2</td>
+			<td>100</td>
+			<td>Romance</td>
+		</tr>
+		<tr>
+			<td>C</td>
+			<td>1</td>
+			<td>81</td>
+			<td>Romance</td>
+		</tr>
+		<tr>
+			<td>D</td>
+			<td>101</td>
+			<td>10</td>
+			<td>Action</td>
+		</tr>
+		<tr>
+			<td>E</td>
+			<td>99</td>
+			<td>5</td>
+			<td>Action</td>
+		</tr>
+		<tr>
+			<td>F</td>
+			<td>98</td>
+			<td>2</td>
+			<td>Action</td>
+		</tr>
+		<tr>
+			<td>未知</td>
+			<td>18</td>
+			<td>90</td>
+			<td>UnKnown</td>
+		</tr>
+	</tbody>
+</table>
+
+<p>分别计算A-F点于未知点的距离</p>
+
+<pre>
+<code>import math
+def ComputeEuclideanDistance(x1, y1, x2, y2):
+    d = math.sqrt(math.pow((x1-x2), 2) + math.pow((y1-y2), 2))
+    return d
+
+d_ag = ComputeEuclideanDistance(3, 104, 18, 90)
+d_bg = ComputeEuclideanDistance(2, 100, 18, 90)
+d_cg = ComputeEuclideanDistance(1, 81, 18, 90)
+d_dg = ComputeEuclideanDistance(101, 10, 18, 90)
+d_eg = ComputeEuclideanDistance(99, 5, 18, 90)
+d_fg = ComputeEuclideanDistance(98, 2, 18, 90)
+print('d_ag',d_ag)
+print('d_bg',d_bg)
+print('d_cg',d_cg)
+print('d_dg',d_dg)
+print('d_eg',d_eg)
+print('d_fg',d_fg)</code></pre>
+
+<p>d_ag 20.518284528683193<br />
+d_bg 18.867962264113206<br />
+d_cg 19.235384061671343<br />
+d_dg 115.27792503337315<br />
+d_eg 117.41379816699569<br />
+d_fg 118.92854997854805</p>
+
+<p>由于ABC三点的距离较小，而且ABC三点的类型均为Romance，所以判断未知影片的类型也为Romance</p>
+
+<p><a id="算法优缺点" name="算法优缺点"></a>算法优缺点：</p>
+
+<pre>
+<code>算法优点
+
+简单、易于理解、容易实现、通过对K的选择可具备丢噪音数据的健壮性
+
+算法缺点
+
+需要大量空间储存所有已知实例
+
+算法复杂度高（需要比较所有已知实例与要分类的实例）
+
+当其样本分布不平衡时，比如其中一类样本过大（实例数量过多）占主导的时候，新的未知实例容易被归类为这个主导样本，因为这类样本实例的数量过大，但这个新的未知实例实际并木接近目标样本</code></pre>
+
+<p><a id="改进" name="改进"></a>改进</p>
+
+<p>考虑距离，根据距离加上权重</p>
+
+				    </section>
+					</article>
+				</main>
+            </div>
+        </div>
+    </section>
+    <a href="#top" id="goTop" ><i class="fa fa-angle-up fa-3x"></i></a>
+	<script src="../js/jquery.min.js"></script>
+    <script type="text/javascript" src="../js/datas/detailAngularJs.js"></script>
+    <script src="../plugins/scrolltopcontrol.js"></script>
+</body>
+</html>

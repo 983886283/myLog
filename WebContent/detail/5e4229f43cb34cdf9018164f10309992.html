@@ -1,0 +1,153 @@
+<html>
+<!DOCTYPE html>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <title>MongoDb简单语句</title>
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link rel="stylesheet" href="../css/bootstrap.min.css">
+	<link rel="stylesheet" href="../css/font-awesome.min.css">
+    <link rel="stylesheet" href="../plugins/ckeditor/plugins/codesnippet/lib/highlight/styles/googlecode.css">
+    <link rel="stylesheet" type="text/css" href="../css/front/screen.css">
+    <script src="../plugins/ckeditor/plugins/codesnippet/lib/highlight/highlight.pack.js"></script>
+	<style type="text/css">
+		.list{
+			margin-top:5em;
+			position: fixed;
+		}
+		
+		.list h4{
+			padding-bottom:0.5em;
+			border-bottom:2px solid lightgray;
+		}
+		
+		.list .readTitle li{
+			margin-top:0.4em;
+			padding-left:1em;
+			border:2px solid white;
+		}
+		.list .readTitle li:hover{
+			border-left:2px solid black;
+			color:blue;
+		}
+		.liHover{
+			border-left:2px solid black !important;
+		}
+		.aHover{
+			color:blue;
+		}
+		.list .readTitle li a:hover{
+			color:blue;
+			text-decoration: none;
+		}
+	</style>
+</head>
+<body>
+    <section class="content-wrap container-fluid">
+        <div class="container">
+            <div class="row">
+				<div class="col-md-3 visible-lg-block visible-md-block">
+					<div class="list">
+						<h4>阅读目录</h4>
+						<div>
+							<ul class="readTitle list-unstyled"></ul>
+						</div>
+					</div>
+				</div>
+                 <main class="col-md-19 main-content">
+					<article class="post row">
+					<header class="post-head">
+				        <h1 class="post-title">MongoDb简单语句</h1>
+				        <section class="post-meta">
+					        <span><span class="glyphicon glyphicon-user"></span>:<span>c</span></span>|
+				            <span><span class="glyphicon glyphicon-bookmark"></span>:<span>Database</span></span>|
+				            <span><span class="glyphicon glyphicon-time"></span>:<span>2017-07-11</span></span>
+				        </section>
+				    </header>
+				    <section class="post-content"><p><a id="MongoDB" name="MongoDB"></a>MongoDB</p>
+
+<pre>
+<code class="language-sql">创建数据库
+use mydb
+删除数据库
+db.dropDatabase()
+查看所有databases
+show dbs
+查看数据库所有Collection
+show collections
+删除Collection
+db.esdata.drop()
+增加
+db.esdata.insert({"name":"xc"})
+删除
+db.esdata.remove({"name":"xc"})
+查询
+db.esdata.findOne({})查询一条
+db.esdata.find({})查询所有
+db.esdata.find({}).count()查询总数
+db.esdata.find({'state':'0'})查询state为'0'的值
+db.esdata.find({'state':{'$ne':'0'}})查询state不为'0'的值{$ne(≠)$gt(&gt;)$lt(&lt;)$gte(≥)$lte(≤)}
+db.esdata.find({'state':{$in: ['0','1','2']}});查询state在['0','1','2']中的值{not in}
+db.esdata.find({'$and':[{'demin':'zxgg'},{'state':'0'}]});查询demin为'zxgg'并且state为'0'的值{$or}
+db.esdata.find({}).sort({'createTime':1}).skip(0).limit(100)分页：按照createTime正序查询跳过0条查询100条{(1正序-1反序)}
+如果value类型为ObjectId（"_id" : ObjectId("59363cbaa795a51a74559eeb"),）那么查询时也要采用ObjectId进行查询
+db.esdata.find({'_id':ObjectId("59363cbaa795a51a74559eeb")})
+
+更新
+格式：db.esdata.update(criteria,objNew,upsert,multi)
+
+参数说明：
+criteria：查询条件
+objNew：update对象和一些更新操作符
+upsert：如果不存在update的记录，是否插入objNew这个新的文档，true为插入，默认为false，不插入。
+multi：默认是false，只更新找到的第一条记录。如果为true，把按条件查询出来的记录全部更新。
+db.esdata.update({'state':'2'},{$set:{'state':'0'}},false,true)更新所有state为'2'的为state为'0'
+
+（3）去重
+作用：获取集合中指定字段的不重复值，并以数组的形式返回
+db.esdata.distinct(field,query,options)
+
+参数说明：
+field -----指定要返回的字段(string)
+query-----条件查询(document)
+options-----其他的选项(document)
+
+（4）分组
+db.HI_CRAWLER_ERR.aggregate(
+	{$match:{"menuId":"596ebd8aacd75d19f09d1b8f"}},
+	{$group:{_id:'$menuName',count:{$sum:1}}}
+	,{$sort:{count:-1}}
+	)
+
+（5）MongoDB运行状态、性能监控，分析
+获取当前数据库的信息，比如Obj总数、数据库总大小、平均Obj大小等
+db.stat()
+
+获取服务器的状态（connections 当前连接和可用连接数，indexCounters:btree:misses 索引的不命中数，和hits的比例高就要考虑索引是否正确建立，其他的都能自解释，也不是查看mongo健康状况的关键）
+db.serverStatus()
+
+在一台繁忙的机器或者有比较慢的命令时，你可以获取当前正在执行的操作
+db.currentOp()
+在没有负载的机器上，该命令基本上都是返回空的：
+{ "inprog" : [ ] }
+有负载的机器上得到的返回值样例：
+{ "opid" : "shard3:466404288", "active" : false, "waitingForLock" : false, "op" : "query", "ns" : "sd.usersEmails", "query" : { }, "client_s" : "10.121.13.8:34473", "desc" : "conn" }
+如果你发现一个操作太长，把数据库卡死的话，可以用这个命令杀死他
+db.killOp("shard3:466404288")</code></pre>
+
+<p>&nbsp;</p>
+
+<p>&nbsp;</p>
+				    </section>
+					</article>
+				</main>
+            </div>
+        </div>
+    </section>
+    <a href="#top" id="goTop" ><i class="fa fa-angle-up fa-3x"></i></a>
+	<script src="../js/jquery.min.js"></script>
+    <script type="text/javascript" src="../js/datas/detailAngularJs.js"></script>
+    <script src="../plugins/scrolltopcontrol.js"></script>
+</body>
+</html>

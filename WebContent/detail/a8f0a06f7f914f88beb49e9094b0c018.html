@@ -1,0 +1,277 @@
+<html>
+<!DOCTYPE html>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <title>Varnish基本配置文件</title>
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link rel="stylesheet" href="../css/bootstrap.min.css">
+	<link rel="stylesheet" href="../css/font-awesome.min.css">
+    <link rel="stylesheet" href="../plugins/ckeditor/plugins/codesnippet/lib/highlight/styles/googlecode.css">
+    <link rel="stylesheet" type="text/css" href="../css/front/screen.css">
+    <script src="../plugins/ckeditor/plugins/codesnippet/lib/highlight/highlight.pack.js"></script>
+	<style type="text/css">
+		.list{
+			margin-top:5em;
+			position: fixed;
+		}
+		
+		.list h4{
+			padding-bottom:0.5em;
+			border-bottom:2px solid lightgray;
+		}
+		
+		.list .readTitle li{
+			margin-top:0.4em;
+			padding-left:1em;
+			border:2px solid white;
+		}
+		.list .readTitle li:hover{
+			border-left:2px solid black;
+			color:blue;
+		}
+		.liHover{
+			border-left:2px solid black !important;
+		}
+		.aHover{
+			color:blue;
+		}
+		.list .readTitle li a:hover{
+			color:blue;
+			text-decoration: none;
+		}
+	</style>
+</head>
+<body>
+    <section class="content-wrap container-fluid">
+        <div class="container">
+            <div class="row">
+				<div class="col-md-3 visible-lg-block visible-md-block">
+					<div class="list">
+						<h4>阅读目录</h4>
+						<div>
+							<ul class="readTitle list-unstyled"></ul>
+						</div>
+					</div>
+				</div>
+                 <main class="col-md-19 main-content">
+					<article class="post row">
+					<header class="post-head">
+				        <h1 class="post-title">Varnish基本配置文件</h1>
+				        <section class="post-meta">
+					        <span><span class="glyphicon glyphicon-user"></span>:<span>c</span></span>|
+				            <span><span class="glyphicon glyphicon-bookmark"></span>:<span>Software</span></span>|
+				            <span><span class="glyphicon glyphicon-time"></span>:<span>2018-03-30</span></span>
+				        </section>
+				    </header>
+				    <section class="post-content"><p>Varnish配置文件</p>
+
+<pre>
+<code class="language-nginx"># This is a basic VCL configuration file forvarnish. See the vcl(7)
+# man page for details on VCL syntax andsemantics.
+#
+# Default backend definition. Set this to point to your content
+# server.
+#定义后端服务器
+backend server1 {
+	.host= "100.11.6.202";
+	.port= "8080";
+}
+backend server2 {
+	.host= "100.11.6.204";
+	.port= "8080";
+}
+#定义调度器，调度方法为轮询，调度器名称为server
+director server round-robin {
+	{ .backend = server1; }
+	{ .backend = server2; }
+}
+#如果请求的服务器地址是100.11.6.202（也可以是域名）则调用server这个调度器
+sub vcl_recv {
+	if(req.http.host ~ "100.11.6.202") {
+		set req.backend=server;
+	}
+}
+
+#定义acl，用于管理缓存,允许acl中定义的网段去管理varnish
+acl purge {
+	"localhost";
+	"127.0.0.1";
+	"172.30.0.0"/16;
+	"10.100.6.0"/8;
+}
+# Below is a commented-out copy of thedefault VCL logic. If you
+# redefine any of these subroutines, thebuilt-in logic will be
+# appended to your code.
+subvcl_recv {
+	if(req.restarts == 0) {
+		if (req.http.x-forwarded-for) {
+			set req.http.X-Forwarded-For = req.http.X-Forwarded-For +", " + client.ip;
+		} else {
+			set req.http.X-Forwarded-For = client.ip;
+		}
+	}
+
+#压缩设置，图片不压缩
+if(req.http.Accept-Encoding) {
+	if (req.url ~ ".(jpg|png|gif|jpeg|flv)$") {
+		remove req.http.Accept-Encoding;
+		remove req.http.Cookie;
+	} else if (req.http.Accept-Encoding ~ "gzip") {
+		set req.http.Accept-Encoding = "gzip";
+	} else if (req.http.Accept-Encoding ~ "deflate") {
+		set req.http.Accept-Encoding = "deflate";
+	} else {
+		remove req.http.Accept-Encoding;
+	}
+}
+#不是get、head 、put、 post、 trace、 options、 delete 操作的返回pipe不缓存
+if(req.request != "GET" &amp;&amp;
+	req.request != "HEAD" &amp;&amp;
+	req.request != "PUT" &amp;&amp;
+	req.request != "POST" &amp;&amp;
+	req.request != "TRACE" &amp;&amp;
+	req.request != "OPTIONS"&amp;&amp;
+	req.request != "DELETE") {
+	return(pipe);
+}
+
+if(req.request == "purge") {
+	if (!client.ip ~ purge) {
+		error 405 "Not allowed.";
+	}
+	return(lookup);
+}
+#缓存方法是GET及HEAD的请求
+if(req.request != "GET" &amp;&amp; req.request != "HEAD") {
+	return(pass);
+}
+#不缓存认证及cookie信息
+# if (req.http.Authorization || req.http.Cookie) {
+# /* Not cacheable by default */
+# 	return (pass);
+# }
+#请求是GET且以jsp和do结尾或包含?的url直接访问后端服务器不缓存
+# if (req.request =="GET"&amp;&amp;req.url~"(?i)\.(jsp|do)($|\?)") {
+# 	return (pass);
+# }
+# return (lookup);
+
+}
+
+sub vcl_pipe {
+# #Note that only the first request to the backend will have
+# #X-Forwarded-For set. If you useX-Forwarded-For and want to
+# #have it set for all requests, make sure to have:
+# #set bereq.http.connection = "close";
+# #here. It is not set by default as itmight break some broken web
+# #applications, like IIS with NTLM authentication.
+	return (pipe);
+}
+#
+subvcl_pass {
+	return (pass);
+}
+#
+subvcl_hash {
+	hash_data(req.url);
+	if(req.http.host) {
+		hash_data(req.http.host);
+	}else {
+		hash_data(server.ip);
+	}
+	return (hash);
+}
+#
+subvcl_hit {
+	return (deliver);
+}
+#
+subvcl_miss {
+	return (fetch);
+}
+#
+subvcl_fetch {
+	if(beresp.ttl &lt;= 0s ||
+	beresp.http.Set-Cookie ||
+	beresp.http.Vary == "*") {
+	/*
+	* Mark as "Hit-For-Pass" for the next2 minutes
+	*/
+		set beresp.ttl = 120 s;
+		return (hit_for_pass);
+}
+#下为不缓存404的代码设置
+	if (beresp.status == 404){
+		set beresp.ttl = 0s;
+		return (hit_for_pass);
+	}
+#以css、js、html、htm结尾的文件缓存5分
+# if (req.request == "GET" &amp;&amp; req.url ~"\.(css|js|html|htm)$") {
+# 	set beresp.do_gzip = true;
+# 	set beresp.ttl = 300s;
+# }
+#图片缓存7天
+	if(req.request == "GET" &amp;&amp; req.url ~"\.(gif|jpg|jpeg|bmp|png|tiff|tif|ico|img|bmp|wmf)$") {
+		set beresp.ttl = 7d;
+	}
+	return(deliver);
+}
+#此函数用来统计请求是否在varnsih中命中
+subvcl_deliver {
+	if(obj.hits &gt; 0) {
+		setresp.http.X-Cache = "Hit from image.domain.com";
+	} else {
+		set resp.http.X-Cache = "Miss from image.domain.com";
+	}
+	return (deliver);
+}
+#
+# sub vcl_error {
+# set obj.http.Content-Type = "text/html; charset=utf-8";
+# set obj.http.Retry-After = "5";
+# synthetic {"
+# &lt;?xml version="1.0"encoding="utf-8"?&gt;
+# &lt;!DOCTYPE html PUBLIC "-//W3C//DTDXHTML 1.0 Strict//EN"
+# "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"&gt;
+# &lt;html&gt;
+# &lt;head&gt;
+# &lt;title&gt;"} + obj.status + " " + obj.response +{"&lt;/title&gt;
+# &lt;/head&gt;
+# &lt;body&gt;
+# &lt;h1&gt;Error "} + obj.status + " " + obj.response +{"&lt;/h1&gt;
+# &lt;p&gt;"} + obj.response + {"&lt;/p&gt;
+# &lt;h3&gt;Guru Meditation:&lt;/h3&gt;
+# &lt;p&gt;XID: "} + req.xid + {"&lt;/p&gt;
+# &lt;hr&gt;
+# &lt;p&gt;Varnish cache server&lt;/p&gt;
+# &lt;/body&gt;
+# &lt;/html&gt;
+# "};
+# return (deliver);
+# }
+#
+subvcl_init {
+	return (ok);
+}
+#
+subvcl_fini {
+	return (ok);
+}
+</code></pre>
+
+<p>&nbsp;</p>
+
+				    </section>
+					</article>
+				</main>
+            </div>
+        </div>
+    </section>
+    <a href="#top" id="goTop" ><i class="fa fa-angle-up fa-3x"></i></a>
+	<script src="../js/jquery.min.js"></script>
+    <script type="text/javascript" src="../js/datas/detailAngularJs.js"></script>
+    <script src="../plugins/scrolltopcontrol.js"></script>
+</body>
+</html>

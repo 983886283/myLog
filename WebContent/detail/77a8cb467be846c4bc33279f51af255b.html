@@ -1,0 +1,291 @@
+<html>
+<!DOCTYPE html>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <title>高性能Mysql笔记七</title>
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link rel="stylesheet" href="../css/bootstrap.min.css">
+	<link rel="stylesheet" href="../css/font-awesome.min.css">
+    <link rel="stylesheet" href="../plugins/ckeditor/plugins/codesnippet/lib/highlight/styles/googlecode.css">
+    <link rel="stylesheet" type="text/css" href="../css/front/screen.css">
+    <script src="../plugins/ckeditor/plugins/codesnippet/lib/highlight/highlight.pack.js"></script>
+	<style type="text/css">
+		.list{
+			margin-top:5em;
+			position: fixed;
+		}
+		
+		.list h4{
+			padding-bottom:0.5em;
+			border-bottom:2px solid lightgray;
+		}
+		
+		.list .readTitle li{
+			margin-top:0.4em;
+			padding-left:1em;
+			border:2px solid white;
+		}
+		.list .readTitle li:hover{
+			border-left:2px solid black;
+			color:blue;
+		}
+		.liHover{
+			border-left:2px solid black !important;
+		}
+		.aHover{
+			color:blue;
+		}
+		.list .readTitle li a:hover{
+			color:blue;
+			text-decoration: none;
+		}
+	</style>
+</head>
+<body>
+    <section class="content-wrap container-fluid">
+        <div class="container">
+            <div class="row">
+				<div class="col-md-3 visible-lg-block visible-md-block">
+					<div class="list">
+						<h4>阅读目录</h4>
+						<div>
+							<ul class="readTitle list-unstyled"></ul>
+						</div>
+					</div>
+				</div>
+                 <main class="col-md-19 main-content">
+					<article class="post row">
+					<header class="post-head">
+				        <h1 class="post-title">高性能Mysql笔记七</h1>
+				        <section class="post-meta">
+					        <span><span class="glyphicon glyphicon-user"></span>:<span>c</span></span>|
+				            <span><span class="glyphicon glyphicon-bookmark"></span>:<span>Database</span></span>|
+				            <span><span class="glyphicon glyphicon-time"></span>:<span>2018-09-02</span></span>
+				        </section>
+				    </header>
+				    <section class="post-content"><h2>复制概述</h2>
+
+<pre>
+<code>MySQL内建的复制功能是构建基于MySQL的大规模,高性能应用的基础.同时也是高可用性,可扩展性,灾难恢复,备份及数据仓库等工作的基础
+
+MySQL支持两种复制方式：基于行的复制和基于语句的复制。这两种方式都是通过在主库上记录二进制日志、在备库重放日志的方式来实现异步的数据复制。这意味着同一时间点主库与备库可能存在延迟。
+
+复制解决的问题
+数据分布: 基于行的复制会比传统的基于语句的复制模式对带宽压力更大。你可以随意地停止或开始复制，并在不同的地理位置来分布数据备份
+负载均衡: 将读操作分布到多个服务器上，实现对读密集型应用的优化，可以简单地对机器名做硬编码或使用DNS轮询等
+备份: 复制对于备份是一项很有意义的技术补充，但复制既不是备份也不能够取代备份。
+高可用性和故障切换: 避免单点失败
+MySQL升级测试: 一种普遍做法是使用一个更高版本的MySQL作为备库保证实例升级前查询能够在备库按照预期执行
+
+复制如何工作（在主库上并发运行的查询在备库只能串行化执行）
+1、在主库上记录二进制日志。每次准备提交事务完成数据更新前，主库将更新事件记录到二进制日志中（按事务提交的顺序而非语句的执行顺序来记录二进制日志）。在记录二进制日志后，主库通知存储引擎可以提交事务了
+2、备库将主库的二进制日志复制到其本地的中继日志中。首先，备库会启动一个工作线程，称为I/O线程，I/O线程跟主库建立一个普通的客户端连接，然后在主库上启动一个特殊的二进制转储线程，这个二进制转储线程会读取主库上二进制日志中的事件。它不会对事件进行轮询。如果该线程追赶上了主库，它将进入睡眠状态，直到主库发送信号量通知其有新的事件产生时才会被唤醒，备库I/O线程会将接收到的事件记录到中继日志中。
+3、备库的SQL线程从中继日志中读取事件并在备库执行，从而实现备库数据的更新。当SQL线程追赶上I/O线程时，中继日志通常已经在系统缓存中，所以中继日志的开销很低。SQL线程执行的事件也可以通过配置选项来决定是否写入其自己的二进制日志中
+</code></pre>
+
+<h2>配置复制</h2>
+
+<pre>
+<code>MySQL服务器配置复制（主库/备库均为新库）
+1、在每台服务器上创建复制账号（赋予REPLICATION SLAVE、REPLICATION CLIENT权限）。
+主/备库权限赋予说明：
+（1）用来监控和管理复制的账号需要REPLICATION CLIENT权限。
+（2）有需要可以方便地交换主备库的角色。
+2、需要打开二进制日志并指定一个唯一的server_id，在主库的my.cnf文件中增加或修改配置文件，重启服务器。备库一样操作。
+3、使用CHANGE MASTER TO语句开始执行复制
+
+（主库老库，备库新库---常见）
+初始化备库或者从其他服务器克隆数据到备库
+1、有三个条件来让主库和备库保持同步
+（1）在某个时间点的主库的数据快照。
+（2）主库当前的二进制日志文件，和获得数据快照时在该二进制日志文件中的偏移量，我们把这两个值称为日志文件坐标。通过这两个值可以确定二进制日志的位置。可以通过SHOW MASTER STATUS命令来获取这些值。
+（3）从快照时间到现在的二进制日志。
+2、从别的服务器克隆备库的方法
+（2）冷备份：关闭主库，把数据复制到备库。重启主库后，会使用一个新的二进制日志文件，我们在备库通过执行CHANGE MASTER TO指向这个文件的起始处。缺点：需要关闭主库
+（3）热备份：只针对MyISAM表，可以在主库运行时使用mysqlhotcopy或rsync来复制数据
+（4）mysqldump：只针对InnoDB表，使用命令来转储主库数据并将其加载到备库，然后设置相应的二进制日志坐标
+（5）快照或备份：把备份或快照恢复到备库，然后使用CHANGE MASTER TO指定二进制日志的坐标（如果使用备份，需要确保从备份的时间点开始的主库二进制日志都要存在）
+（6）Xtrabackup：开源的热备份工具，能够在备份时不阻塞服务器的操作，可以在不影响主库的情况下设置备库。通过克隆主库或另一个已存在的备库的方式来建立备库</code></pre>
+
+<h2>复制的原理</h2>
+
+<pre>
+<code>基于语句的复制
+5.0及之前的版本中只支持基于SQL语句的复制（也称为逻辑复制）
+优点
+实现简单
+二进制日志里的事件更加紧凑，节省带宽
+出现问题容易定位
+缺点
+存在无法被正确复制的sql，如语句中包含CURRENT_USER()函数等，存储过程和触发器在使用基于语句的复制模式时也可能存在问题。
+更新必须是串行的。这需要更多的锁
+
+基于行的复制
+5.1开始支持基于行的复制,将实际数据记录在二进制日志中
+优点
+可以正确地复制每一行
+无需建立执行计划并查询，性能占用低
+快速定位主/备数据不一致的情况（在备库更新一个不存在的记录会报错并停止复制）
+某些sql语句重放的代价很高（查询复杂，结果很少），可以更高效地复制数据。
+缺点
+出现问题不容易定位（执行过程黑盒）
+某些sql语句重放的代价很低（UPDATE a SET b=0）,全表更新，使用行复制开销很大
+二进制日志庞大。给主库记录日志和复制增加额外的负载，日志记录慢导致并发度降低
+
+复制过程使用的文件
+二进制日志文件
+中继日志文件
+二进制日志名称.index（用于记录磁盘上的二进制日志文件，如果删除将导致MySQL识别不了二进制日志文件）
+mysql-relay-bin-index（中继日志的索引文件）
+master.info（保存备库连接到主库所需要的信息，如果删除将导致备库在重启后无法连接到主库。这个文件以文本的方式记录了复制用户的密码）
+relay-log.info（包含了当前备库复制的二进制日志和中继日志坐标，如果删除将导致备库重启后无法获知开始位置开始复制，可能导致重放已经执行过的语句）</code></pre>
+
+<h2>复制拓扑</h2>
+
+<pre>
+<code>可以在任意个主库和备库之间建立复制。限制：每一个备库只能有一个主库
+主库与备库为一对多的关系。log_slave_updates选项可以让备库变成其他服务器的主库，实现主库=&gt;备库=&gt;备库。
+
+一主库多备库
+在有少量写和大量读时，这种配置非常有效。可以把读请求分摊到多个备库上，直到备库给主库造成了太大的负担（每个备库在主库上开启一个线程，可以使用金字塔形方案），或者主备之间的带宽成为瓶颈为止
+
+用途
+1、不同的角色使用不同的备库（添加不同的索引或使用不同的存储引擎）。
+2、把一台备库当作待用的主库，除了复制没有其他数据传输。
+3、将一台备库放到远程数据中心，用作灾难恢复。
+4、延迟一个或多个备库，以备灾难恢复。
+5、把一台备库作为备份、培训、开发或者测试使用服务器。
+
+主动-主动模式下的主-主复制
+模式:
+主（主动）⇆主（主动）
+主-主复制（也叫双主复制或双向复制）包含两台服务器，每一个都被配置成对方的主库和备库
+用途
+一个可能的应用场景是两个处于不同地理位置的办公室，并且都需要一份可写的数据拷贝。
+最大的问题是如何解决冲突，两个可写的互主服务器导致的问题非常多。这通常发生在两台服务器同时修改一行记录，或同时在两台服务器上向一个包含AUTO_INCREMENT列的表里插入数据（设置auto_increment_increment和auto_increment_offset。通过这两个选项可以让MySQL自动为INSERT语句选择不互相冲突的值）。
+
+主动-被动模式下的主-主复制
+模式:
+主（主动）⇉主（被动）
+其中的一台服务器是只读的被动服务器
+如何配置主动-被动模式下的主-主复制
+1、确保两台服务器上有相同的数据。
+2、启用二进制日志，选择唯一的服务器ID，并创建复制账号。
+3、启用备库更新的日志记录，这是故障转移和故障恢复的关键。
+4、把被动服务器配置成只读，防止可能与主动服务器上的更新产生冲突，这一点是可选的。
+5、启动每个服务器的MySQL实例。
+6、将每个主库设置为对方的备库，使用新创建的二进制日志开始工作。
+
+拥有备库的主-主结构
+模式:
+主（主动）⇆主（主动）
+  ⇊          ⇊
+ 备库        备库
+为每个主库增加一个备库，增加冗余
+
+环形复制
+模式:
+主库⇐主库
+   ⇘⇗ 
+   主库
+环形结构可以有三个或更多的主库。每个服务器都是在它之前的服务器的备库，是在它之后的服务器的主库，失效几率高，不推荐
+缺点：如果发起事件的节点失效，该事件将陷入无限循环，因为在循环中无法找到发起事件的节点服务器ID来终止复制
+
+拥有备库的环形复制
+模式:
+  备库     备库
+    ⇖     ⇗
+    主库⇐主库
+       ⇘⇗ 
+       主库
+        ⇓
+       备库
+缺点：解决了单点失效循环问题，但依然不稳定
+
+树或金字塔型
+      主库
+    ⇙     ⇘
+  备库     备库
+ ⇙   ⇘   ⇙   ⇘
+备库 备库 备库 备库
+优点：减轻主库负担，缺点：中间层错误影响下方备库
+
+备库使用方案
+用作负载均衡：
+将主库数据划分到不同的备库里，每个备库只拥有主库的一部分数据，实现读取的负载均衡，降低主库读负担，每个备库通过选项replicate_wild_do_table选项来限制给定数据库的数据
+用作分离功能：
+将某个备库用作其他用途
+用作数据归档（慎用）
+备库上保留主库删除的数据，实现方法一种是在主库上选择性地禁止二进制日志，第二种是在备库上使用replicate_ignore_db规则，第三种办法是利用binlog_ignore_db来过滤复制事件
+用作全文检索
+许多应用要求合并事务和全文检索
+用作只读备库
+将备库设为只读，除了复制线程和拥有超级权限的用户以及临时表操作外禁止普通用户修改操作
+用作模拟多主库复制
+MySQL不支持多主库复制（一个备库拥有多个主库）。但是可以通过把一台备库轮流指向多台主库的方式来模拟这种结构
+用作日志服务器
+创建没有数据的日志服务器。它唯一的目的就是更加容易重放并且/或者过滤二进制日志事件，无须执行二进制日志
+日志服务器相比mysqlbinlog的优势
+1、复制作为应用二进制日志的方法已经被大量的用户所测试，能够证明是可行的。mysqlbinlog并不能确保像复制那样工作，并且可能无法正确生成二进制日志中的数据更新。
+2、复制的速度更快，因为无须将语句从日志导出来并传送给MySQL。
+3、可以很容易观察到复制过程。能够更方便处理错误。例如，可以跳过执行失败的语句。更方便过滤复制事件。
+4、有时候mysqlbinlog会因为日志记录格式更改而无法读取二进制日志。</code></pre>
+
+<h2>复制管理和维护</h2>
+
+<pre>
+<code>监控复制: SHOW MASTER STATUS查看主库的二进制日志位置和配置, SHOW BINLOG EVENTS查看复制事件
+测量备库延迟: 使用Percona Toolkit的pt-hearbeat
+确定主备是否一致：使用Percona Toolkit的pt-table-checksum
+从主库重新同步备库（单独处理某个备库）: 使用Percona Toolkit的pt-table-sync（基于复制工作，要求复制功能正常）
+备库提升为主库：有两种场景需要将备库替换为主库，一种是计划内的提升，一种是计划外的提升。
+主-主配置中交换角色：</code></pre>
+
+<h2>复制的问题和解决方案</h2>
+
+<pre>
+<code>数据损坏或丢失
+主库意外关闭: 主库开启sync_binlog避免事件丢失,使用Percona Toolkit中的pt-table-checksum检查主备一致性
+备库意外关闭: 重启后观察MySQL错误日志,想方法获取备库指向主库的日志偏移量
+主库上的二进制日志损坏: 跳过所有损坏的事件,手动找到一个完好的事件开始
+备库上的中继日志损坏: 5.5版本后能在崩溃后自动重新获取中继日志
+二进制日志与InnoDB事务日志不同步: 除非备库中继日志有保存,否则没有任何办法恢复丢失的事务
+
+复制容易出现的问题
+1、当对非事务型表的更新发生错误时，例如查询在完成前被kill，就可能导致主库和备库的数据不一致，如果使用myisam,在关闭Mysql前需要确保已经运行了stop slave,否则在服务器关闭时会kill所有正在运行的查询。
+2、如果是事务型,失败的更新会在主库上回滚而且不会记录到二进制日志
+3、避免混用事务和非事务: 如果备库发生死锁而主库没有,事务型会回滚而非事务型则不会造成不同步
+4、主库和备库使用不同存储引擎容易导致问题
+5、避免不唯一和未定义备库服务器id
+6、避免在主库上创建备库上没有的表,因为复制可能中断
+7、基于语句复制时,主库上没有安全使用临时表的方法.丢失临时表: 备库崩溃时,任何复制线程拥有的临时表都会丢失,重启备库后所有依赖临时表的语句都会失败
+8、InnoDB加锁读引起的锁争用: 将大命令拆成小命令可以有效减少锁竞争
+9、过大的复制延迟: 定位执行慢的语句,改善机器配置</code></pre>
+
+<h2>MySQL复制的高级特性</h2>
+
+<pre>
+<code>半同步复制: 当提交事务,客户端收到查询结束反馈前必须保证二进制日志已经传输到至少一台备库上,主库将事务提交到磁盘上之后会增加一些延迟
+复制心跳: 保证备库一直与主库相联系,如果出现断开的网络连接,备库会注意到丢失的心跳数据</code></pre>
+
+<h2>其他复制技术</h2>
+
+<pre>
+<code>Percona XtraDB Cluster的同步复制
+Tungsten Replicator</code></pre>
+
+<p>&nbsp;</p>
+				    </section>
+					</article>
+				</main>
+            </div>
+        </div>
+    </section>
+    <a href="#top" id="goTop" ><i class="fa fa-angle-up fa-3x"></i></a>
+	<script src="../js/jquery.min.js"></script>
+    <script type="text/javascript" src="../js/datas/detailAngularJs.js"></script>
+    <script src="../plugins/scrolltopcontrol.js"></script>
+</body>
+</html>

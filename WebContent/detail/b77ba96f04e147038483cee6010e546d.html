@@ -1,0 +1,617 @@
+<html>
+<!DOCTYPE html>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <title>ES基础理论（四）</title>
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link rel="stylesheet" href="../css/bootstrap.min.css">
+	<link rel="stylesheet" href="../css/font-awesome.min.css">
+    <link rel="stylesheet" href="../plugins/ckeditor/plugins/codesnippet/lib/highlight/styles/googlecode.css">
+    <link rel="stylesheet" type="text/css" href="../css/front/screen.css">
+    <script src="../plugins/ckeditor/plugins/codesnippet/lib/highlight/highlight.pack.js"></script>
+	<style type="text/css">
+		.list{
+			margin-top:5em;
+			position: fixed;
+		}
+		
+		.list h4{
+			padding-bottom:0.5em;
+			border-bottom:2px solid lightgray;
+		}
+		
+		.list .readTitle li{
+			margin-top:0.4em;
+			padding-left:1em;
+			border:2px solid white;
+		}
+		.list .readTitle li:hover{
+			border-left:2px solid black;
+			color:blue;
+		}
+		.liHover{
+			border-left:2px solid black !important;
+		}
+		.aHover{
+			color:blue;
+		}
+		.list .readTitle li a:hover{
+			color:blue;
+			text-decoration: none;
+		}
+	</style>
+</head>
+<body>
+    <section class="content-wrap container-fluid">
+        <div class="container">
+            <div class="row">
+				<div class="col-md-3 visible-lg-block visible-md-block">
+					<div class="list">
+						<h4>阅读目录</h4>
+						<div>
+							<ul class="readTitle list-unstyled"></ul>
+						</div>
+					</div>
+				</div>
+                 <main class="col-md-19 main-content">
+					<article class="post row">
+					<header class="post-head">
+				        <h1 class="post-title">ES基础理论（四）</h1>
+				        <section class="post-meta">
+					        <span><span class="glyphicon glyphicon-user"></span>:<span>c</span></span>|
+				            <span><span class="glyphicon glyphicon-bookmark"></span>:<span>Elasticsearch</span></span>|
+				            <span><span class="glyphicon glyphicon-time"></span>:<span>2017-07-10</span></span>
+				        </section>
+				    </header>
+				    <section class="post-content"><p>两种查询方式：query string search/query DSL</p>
+
+<p><a name="query string search"></a>1、query string search</p>
+
+<p>（1）搜索全部</p>
+
+<pre>
+<code class="language-json">GET /epb_jkqy/epb_jkqy/_search
+
+took：耗费了几毫秒
+
+timed_out：默认无timeout，latency平衡completeness，手动指定timeout
+    timeout=10ms，timeout=1s，timeout=1m
+    GET /_search?timeout=10m
+    timeout查询执行机制：在timeout时间范围内将数据返回给客户端，注意可能是全部数据也可能是部分数据，并不一定等到
+    所有数据都检索出来再返回
+
+_shards：数据拆成了5个分片，所以对于搜索请求，会打到所有的primary shard（或者是它的某个replica shard也可以）
+
+hits.total：查询结果的数量，3个document
+
+hits.max_score：
+    相关度评分TF&amp;IDF算法：Elasticsearch使用的是 term frequency/inverse document frequency算法，简称为TF/IDF算法，
+        规则：
+        Term frequency：搜索文本中的各个词条在field文本中出现了多少次，出现次数越多，相关度越高
+        Inverse document frequency：搜索文本中的各个词条在整个索引的所有文档中出现了多少次，出现的次数越多，
+            相关度越低
+        Field-length norm：field长度，field越长，相关度越低
+    _score是如何被计算出来的:添加?explain，结果复杂，暂不讨论
+        GET /epb_jkqy/epb_jkqy/_search?explain
+        {
+          "query": {
+            "match": {
+              "pname": "永州 有限公司"
+            }
+          }
+        }
+    分析一个document是如何被匹配上的:添加_explain，结果复杂，暂不讨论
+    GET /epb_jkqy/epb_jkqy/2/_explain
+    {
+      "query": {
+        "match": {
+          "pname": "永州 有限公司"
+        }
+      }
+    }
+
+   
+hits.hits：包含了匹配搜索的document的详细数据</code></pre>
+
+<p>（2）query string基础语法</p>
+
+<pre>
+<code class="language-json">查询pname包含永州福嘉的数据
+GET /epb_jkqy/epb_jkqy/_search?q=pname:永州福嘉
+
+查询pname必须包含永州福嘉的数据（与上同）
+GET /epb_jkqy/epb_jkqy/_search?q=+pname:永州福嘉
+
+查询pname不包含永州福嘉的数据
+GET /epb_jkqy/epb_jkqy/_search?q=-pname:永州福嘉</code></pre>
+
+<p>（3）_all metadata的原理和作用</p>
+
+<pre>
+<code class="language-json">GET /epb_jkqy/epb_jkqy/_search?q=永州福嘉
+直接可以搜索所有的field，任意一个field包含指定的关键字就可以搜索出来。
+
+我们在进行中搜索的时候，难道是对document中的每一个field都进行一次搜索吗？不是的
+es中的_all元数据，在建立索引的时候，我们插入一条document，它里面包含了多个field，此时，es会自动将多个field的值，
+全部用字符串的方式串联起来，变成一个长的字符串，作为_all field的值，同时建立索引
+
+后面如果在搜索的时候，没有对某个field指定搜索，就默认搜索_all field，其中是包含了所有field的值的
+
+举个例子
+
+{
+  "name": "jack",
+  "age": 26,
+  "email": "jack@sina.com",
+  "address": "guamgzhou"
+}
+
+"jack 26 jack@sina.com guangzhou"，作为这一条document的_all field的值，同时进行分词后建立对应的倒排索
+</code></pre>
+
+<pre>
+<code class="language-json">搜索pname中包含永州福嘉，而且按照年份降序排序：GET /epb_jkqy/epb_jkqy/_search?q=pname:永州福嘉&amp;sort=years:desc</code></pre>
+
+<p>适用于临时的在命令行使用一些工具，比如curl，快速的发出请求，来检索想要的信息；但是如果查询请求很复杂，是很难去构建的</p>
+
+<p>在生产环境中，几乎很少使用query string search</p>
+
+<p>&nbsp;</p>
+
+<p><a name="query DSL"></a>2、query DSL</p>
+
+<p>DSL：Domain Specified Language，Es专用语言</p>
+
+<p>http request body：请求体，可以用json的格式来构建查询语法，比较方便，可以构建各种复杂的语法，功能强大</p>
+
+<p>&nbsp;</p>
+
+<p>（1）full-text search（全文检索）</p>
+
+<p>不是单纯的只是匹配完整的一个值，而是可以对值进行拆分词语后（分词）进行匹配，也可以通过缩写、时态、大小写、同义词等进行匹配</p>
+
+<p>&lt;1&gt;缩写：cn china</p>
+
+<p>&lt;2&gt;时态：like liked likes</p>
+
+<p>&lt;3&gt;大小写：Tom tom</p>
+
+<p>&lt;4&gt;同义词：like love</p>
+
+<p>&lt;5&gt;等...</p>
+
+<pre>
+<code class="language-json">GET /epb_jkqy/epb_jkqy/_search
+{
+    "query":{
+        "match":{
+            "pname":"永州 福嘉"
+        }
+    }
+}
+包含永州福嘉有色金属有限公司、嘉兴福鑫纸业有限公司、国电永福发电有限公司的检索结果，但是相关度（_score）不一样</code></pre>
+
+<p>&lt;1&gt;查询所有</p>
+
+<pre>
+<code class="language-json">GET /epb_jkqy/epb_jkqy/_search
+{
+  "query": {
+     "match_all": {}
+  }
+}</code></pre>
+
+<p>&lt;2&gt;搜索标题中包含java或elasticsearch的数据</p>
+
+<pre>
+<code class="language-markdown">GET /e/p/_search
+{
+    "query": {
+        "match": {
+            "title": "java elasticsearch"
+        }
+    }
+}</code></pre>
+
+<p>&lt;3&gt;搜索标题中包含java和elasticsearch的数据,那么就用and</p>
+
+<pre>
+<code class="language-markdown">GET /e/p/_search
+{
+    "query":{
+        "match":{
+            "title":{
+                "query":"java elasticsearch",
+                "operator":"and"
+            }
+        }
+    }
+}</code></pre>
+
+<p>&lt;4&gt;搜索包含java，elasticsearch，spark，hadoop，4个关键字中，至少3个的数据</p>
+
+<pre>
+<code class="language-markdown">GET /e/p/_search
+{
+  "query": {
+    "match": {
+      "title": {
+        "query": "java elasticsearch spark hadoop",
+        "minimum_should_match": "75%"
+      }
+    }
+  }
+}</code></pre>
+
+<p>&lt;5&gt;query为查询条件，_source为查询字段，from/size为分页，sort为排序</p>
+
+<pre>
+<code class="language-json">GET /e/p/_search
+{
+   "query": {
+     "match": {
+       "FIELD": "TEXT"
+     }
+   },
+   "_source": ["field"],
+   "from": 0,
+   "size": 20,
+   "sort": [
+     {
+       "FIELD": {
+         "order": "desc"
+       }
+     }
+   ]
+}</code></pre>
+
+<p>&lt;6&gt;组合多个查询条件</p>
+
+<pre>
+<code class="language-json">详细为Elasticsearch（十八）
+http://www.localhost:8080/myLog/detailContent.jsp?id=a576f4b74b26443f8b1b9b8a98906f03</code></pre>
+
+<p>（2）match_phrase</p>
+
+<p>必须完全匹配，部分匹配无效(pname为永州福嘉)</p>
+
+<pre>
+<code class="language-json">{
+  "query": {
+    "match_phrase": {
+      "pname": {
+        "query": "永州福嘉"
+      }
+    }
+  }
+}</code></pre>
+
+<p>（3）proximity match</p>
+
+<p>有时我们会希望有个可调节因子，临近也满足slop，(pname为永州福嘉)</p>
+
+<pre>
+<code class="language-markdown">query string搜索文本中的几个term,要经过几次移动才能与一个document匹配，这个移动的次数，就是slop
+举例：
+hello world, java is very good, spark is also very good.
+java spark搜不到
+如果我们指定了slop，那么就允许java spark进行移动，来尝试与doc进行匹配
+
+java		is		very		good		spark		is
+java		spark
+java		--&gt;		spark
+java				--&gt;		spark
+java						--&gt;		spark
+
+这里的slop，就是3，因为java spark这个短语，spark移动了3次，就可以跟一个doc匹配上了
+{
+  "query": {
+    "match_phrase": {
+      "pname": {
+        "query": "java spark",
+        "slop": 1
+      }
+    }
+  }
+}
+</code></pre>
+
+<p>match和phrase match(proximity match)区别</p>
+
+<pre>
+<code>match --&gt; 只要简单的匹配到了一个term，就可以理解将term对应的doc作为结果返回，扫描倒排索引，扫描到了就ok
+phrase match --&gt; 首先扫描到所有term的doc list; 找到包含所有term的doc list; 然后对每个doc都计算每个term的position，是否符合指定的范围; slop，需要进行复杂的运算，来判断能否通过slop移动，匹配一个doc
+
+match query的性能比phrase match和proximity match（有slop）要高很多。因为后两者都要计算position的距离。
+match query比phrase match的性能要高10倍，比proximity match的性能要高20倍。
+
+但是因为es的性能一般都在毫秒级别，match query一般几毫秒，或者几十毫秒，而phrase match和proximity match的性能在几十毫秒到几百毫秒之间，所以也是可以接受的。
+
+优化proximity match的性能，一般就是减少要进行proximity match搜索的document数量。主要思路就是，用match query先过滤出需要的数据，然后再用proximity match来根据term距离提高doc的分数，因为一般用户会分页查询，只会看到前几页的数据，所以不需要对所有结果进行proximity match操作，所以proximity match只针对每个shard的分数排名前n个doc起作用，来重新调整它们的分数，这个过程称之为rescoring，重计分。
+
+match + proximity match同时实现召回率和精准度
+match：1000个doc，其实这时候每个doc都有一个分数了; proximity match，前50个doc，进行rescore，重打分，即可; 让前50个doc，term举例越近的，排在越前面
+GET /e/p/_search 
+{
+  "query": {
+    "match": { "content": "java spark" }
+  },
+  "rescore": {
+    "window_size": 50,
+    "query": {
+      "rescore_query": {
+        "match_phrase": {
+          "content": { "query": "java spark","slop": 50 }
+        }
+      }
+    }
+  }
+}
+</code></pre>
+
+<p>（4）multi_phrase</p>
+
+<p>多个字段进行匹配，其中一个字段有这个文档就满足(pname/eventName/xzqhCode字段中检索昌邑)</p>
+
+<pre>
+<code class="language-json">{
+  "query": {
+    "multi_match": {
+      "query": "昌邑",
+      "fields": [
+        "pname",
+        "eventName",
+        "xzqhCode"
+      ]
+    }
+  }
+}</code></pre>
+
+<p>（5）best_fields</p>
+
+<p>我们希望完全匹配的文档占的评分比较高，则需要使用</p>
+
+<pre>
+<code class="language-json">{
+  "query": {
+    "multi_match": {
+      "query": "昌邑",
+      "type": "best_fields",
+      "fields": [
+        "pname",
+        "eventName",
+        "xzqhCode"
+      ],
+      "tie_breaker": 0.3
+    }
+  }
+}</code></pre>
+
+<p>（6）most_fields</p>
+
+<p>我们希望字段被匹配越多的文档评分越高，就要使用</p>
+
+<pre>
+<code class="language-json">{
+  "query": {
+    "multi_match": {
+      "query": "昌邑",
+      "type": "most_fields",
+      "fields": [
+        "pname",
+        "eventName",
+        "xzqhCode"
+      ]
+    }
+  }
+}</code></pre>
+
+<p>（7）cross_fields</p>
+
+<p>我们会希望这个词条的分词词汇是分配到不同字段中的，那么就使用</p>
+
+<pre>
+<code class="language-json">{
+  "query": {
+    "multi_match": {
+      "query": "昌邑",
+      "type": "cross_fields",
+      "fields": [
+        "pname",
+        "eventName",
+        "xzqhCode"
+      ]
+    }
+  }
+}</code></pre>
+
+<p>（8）scoll滚动搜索</p>
+
+<p>如果一次性查10万条数据，那么性能会很差，此时一般会采取用scoll滚动查询，一批一批的查，直到所有数据都查询处理完</p>
+
+<p>scoll搜索会在第一次搜索的时候，保存一个当时的视图快照，之后只会基于该旧的视图快照提供数据搜索，如果这个期间数据变更，是不会让用户看到的</p>
+
+<p>采用基于_doc进行排序的方式，性能较高</p>
+
+<p>每次发送scroll请求，我们还需要指定一个scoll参数，指定一个时间窗口，每次搜索请求只要在这个时间窗口内能完成就可以了</p>
+
+<pre>
+<code class="language-json">GET /e/p/_search?scroll=1m
+{
+  "query": {
+    "match_all": {}
+  },
+  "sort": [
+    "_doc"
+  ],
+  "size": 2
+}
+=====结果======
+{
+  "_scroll_id": "cXVlcnlUaGVuRmV0Y2g7NTs4NzIyNDE6dnFtQzdNWnBURi1EZVdWSEdscmI5ZzsxMDEzMTYzOjJYbFN0Q2NhUUEtUTFqblh
+  BYjNYR1E7NzEyOTA2OkhDQUxtME54VGVHSmpLX2dnc2U1MHc7NjIwNTQ2OkZqX203cHd2UzdxZ3ZESkYzdDhQdnc7Nzc2MTA0OmZzTkdVNkxZV
+  HFPUTFRQnZQWmZSdXc7MDs=",
+  "took": 2,
+  "timed_out": false,
+  "_shards": {
+    "total": 5,
+    "successful": 5,
+    "failed": 0
+  },
+  "hits": {
+    "total": 109213,
+    "max_score": null,
+    "hits": [
+      {
+        "_index": "epb_jkqy",
+        "_type": "epb_jkqy",
+        "_id": "epb_jkqy19996",
+        "_score": null,
+        "_source": {
+          "sortTime": null,
+          "body": null
+        },
+        "sort": [
+          1060
+        ]
+      }
+    ]
+  }
+}
+=====再次查询=====
+GET /_search/scroll
+{
+    "scroll": "1m", 
+    "scroll_id": "cXVlcnlUaGVuRmV0Y2g7NTs4NzIyNDE6dnFtQzdNWnBURi1EZVdWSEdscmI5ZzsxMDEzMTYzOjJYbFN0Q2NhUUEtUTFqblh
+  BYjNYR1E7NzEyOTA2OkhDQUxtME54VGVHSmpLX2dnc2U1MHc7NjIwNTQ2OkZqX203cHd2UzdxZ3ZESkYzdDhQdnc7Nzc2MTA0OmZzTkdVNkxZV
+  HFPUTFRQnZQWmZSdXc7MDs="
+}
+scoll,看起来挺像分页的，但是其实使用场景不一样。分页主要是用来一页一页搜索，给用户看的；
+scoll主要是用来一批一批检索数据，让系统进行处理的</code></pre>
+
+<p>（9）定位不合法的搜索及其原因</p>
+
+<pre>
+<code class="language-json">GET /epb_jkqy/epb_jkqy/_validate/query?explain
+{
+  "quey": {}
+}
+======结果======
+{
+  "valid": false,
+  "error": "org.elasticsearch.common.ParsingException: request does not support [quey]"
+}
+</code></pre>
+
+<p>（10）解决字符串排序问题</p>
+
+<p>如果对一个string field直接进行排序，结果往往不准确，因为分词后是多个单词，再排序可能不是我们想要的结果</p>
+
+<p>通常解决方案是，将一个string field建立两次索引，一个分词，用来进行搜索；一个不分词，保持整体，用来进行排序</p>
+
+<pre>
+<code class="language-json">PUT /website 
+{
+  "mappings": {
+    "article": {
+      "properties": {
+        "title": {
+          "type": "text",
+          "fields": {
+            "raw": {
+              "type": "string",
+              "index": "not_analyzed"
+            }
+          },
+          "fielddata": true
+        }
+      }
+    }
+  }
+}
+
+查询并排序
+GET /website/article/_search
+{
+  "query": {
+    "match": {
+        "title":"ceshi"
+    }
+  },
+  "sort": [
+    {
+      "title.raw": {
+        "order": "desc"
+      }
+    }
+  ]
+}</code></pre>
+
+<p>（11）highlight search（高亮搜索结果）</p>
+
+<pre>
+<code class="language-json">GET /epb_jkqy/epb_jkqy/_search
+{
+  "query": {
+    "match": {
+      "pname": "昌邑 公司"
+    }
+  },
+  "highlight": {
+    "fields": {
+      "pname": {}
+    }
+  }
+}
+=====结果======
+{
+  "took": 8,
+  "timed_out": false,
+  "_shards": {
+    "total": 5,
+    "successful": 5,
+    "failed": 0
+  },
+  "hits": {
+    "total": 93449,
+    "max_score": 2.8541431,
+    "hits": [
+      {
+        "_index": "epb_jkqy",
+        "_type": "epb_jkqy",
+        "_id": "epb_jkqy2147",
+        "_score": 2.8541431,
+        "_source": {
+          "sortTime": null,
+          "body": null,
+          "createTime": 1496736169000,
+          "dataType": "epb_jkqy",
+          "county": "",
+          "postTime": null
+        },
+        "highlight": {
+          "pname": [
+            "&lt;em&gt;昌&lt;/em&gt;&lt;em&gt;邑&lt;/em&gt;海洋水业有限&lt;em&gt;公&lt;/em&gt;&lt;em&gt;司&lt;/em&gt;"
+          ]
+        }
+      }
+    ]
+  }
+}</code></pre>
+
+<p>&nbsp;</p>
+
+				    </section>
+					</article>
+				</main>
+            </div>
+        </div>
+    </section>
+    <a href="#top" id="goTop" ><i class="fa fa-angle-up fa-3x"></i></a>
+	<script src="../js/jquery.min.js"></script>
+    <script type="text/javascript" src="../js/datas/detailAngularJs.js"></script>
+    <script src="../plugins/scrolltopcontrol.js"></script>
+</body>
+</html>
