@@ -1,6 +1,6 @@
+var basePath = window.location.protocol+'//'+window.location.host+'/myLog';
 $(".layui-canvs").width($(window).width());
 $(".layui-canvs").height($(window).height());
-var basePath = 'http://localhost:8080/myLog';
 
 var login = angular.module('login',[]);
 

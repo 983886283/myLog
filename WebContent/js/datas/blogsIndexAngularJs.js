@@ -1,4 +1,4 @@
-var basePath = 'http://localhost:8080/myLog';
+var basePath = window.location.protocol+'//'+window.location.host+'/myLog';
 
 /*滚动监听回到顶部的显示与隐藏*/
 window.onscroll=function(){

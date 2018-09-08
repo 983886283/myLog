@@ -1,6 +1,6 @@
+var basePath = window.location.protocol+'//'+window.location.host+'/myLog';
 var allLi = [];
 var allLiDis = [];
-var basePath = 'http://localhost:8080/myLog';
 
 function toUrl(arg){
 	$(arg).parent().addClass("liHover");
