@@ -1,0 +1,255 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="me.jianpeng.dao.LogContentMapper">
+	<resultMap id="BaseResultMap"
+		type="me.jianpeng.entity.LogContent">
+		<id column="id" property="contentid" jdbcType="VARCHAR" />
+		<result column="recommend" property="recommend"
+			jdbcType="INTEGER" />
+		<result column="typeId" property="typeid"
+			jdbcType="VARCHAR" />
+		<result column="body" property="body" jdbcType="LONGVARCHAR" />
+		<result column="title" property="title" jdbcType="VARCHAR" />
+		<result column="tag" property="tag" jdbcType="VARCHAR" />
+		<result column="summary" property="summary" jdbcType="VARCHAR" />
+		<result column="state" property="state" jdbcType="INTEGER" />
+		<result column="userId" property="userid"
+			jdbcType="VARCHAR" />
+		<result column="userName" property="username"
+			jdbcType="VARCHAR" />
+		<result column="updateTime" property="updatetime"
+			jdbcType="TIMESTAMP" />
+		<result column="createTime" property="createtime"
+			jdbcType="TIMESTAMP" />
+		<result column="click" property="click" jdbcType="INTEGER" />
+	</resultMap>
+	<resultMap id="ResultMapWithOthers"
+		type="me.jianpeng.entity.LogContent" extends="BaseResultMap">
+		<result column="typeVal" property="typeval"
+			jdbcType="VARCHAR" />
+		<result column="userName" property="username"
+			jdbcType="VARCHAR" />
+	</resultMap>
+	<resultMap id="GroupByTypeVal" type="Map">
+		<result column="typeval" property="typeval" jdbcType="VARCHAR" />
+		<result column="total" property="total" jdbcType="INTEGER" />
+		<result column="clicksum" property="clicksum" jdbcType="INTEGER" />
+	</resultMap>
+	<resultMap id="GroupByDate" type="Map">
+		<result column="date" property="date" jdbcType="VARCHAR" />
+		<result column="total" property="total" jdbcType="INTEGER" />
+	</resultMap>
+
+	<!-- 查询关联表状态为正常的所有数据 -->
+	<select id="selectAll" resultMap="BaseResultMap">
+		select
+		a.id id,
+		a.recommend recommend,
+		a.typeId typeId,
+		b.typeVal typeVal,
+		a.title title,
+		a.tag tag,
+		a.summary summary,
+		a.body body,
+		a.userId userId,
+		c.userName userName,
+		a.createTime createTime,
+		a.updateTime updateTime,
+		a.state state,
+		a.click click
+		from
+		logcontent a
+		left join logtype b on a.typeId = b.id
+		left join loguser c on a.userId = c.id
+		where 
+    <![CDATA[a.state <> 2 ]]>
+		and 
+    <![CDATA[c.state <> 2 ]]>
+		and 
+    <![CDATA[b.state <> 2 ]]>
+		order by b.id,a.createTime,a.title
+		<if test="offset != -1">
+			limit #{offset}, #{limit}
+		</if>
+	</select>
+	
+	<!-- 查询关联表指定id状态为正常的数据 -->
+	<select id="selectOne" resultMap="BaseResultMap" parameterType="java.lang.String">
+		select
+		a.id id,
+		a.recommend recommend,
+		a.typeId typeId,
+		b.typeVal typeVal,
+		a.title title,
+		a.tag tag,
+		a.summary summary,
+		a.body body,
+		a.userId userId,
+		c.userName userName,
+		a.createTime createTime,
+		a.updateTime updateTime,
+		a.state state,
+		a.click click
+		from
+		logcontent a
+		left join logtype b on a.typeId = b.id
+		left join loguser c on a.userId = c.id
+		where 
+    <![CDATA[a.state <> 2 ]]>
+		and 
+    <![CDATA[c.state <> 2 ]]>
+		and 
+    <![CDATA[b.state <> 2 ]]>
+		and 
+		a.id = #{contentid}
+	</select>
+	
+	<!-- 查询关联表状态为正常的数量 -->
+	<select id="selectCount" resultType="Integer">
+		select
+		count(1)
+		from
+		logcontent a
+		left join logtype b on a.typeId = b.id
+		left join loguser c on a.userId = c.id
+		where 
+    <![CDATA[a.state <> 2 ]]>
+		and 
+    <![CDATA[c.state <> 2 ]]>
+		and 
+    <![CDATA[b.state <> 2 ]]>
+	</select>
+	
+	<!-- 查询关联表状态为正常根据类型分组的前5（排序:click/total） -->
+	<select id="selectCountByTypevalLimit5" resultMap="GroupByTypeVal">
+		select 
+		b.typeVal as typeval,count(1) as total,sum(a.click) as clicksum 
+		from 
+		logcontent a left join logtype b on a.typeId = b.id 
+		where 
+		<![CDATA[a.state <> 2]]> 
+		group by b.typeVal 
+		order by clicksum desc,total desc 
+		limit 5
+	</select>
+	
+	<!-- 查询关联表状态为正常根据创建日期分组 -->
+	<select id="selectCountByDate" resultMap="GroupByDate">
+		select 
+		a.date as date,count(1) as total 
+		from 
+		(select date_format(a.createtime,'%y-%m-%d') as date 
+		from logcontent a left join logtype b on a.typeId = b.id
+		where
+		<![CDATA[a.state <> 2]]> 
+		) a 
+		group by a.date
+	</select>
+	
+	<!-- 逻辑删除 -->
+	<delete id="deleteByPrimaryKey" parameterType="java.lang.String">
+		update logcontent
+		<set>
+			state = 2
+		</set>
+		where id = #{contentid,jdbcType=VARCHAR}
+	</delete>
+
+	<!-- 插入数据 -->
+	<insert id="insert"
+		parameterType="me.jianpeng.entity.LogContent">
+		insert into logcontent (
+		id, 
+		recommend,
+		typeId,
+		title,
+		tag, 
+		summary,
+		userId,
+		body)
+		values (
+		#{contentid,jdbcType=VARCHAR},
+		#{recommend,jdbcType=VARCHAR},
+		#{typeid,jdbcType=VARCHAR},
+		#{title,jdbcType=VARCHAR},
+		#{tag,jdbcType=VARCHAR},
+		#{summary,jdbcType=VARCHAR},
+		#{userid,jdbcType=VARCHAR},
+		#{body,jdbcType=LONGVARCHAR})
+		ON DUPLICATE KEY UPDATE 
+	<if test="recommend != null">
+		recommend = #{recommend,jdbcType=INTEGER},
+	</if>
+	<if test="typeid != null">
+		typeid = #{typeid,jdbcType=VARCHAR},
+	</if>
+	<if test="title != null">
+		title = #{title,jdbcType=VARCHAR},
+	</if>
+	<if test="tag != null">
+		tag = #{tag,jdbcType=VARCHAR},
+	</if>
+	<if test="summary != null">
+		summary = #{summary,jdbcType=VARCHAR},
+	</if>
+	<if test="state != null">
+		state = #{state,jdbcType=INTEGER},
+	</if>
+	<if test="userid != null">
+		userid = #{userid,jdbcType=VARCHAR},
+	</if>
+	<if test="click != null">
+		click = #{click,jdbcType=INTEGER},
+	</if>
+	<if test="body != null">
+		body = #{body,jdbcType=LONGVARCHAR}
+	</if>
+	</insert>
+
+	<!-- 修改 -->
+	<update id="updateByPrimaryKey"
+		parameterType="me.jianpeng.entity.LogContent">
+		update logcontent
+		<set>
+			<if test="recommend != null">
+				recommend = #{recommend,jdbcType=INTEGER},
+			</if>
+			<if test="typeid != null">
+				typeid = #{typeid,jdbcType=VARCHAR},
+			</if>
+			<if test="title != null">
+				title = #{title,jdbcType=VARCHAR},
+			</if>
+			<if test="tag != null">
+				tag = #{tag,jdbcType=VARCHAR},
+			</if>
+			<if test="summary != null">
+				summary = #{summary,jdbcType=VARCHAR},
+			</if>
+			<if test="state != null">
+				state = #{state,jdbcType=INTEGER},
+			</if>
+			<if test="userid != null">
+				userid = #{userid,jdbcType=VARCHAR},
+			</if>
+			<if test="click != null">
+				click = #{click,jdbcType=INTEGER},
+			</if>
+			<if test="body != null">
+				body = #{body,jdbcType=LONGVARCHAR}
+			</if>
+		</set>
+		where
+		id = #{contentid,jdbcType=VARCHAR}
+	</update>
+	
+	<!-- 修改 -->
+	<update id="addClick" parameterType="java.lang.String">
+		update logcontent
+		<set>
+			click = click+1
+		</set>
+		where
+		id = #{contentid,jdbcType=VARCHAR}
+	</update>
+</mapper>
