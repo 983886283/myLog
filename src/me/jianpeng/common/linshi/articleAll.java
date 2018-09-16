@@ -13,6 +13,7 @@ import org.apache.commons.io.FileUtils;
 
 public class articleAll {
 
+	@SuppressWarnings("deprecation")
 	public static void main(String[] args) throws Exception {
 		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
 		Connection conn = getConn();

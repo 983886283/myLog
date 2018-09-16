@@ -1,11 +1,10 @@
 package me.jianpeng.common.linshi;
 
+import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-
-import com.mysql.jdbc.Connection;
 
 public class editImgUrl {
 
