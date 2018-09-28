@@ -1,5 +1,7 @@
 package me.jianpeng.web;
 
+import java.io.IOException;
+import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
 
@@ -18,6 +20,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import com.alibaba.fastjson.JSONObject;
 
 import me.jianpeng.common.Common;
+import me.jianpeng.common.linshi.articleAll;
 import me.jianpeng.entity.LogContent;
 import me.jianpeng.entity.LogType;
 import me.jianpeng.entity.LogUser;
@@ -59,7 +62,7 @@ public class LogBackController {
 	private @ResponseBody JSONObject delData(@PathVariable("id") String id, HttpSession session, Model model) {
 		int result = logBackService.delData(id);
 		if(result==1) {
-			Common.fileExists(session.getServletContext().getRealPath("detail"), id);
+			Common.writeFile(session.getServletContext().getRealPath("detail"), id);
 		}
 		JSONObject obj = new JSONObject();
 		obj.put("data", result == 1 ? "success" : "失败");
@@ -123,6 +126,18 @@ public class LogBackController {
 		int result = logBackService.saveUser(user);
 		JSONObject obj = new JSONObject();
 		obj.put("data", result == 1 ? "success" : "失败");
+		return obj;
+	}
+	
+	@RequestMapping(value = "/htmlStatic", method = RequestMethod.GET)
+	private @ResponseBody JSONObject htmlStatic(HttpSession session, Model model) {
+		JSONObject obj = new JSONObject();
+		try {
+			articleAll.htmlStatic(session.getServletContext().getRealPath("detail"));
+			obj.put("data","success");
+		} catch (SQLException | IOException e) {
+			obj.put("data","失败");
+		}
 		return obj;
 	}
 }

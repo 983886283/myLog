@@ -127,6 +127,18 @@
     		$scope.editor.setData("");
     		$scope.flag=!$scope.flag;
     	}
+    	//页面静态化
+    	$scope.htmlStatic = function() {
+    		var url = $scope.common.basePath+"/back/htmlStatic";
+    		$http.get(url)
+    		.success(function (response) {
+    			if(response.data==='success'){
+		    		toastr.success("ヽ(￣▽￣)ﾉ笔记静态化成功!");
+		    	}else{
+		    		toastr.error("(▼へ▼メ)笔记静态化失败!", 'Error');
+		    	}
+		    });
+    	}
     	
     	$scope.changeFlag = function(){
     		$scope.formData = {}
@@ -173,7 +185,6 @@
     		//发送post请求，获取数据
     		$http.post(url, $scope.formData, postCfg)
     		    .success(function (response) {
-    		    	console.log(response.data)
     		    	getAllDatas();
     		    	if(response.data==='success'){
     		    		toastr.success("ヽ(￣▽￣)ﾉ成功!");

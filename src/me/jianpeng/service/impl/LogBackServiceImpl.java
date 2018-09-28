@@ -123,6 +123,7 @@ public class LogBackServiceImpl implements LogBackService {
 		if(StringUtils.isBlank(logContent.getContentid())) {
 			logContent.setContentid(UUID.randomUUID().toString().replaceAll("-", ""));
 		}
+		Common.replaceCodeSnippet(logContent);
 		rs = logContentMapper.insert(logContent);
 		return rs;
 	}

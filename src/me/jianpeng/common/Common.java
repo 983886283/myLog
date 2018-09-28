@@ -16,6 +16,17 @@ import me.jianpeng.entity.LogContent;
 
 public class Common {
 
+	/*
+	 * @Description: Md5
+	 * @author: 崔建鹏
+	 * @date: 2018年9月28日 上午10:14:21
+	 * @param userPw
+	 * @param userSal
+	 * @return
+	 * @throws NoSuchAlgorithmException
+	 * @throws NoSuchProviderException
+	 * @throws UnsupportedEncodingException
+	 */
 	public static String md5(String userPw, byte[] userSal)
 			throws NoSuchAlgorithmException, NoSuchProviderException, UnsupportedEncodingException {
 		MessageDigest md = MessageDigest.getInstance("MD5", "SUN");
@@ -29,41 +40,70 @@ public class Common {
 		pwd = pwd + new String(Base64.encodeBase64(bys), "utf-8");
 		return pwd;
 	}
-	
+	/*
+	 * @Description: 生成笔记静态化文件
+	 * @author: 崔建鹏
+	 * @date: 2018年9月28日 上午10:13:29
+	 * @param baseUrl
+	 * @param content
+	 */
 	@SuppressWarnings("deprecation")
 	public static void saveDetailFile(String baseUrl, LogContent content) {
 		try {
-			SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-			File read = new File(baseUrl+"/demo.html");
-			String readFileToString = FileUtils.readFileToString(read)
-					.replace("{title}", content.getTitle())
-					.replace("{title}", content.getTitle())
-					.replace("{body}", content.getBody())
-					.replace("{username}", content.getUsername())
-					.replace("{createtime}", sdf.format(content.getCreatetime()==null?new Date():content.getCreatetime()))
-					.replace("{typeval}", content.getTypeval())
-					;
-							
-			File write = fileExists(baseUrl, content.getContentid());
-			FileUtils.writeStringToFile(write, readFileToString);
-			File writeLinShi = new File("E:/myLog/WebContent/detail/"+content.getContentid()+".html");
-			if(writeLinShi.exists()) {
-				writeLinShi.delete();
-			}
-			FileUtils.writeStringToFile(writeLinShi, readFileToString);
+			FileUtils.writeStringToFile(writeFile(baseUrl, content.getContentid()), readFileSetData(baseUrl, content));
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 	}
+	
+	/*
+	 * @Description: 对类型为Java的代码块进行批量替换
+	 * @author: 崔建鹏
+	 * @date: 2018年9月28日 上午10:25:41
+	 * @param body
+	 * @return
+	 */
+	public static void replaceCodeSnippet(LogContent logcontent) {
+		//java
+		if("JAVA".equalsIgnoreCase(logcontent.getTypeval())) {
+			logcontent.setBody(logcontent.getBody().replaceAll("<code>", "<code class=\"language-java\">"));
+		}
+	}
 
-	public static File fileExists(String baseUrl, String contentid) {
+	/*
+	 * @Description: 对模板变量注值
+	 * @author: 崔建鹏
+	 * @date: 2018年9月28日 上午10:11:01
+	 * @param baseUrl
+	 * @param content
+	 * @return
+	 * @throws IOException
+	 */
+	@SuppressWarnings("deprecation")
+	private static String readFileSetData(String baseUrl, LogContent content) throws IOException {
+		String readFileToString = FileUtils.readFileToString(new File(baseUrl+"/demo.html"))
+				.replace("{title}", content.getTitle())
+				.replace("{title}", content.getTitle())
+				.replace("{body}", content.getBody())
+				.replace("{username}", content.getUsername())
+				.replace("{createtime}", new SimpleDateFormat("yyyy-MM-dd").format(content.getCreatetime()==null?new Date():content.getCreatetime()))
+				.replace("{typeval}", content.getTypeval())
+				;
+		return readFileToString;
+	}
+	
+	/*
+	 * @Description: 输出文件不存在则新建，已存在则删除再新建
+	 * @author: 崔建鹏
+	 * @date: 2018年9月28日 上午10:12:07
+	 * @param baseUrl
+	 * @param contentid
+	 * @return
+	 */
+	public static File writeFile(String baseUrl, String contentid) {
 		File write = new File(baseUrl+"/"+contentid+".html");
 		if(write.exists()) {
 			write.delete();
-		}
-		File writeLinShi = new File("E:/myLog/WebContent/detail/"+contentid+".html");
-		if(writeLinShi.exists()) {
-			writeLinShi.delete();
 		}
 		return write;
 	}

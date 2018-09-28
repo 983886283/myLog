@@ -11,42 +11,31 @@ import java.text.SimpleDateFormat;
 
 import org.apache.commons.io.FileUtils;
 
+import me.jianpeng.common.Common;
+
 public class articleAll {
 
 	@SuppressWarnings("deprecation")
-	public static void main(String[] args) throws Exception {
+	public static void htmlStatic(String baseUrl) throws SQLException, IOException {
 		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
 		Connection conn = getConn();
 		PreparedStatement prepareStatement = conn.prepareStatement
 				("select a.id,a.title,a.body,c.username,a.createtime,b.typeval "
 						+ "from logcontent a,logtype b,loguser c "
-						+ "where a.typeid = b.id and a.userid = c.id and a.id = '23db65a7e84f4cf7b7d38ce564f0ccf6'");
+						+ "where a.typeid = b.id and a.userid = c.id");
 		ResultSet rs = prepareStatement.executeQuery();
+		
 		while(rs.next()){
-			try {
-				File read = new File("E:/apache-tomcat-9.0.0.M21/webapps/myLog/detail/demo.html");
-				String readFileToString = FileUtils.readFileToString(read)
-						.replace("{title}", rs.getString("title"))
-						.replace("{title}", rs.getString("title"))
-						.replace("{body}", rs.getString("body"))
-						.replace("{username}", rs.getString("username"))
-						.replace("{createtime}", sdf.format(rs.getDate("createtime")))
-						.replace("{typeval}", rs.getString("typeval"))
-						;
-								
-				File write = new File("E:/myLog/WebContent/detail/"+rs.getString("id")+".html");
-				if(write.exists()) {
-					write.delete();
-				}
-				FileUtils.writeStringToFile(write, readFileToString);
-				File writeLinShi = new File("E:/myLog/WebContent/detail/"+rs.getString("id")+".html");
-				if(writeLinShi.exists()) {
-					writeLinShi.delete();
-				}
-				FileUtils.writeStringToFile(writeLinShi, readFileToString);
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
+			File read = new File(baseUrl+"/demo.html");
+			String readFileToString = FileUtils.readFileToString(read)
+					.replace("{title}", rs.getString("title"))
+					.replace("{title}", rs.getString("title"))
+					.replace("{body}", rs.getString("body"))
+					.replace("{username}", rs.getString("username"))
+					.replace("{createtime}", sdf.format(rs.getDate("createtime")))
+					.replace("{typeval}", rs.getString("typeval"))
+					;
+			FileUtils.writeStringToFile(Common.writeFile(baseUrl, rs.getString("id")), readFileToString);
 		}
 	}
 	

@@ -12,7 +12,7 @@
     'BlurAdmin.pages.set',
   ])
   .service('common', function($window) {
-	  this.basePath = 'http://localhost:8080/myLog';
+	  this.basePath = $window.location.protocol+'//'+$window.location.host+'/myLog/';
 	})
   .config(routeConfig);
 
