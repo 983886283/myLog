@@ -1,105 +1,112 @@
 <div class="widgets">
-  <div class="row" ng-show="flag&&!delFlag">
-  <div class="col-md-12">
-  <div ba-panel ba-panel-title="BlogType" ba-panel-class="with-scroll">
-  	<div class="add-row-editable-table">
-		<button class="btn btn-primary" ng-click="add()">Add</button>
+	<div class="row" ng-show="flag===0">
+		<div class="col-md-12">
+			<div ba-panel ba-panel-title="type" ba-panel-class="with-scroll">
+				<div class="add-row-editable-table">
+					<button class="btn btn-default btn-with-icon" ng-click="add()">
+						<i class="ion-plus-round"></i>Add
+					</button>
+				</div>
+				<table class="table">
+					<thead>
+						<tr>
+							<th class="table-id">#</th>
+							<th class="col-md-4">TypeVal</th>
+							<th class="col-md-4">State</th>
+							<th class="col-md-3">Action</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr ng-repeat="item in list" class="editable-row">
+							<td class="table-id" ng-bind="$index+1"></td>
+							<td ng-bind="item.typeval"></td>
+							<td ng-if="item.state==0">显示</td>
+							<td ng-if="item.state==1">隐藏</td>
+							<td ng-if="item.state!=1&&item.state!=0"><font color="red">异常</font></td>
+							<td>
+								<div class="buttons" ng-show="!rowform.$visible">
+									<button class="btn btn-warning editable-table-button btn-xs btn-with-icon"
+										ng-click="edit($index)">
+										<i class="ion-edit"></i>Edit
+									</button>
+									<button class="btn btn-danger editable-table-button btn-xs btn-with-icon"
+										ng-click="del($index)">
+										<i class="ion-trash-a"></i>Delete
+									</button>
+								</div>
+							</td>
+						</tr>
+					</tbody>
+				</table>
+				<!-- 分页 -->
+				<nav style="text-align: center">
+					<ul class="pagination">
+						<li ng-class="{true:'disabled',false:''}[pagination.pageSize===1]">
+							<a href="" aria-label="Previous" ng-click="pre()"> <span
+								aria-hidden="true">&laquo;</span>
+						</a>
+						</li>
+						<li><a href="" ng-bind="pagination.pageSize"></a></li>
+						<li
+							ng-class="{true:'disabled',false:''}[pagination.pageSize===pagination.total]">
+							<a href="" aria-label="Next" ng-click="nex()"> <span
+								aria-hidden="true">&raquo;</span>
+						</a>
+						</li>
+						<li><span ng-bind="'共'+pagination.total+'页'"><span></li>
+					</ul>
+				</nav>
+			</div>
+		</div>
 	</div>
-	<table class="table">
-		<thead>
-		<tr>
-			<th class="table-id">#</th>
-			<th class="col-md-4">Type Value</th>
-			<th class="col-md-4">State</th>
-			<th class="col-md-3">Action</th>
-		</tr>
-		</thead>
-		<tbody>
-		<tr ng-repeat="item in list" class="editable-row">
-		    <td class="table-id" ng-bind="$index+1"></td>
-		    <td ng-bind="item.typeval"></td>
-		    <td ng-if="item.state==0">显示</td>
-		    <td ng-if="item.state==1">隐藏</td>
-		    <td ng-if="item.state!=1&&item.state!=0"><font color="red">异常</font></td>
-			<td>
-		    	<div class="buttons" ng-show="!rowform.$visible">
-			        <button class="btn btn-warning editable-table-button btn-xs" ng-click="edit($index)">Edit</button>
-			        <button class="btn btn-danger editable-table-button btn-xs" ng-click="del($index)">Delete</button>
-		        </div>
-		    </td>
-		</tr>
-		</tbody>
-	</table>
-  <!-- 分页 -->
-	<nav style="text-align: center">
-		<ul class="pagination">
-		   <li ng-class="{true:'disabled',false:''}[pagination.pageSize===1]">
-		     <a href="" aria-label="Previous" ng-click="pre()">
-		       <span aria-hidden="true">&laquo;</span>
-		     </a>
-		   </li>
-		   <li><a href="" ng-bind="pagination.pageSize"></a></li>
-		   <li ng-class="{true:'disabled',false:''}[pagination.pageSize===pagination.total]">
-		     <a href="" aria-label="Next" ng-click="nex()">
-		       <span aria-hidden="true">&raquo;</span>
-		     </a>
-		   </li>
-		   <li>
-		   	<span ng-bind="'共'+pagination.total+'页'"><span>
-		   </li>
-		 </ul>
-	</nav> 
-       </div>
-    </div>
-</div> 
 
-<!-- 删除的模态框 -->
-<div class="row" ng-show="delFlag">
-<div class="col-md-12">
-<div ba-panel ba-panel-title="删除确认" ba-panel-class="with-scroll">
-<table class="table table-condensed">
-  <tr>
-	<th class="table-id">#</th>
-	<th>Type Value</th>
-	<th>State</th>
-  </tr>
-  <tr class="editable-row">
-	<td class="table-id" ng-bind="$index+1"></td>
-	<td ng-bind="formData.typeval"></td>
-	<td ng-if="formData.state==0">显示</td>
-    <td ng-if="formData.state==1">隐藏</td>
-    <td ng-if="formData.state!=1&&formData.state!=0"><font color="red">异常</font></td>
-  </tr>
-</table>
-<div class="modal-footer">
-    <button class="btn btn-danger" ng-click="delDatas()">Delete</button>
-    <button class="btn btn-default" ng-click="changeDelFlag()">Cancel</button>
-</div>
-</div>
-</div>
-</div>
-  <div class="row" ng-show="!flag">
-  <div class="col-md-12">
-  <div ba-panel ba-panel-title="编辑" ba-panel-class="with-scroll">
-	<!-- 增加修改的模态框 -->
-  <div class="form-group">
-    <label for="input01">类型:</label>
-	    <input type="text" 
-				ng-model="formData.typeval" 
-				class="form-control "/>
-	  </div>
-	  <div class="form-group">
-		<label for="input02">状态 :</label>
-		<select id="typeState" class="form-control" style="display: inline">
-			<option value="0" ng-selected="'0'===formData.state||formData.state===''">显示</option>
-			<option value="1" ng-selected="'1'===formData.state">隐藏</option>
-		</select>
-	  </div>
-	<div class="modal-footer">
-	    <button class="btn btn-success" ng-click="saveDatas()">Save</button>
-	    <button class="btn btn-default" ng-click="changeFlag()">Cancel</button>
+	<!-- 删除的模态框 -->
+	<div class="row" ng-show="flag===-1">
+		<div class="col-md-12">
+			<div ba-panel ba-panel-title="删除确认" ba-panel-class="with-scroll">
+				<table class="table table-condensed">
+					<tr>
+						<th class="table-id">#</th>
+						<th>Type Value</th>
+						<th>State</th>
+					</tr>
+					<tr class="editable-row">
+						<td class="table-id" ng-bind="$index+1"></td>
+						<td ng-bind="formData.typeval"></td>
+						<td ng-if="formData.state==0">显示</td>
+						<td ng-if="formData.state==1">隐藏</td>
+						<td ng-if="formData.state!=1&&formData.state!=0"><font
+							color="red">异常</font></td>
+					</tr>
+				</table>
+				<div class="modal-footer">
+					<button class="btn btn-danger" ng-click="delDatas()">Delete</button>
+					<button class="btn btn-default" ng-click="changeFlag()">Cancel</button>
+				</div>
+			</div>
+		</div>
 	</div>
+	<div class="row" ng-show="flag===1">
+		<div class="col-md-12">
+			<div ba-panel ba-panel-title="编辑" ba-panel-class="with-scroll">
+				<!-- 增加修改的模态框 -->
+				<div class="form-group">
+					<label for="input01">类型:</label> <input type="text"
+						ng-model="formData.typeval" class="form-control " />
+				</div>
+				<div class="form-group">
+					<label for="input02">状态 :</label> <select id="typeState"
+						class="form-control" style="display: inline">
+						<option value="0"
+							ng-selected="'0'===formData.state||formData.state===''">显示</option>
+						<option value="1" ng-selected="'1'===formData.state">隐藏</option>
+					</select>
+				</div>
+				<div class="modal-footer">
+					<button class="btn btn-success" ng-click="saveDatas()">Save</button>
+					<button class="btn btn-default" ng-click="changeFlag()">Cancel</button>
+				</div>
+			</div>
+		</div>
 	</div>
-</div> 
-</div> 
 </div>

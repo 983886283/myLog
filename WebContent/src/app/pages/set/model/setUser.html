@@ -1,9 +1,11 @@
 <div class="widgets">
-  <div class="row" ng-show="flag&&!delFlag">
+  <div class="row" ng-show="flag===0">
   <div class="col-md-12">
-  <div ba-panel ba-panel-title="setUser" ba-panel-class="with-scroll">
+  <div ba-panel ba-panel-title="user" ba-panel-class="with-scroll">
   	<div class="add-row-editable-table">
-		<button class="btn btn-primary" ng-click="add()">Add</button>
+		<button class="btn btn-default btn-with-icon" ng-click="add()">
+			<i class="ion-plus-round"></i>Add
+		</button>
 	</div>
 	<table class="table">
 		<thead>
@@ -28,8 +30,12 @@
 		    <td ng-if="item.state!=1&&item.state!=0"><font color="red">异常</font></td>
 			<td>
 		    	<div class="buttons" ng-show="!rowform.$visible">
-			        <button class="btn btn-warning editable-table-button btn-xs" ng-click="edit($index)">Edit</button>
-			        <button class="btn btn-danger editable-table-button btn-xs" ng-click="del($index)">Delete</button>
+			        <button class="btn btn-warning editable-table-button btn-xs btn-with-icon" ng-click="edit($index)">
+			        	<i class="ion-edit"></i>Edit
+			        </button>
+			        <button class="btn btn-danger editable-table-button btn-xs btn-with-icon" ng-click="del($index)">
+			        	<i class="ion-trash-a"></i>Delete
+			        </button>
 		        </div>
 		    </td>
 		</tr>
@@ -59,7 +65,7 @@
 </div> 
 
 <!-- 删除的模态框 -->
-<div class="row" ng-show="delFlag">
+<div class="row" ng-show="flag===-1">
 <div class="col-md-12">
 <div ba-panel ba-panel-title="删除确认" ba-panel-class="with-scroll">
 <table class="table table-condensed">
@@ -83,14 +89,14 @@
 </table>
 <div class="modal-footer">
     <button class="btn btn-danger" ng-click="delDatas()">Delete</button>
-    <button class="btn btn-default" ng-click="changeDelFlag()">Cancel</button>
+    <button class="btn btn-default" ng-click="changeFlag()">Cancel</button>
 </div>
 </div>
 </div>
 </div>
 
 <!-- 增加修改的模态框 -->
-<div class="row" ng-show="!flag">
+<div class="row" ng-show="flag===1">
 <div class="col-md-12">
 <div ba-panel ba-panel-title="编辑" ba-panel-class="with-scroll">
   <div class="form-group">

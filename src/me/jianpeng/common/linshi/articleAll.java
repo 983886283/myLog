@@ -15,7 +15,6 @@ import me.jianpeng.common.Common;
 
 public class articleAll {
 
-	@SuppressWarnings("deprecation")
 	public static void htmlStatic(String baseUrl) throws SQLException, IOException {
 		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
 		Connection conn = getConn();
@@ -27,7 +26,7 @@ public class articleAll {
 		
 		while(rs.next()){
 			File read = new File(baseUrl+"/demo.html");
-			String readFileToString = FileUtils.readFileToString(read)
+			String readFileToString = FileUtils.readFileToString(read, "utf-8")
 					.replace("{title}", rs.getString("title"))
 					.replace("{title}", rs.getString("title"))
 					.replace("{body}", rs.getString("body"))
@@ -35,7 +34,7 @@ public class articleAll {
 					.replace("{createtime}", sdf.format(rs.getDate("createtime")))
 					.replace("{typeval}", rs.getString("typeval"))
 					;
-			FileUtils.writeStringToFile(Common.writeFile(baseUrl, rs.getString("id")), readFileToString);
+			FileUtils.writeStringToFile(Common.writeFile(baseUrl, rs.getString("id")), readFileToString, "utf-8");
 		}
 	}
 	

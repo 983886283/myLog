@@ -10,7 +10,7 @@ login.controller('loginCtrl', ['$scope','$http','$window',function ($scope,$http
 	
 	$scope.login = function(){
 	
-	var url = basePath+"/back/login";
+	var url = basePath+"/back/login/in";
 	
 	postCfg = {
             headers: {'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'},

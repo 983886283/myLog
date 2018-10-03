@@ -1,11 +1,15 @@
 <div class="widgets">
-	<div class="row" ng-show="flag&&!delFlag">
+	<div class="row" ng-show="flag===0">
 		<div class="col-md-12">
-			<div ba-panel ba-panel-title="BlogManage"
-				ba-panel-class="with-scroll">
+			<div ba-panel ba-panel-title="log" ba-panel-class="with-scroll">
 				<div class="add-row-editable-table">
-					<button class="btn btn-primary" ng-click="add()">Add</button>
-					<button class="btn btn-primary" ng-click="htmlStatic()">HtmlStatic</button>
+					<button class="btn btn-default btn-with-icon" ng-click="add()">
+						<i class="ion-plus-round"></i>Add
+					</button>
+					<button class="btn btn-default btn-with-icon"
+						ng-click="htmlStatic()">
+						<i class="fa fa fa-book"></i>HtmlStatic
+					</button>
 				</div>
 				<table class="table">
 					<thead>
@@ -13,7 +17,7 @@
 							<th class="table-id">#</th>
 							<th class="col-md-1">Recommend</th>
 							<th class="col-md-3">Title</th>
-							<th class="col-md-2">TypeValue</th>
+							<th class="col-md-2">TypeVal</th>
 							<th class="col-md-1">Author</th>
 							<th class="col-md-1">CreateTime</th>
 							<th class="col-md-1">Click</th>
@@ -33,12 +37,21 @@
 							<td ng-bind="item.click"></td>
 							<td>
 								<div class="buttons" ng-show="!rowform.$visible">
-									<button class="btn btn-info editable-table-button btn-xs"
-										ng-click="read($index)">Check</button>
-									<button class="btn btn-warning editable-table-button btn-xs"
-										ng-click="edit($index)">Edit</button>
-									<button class="btn btn-danger editable-table-button btn-xs"
-										ng-click="del($index)">Delete</button>
+									<button
+										class="btn btn-info editable-table-button btn-xs btn-with-icon"
+										ng-click="read($index)">
+										<i class="ion-search"></i>Check
+									</button>
+									<button
+										class="btn btn-warning editable-table-button btn-xs btn-with-icon"
+										ng-click="edit($index)">
+										<i class="ion-edit"></i>Edit
+									</button>
+									<button
+										class="btn btn-danger editable-table-button btn-xs btn-with-icon"
+										ng-click="del($index)">
+										<i class="ion-trash-a"></i>Delete
+									</button>
 								</div>
 							</td>
 						</tr>
@@ -67,7 +80,7 @@
 	</div>
 
 	<!-- 删除的模态框 -->
-	<div class="row" ng-show="delFlag">
+	<div class="row" ng-show="flag===-1">
 		<div class="col-md-12">
 			<div ba-panel ba-panel-title="删除确认" ba-panel-class="with-scroll">
 				<table class="table table-condensed">
@@ -94,66 +107,56 @@
 				</table>
 				<div class="modal-footer">
 					<button class="btn btn-danger" ng-click="delDatas()">Delete</button>
-					<button class="btn btn-default" ng-click="changeDelFlag()">Cancel</button>
+					<button class="btn btn-default" ng-click="changeFlag()">Cancel</button>
 				</div>
 			</div>
 		</div>
 	</div>
 
 	<!-- 增加修改的模态框 -->
-	<div class="row" ng-show="!flag">
+	<div class="row" ng-show="flag===1">
 		<div class="col-md-12">
-			<div ba-panel ba-panel-title="编辑"
-				ba-panel-class="with-scroll">
+			<div ba-panel ba-panel-title="编辑" ba-panel-class="with-scroll">
 
-				<uib-tabset active="$tabSetStatus.activeTab"> 
-					<uib-tab heading="One Stage">
-						<div class="form-group">
-							<label>是否推荐:</label> 
-				            <select id="articleRecommend"
-								class="form-control" style="font-size: 14px; display: inline">
-								<option value="1"
-									ng-selected="formData.recommend==1">推荐</option>
-								<option value="-1"
-									ng-selected="formData.recommend==-1">不推荐</option>
-							</select>
-						</div>
-						<div class="form-group">
-							<label>标题:</label> 
-							<input type="text"
-								ng-model="formData.title" id="articleTitle"
-								style="display: inline; font-size: 14px;"
-								placeholder="请输入30字以内的标题" class="form-control " />
-						</div>
-						<div class="form-group">
-							<label>摘要:</label>
-							<textarea id="articleSummary" class="form-control" rows="3"
-								ng-model="formData.summary"
-								style="display: inline; font-size: 14px; padding: 10px; border-radius: 3px;"
-								placeholder="请输入摘要(90字以内)">
+				<uib-tabset active="$tabSetStatus.activeTab"> <uib-tab
+					heading="One Stage">
+				<div class="form-group">
+					<label>是否推荐:</label> <select id="articleRecommend"
+						class="form-control" style="font-size: 14px; display: inline">
+						<option value="1" ng-selected="formData.recommend==1">推荐</option>
+						<option value="-1" ng-selected="formData.recommend==-1">不推荐</option>
+					</select>
+				</div>
+				<div class="form-group">
+					<label>标题:</label> <input type="text" ng-model="formData.title"
+						id="articleTitle" style="display: inline; font-size: 14px;"
+						placeholder="请输入30字以内的标题" class="form-control " />
+				</div>
+				<div class="form-group">
+					<label>摘要:</label>
+					<textarea id="articleSummary" class="form-control" rows="3"
+						ng-model="formData.summary"
+						style="display: inline; font-size: 14px; padding: 10px; border-radius: 3px;"
+						placeholder="请输入摘要(90字以内)">
 							</textarea>
-						</div>
-						<div class="form-group">
-							<label>分类:</label> 
-							<select id="articleType"
-								class="form-control" style="font-size: 14px; display: inline">
-								<option ng-repeat="y in types" value="{{y.typeid}}"
-									ng-bind="y.typeval" ng-selected="y.typeid===formData.typeid"></option>
-							</select>
-						</div>
-					</uib-tab> 
-					<uib-tab heading="Two Stage">
-						<div class="form-group">
-							<label>标签:</label> 
-							<input type="text" id="mctag"
-								tag-input="danger" data-role="tagsinput" placeholder="Add Tag">
-						</div>
-						<div class="form-group">
-							<label>正文:</label>
-							<div name="ckeditor"></div>
-						</div>
-					</uib-tab> 
-				</uib-tabset>
+				</div>
+				<div class="form-group">
+					<label>分类:</label> <select id="articleType" class="form-control"
+						style="font-size: 14px; display: inline">
+						<option ng-repeat="y in types" value="{{y.typeid}}"
+							ng-bind="y.typeval" ng-selected="y.typeid===formData.typeid"></option>
+					</select>
+				</div>
+				</uib-tab> <uib-tab heading="Two Stage">
+				<div class="form-group">
+					<label>标签:</label> <input type="text" id="mctag" tag-input="danger"
+						data-role="tagsinput" placeholder="Add Tag">
+				</div>
+				<div class="form-group">
+					<label>正文:</label>
+					<div name="ckeditor"></div>
+				</div>
+				</uib-tab> </uib-tabset>
 				<div class="modal-footer">
 					<button class="btn btn-success" ng-click="saveDatas()">Save</button>
 					<button class="btn btn-default" ng-click="changeFlag()">Cancel</button>

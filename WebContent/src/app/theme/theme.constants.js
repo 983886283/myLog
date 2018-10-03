@@ -5,7 +5,7 @@
 (function () {
   'use strict';
 
-  var IMAGES_ROOT = 'assets/img/';
+  var IMAGES_ROOT = 'images/';
 
   angular.module('BlurAdmin.theme')
     .constant('layoutSizes', {
@@ -15,9 +15,7 @@
     .constant('layoutPaths', {
       images: {
         root: IMAGES_ROOT,
-        profile: IMAGES_ROOT + 'app/profile/',
-        /*amMap: 'assets/img/theme/vendor/ammap//dist/ammap/images/',
-        amChart: 'assets/img/theme/vendor/amcharts/dist/amcharts/images/'*/
+        profile: IMAGES_ROOT + 'user/',
       }
     })
     .constant('colorHelper', {

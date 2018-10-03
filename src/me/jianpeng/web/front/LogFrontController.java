@@ -1,4 +1,4 @@
-package me.jianpeng.web;
+package me.jianpeng.web.front;
 
 import java.util.List;
 

@@ -10,9 +10,10 @@
     'BlurAdmin.pages.dashboard',
     'BlurAdmin.pages.blog',
     'BlurAdmin.pages.set',
+    'BlurAdmin.pages.profile',
   ])
   .service('common', function($window) {
-	  this.basePath = $window.location.protocol+'//'+$window.location.host+'/myLog/';
+	  this.basePath = $window.location.protocol+'//'+$window.location.host+'/myLog';
 	})
   .config(routeConfig);
 

@@ -13,7 +13,7 @@ public class LoginInterceptor implements HandlerInterceptor {
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
     	String username = (String)request.getSession().getAttribute("username");
     	String userid = (String)request.getSession().getAttribute("userid");
-    	if(request.getRequestURI().contains("/back/login")) {
+    	if(request.getRequestURI().contains("/back/login/in")) {
     		return true;
     	}
         if (StringUtils.isBlank(username)||StringUtils.isBlank(userid)) {

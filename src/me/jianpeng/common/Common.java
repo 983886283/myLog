@@ -47,10 +47,9 @@ public class Common {
 	 * @param baseUrl
 	 * @param content
 	 */
-	@SuppressWarnings("deprecation")
 	public static void saveDetailFile(String baseUrl, LogContent content) {
 		try {
-			FileUtils.writeStringToFile(writeFile(baseUrl, content.getContentid()), readFileSetData(baseUrl, content));
+			FileUtils.writeStringToFile(writeFile(baseUrl, content.getContentid()), readFileSetData(baseUrl, content), "utf-8");
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -79,9 +78,8 @@ public class Common {
 	 * @return
 	 * @throws IOException
 	 */
-	@SuppressWarnings("deprecation")
 	private static String readFileSetData(String baseUrl, LogContent content) throws IOException {
-		String readFileToString = FileUtils.readFileToString(new File(baseUrl+"/demo.html"))
+		String readFileToString = FileUtils.readFileToString(new File(baseUrl+"/demo.html"), "utf-8")
 				.replace("{title}", content.getTitle())
 				.replace("{title}", content.getTitle())
 				.replace("{body}", content.getBody())

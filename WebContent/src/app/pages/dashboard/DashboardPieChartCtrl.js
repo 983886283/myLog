@@ -10,7 +10,7 @@
 
 	/** @ngInject */
 	function DashboardPieChartCtrl($scope, $interval, $http, $window, common) {
-		$scope.common = common;
+		$scope.basePath = common.basePath;
 		var myChart;
 		var myChart2;
 		var option;
@@ -19,11 +19,11 @@
 			$http(
 					{
 						method : 'GET',
-						url : $scope.common.basePath+"/back/getDataForCharts"
+						url : $scope.basePath+"/back/dashboard/getDataForCharts"
 					}).then(
 					function successCallback(response) {
 						if ("" === response.data) {
-							$window.location.href = $scope.common.basePath
+							$window.location.href = $scope.basePath
 									+ "/login.html";
 						}
 						var clickAll = response.data.clickSum;
@@ -40,7 +40,7 @@
 						myChart2.setOption(option2);
 					},
 					function errorCallback(response) {
-						$window.location.href = $scope.common.basePath + "/404.html";
+						$window.location.href = $scope.basePath + "/404.html";
 					});
 		}
 
